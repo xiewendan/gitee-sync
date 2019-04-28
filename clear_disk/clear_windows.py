@@ -5,6 +5,9 @@
 
 # desc: 清理磁盘空间
 import os
+import shutil
+import stat
+import subprocess
 
 
 class ClearWinMgr(object):
@@ -16,36 +19,28 @@ class ClearWinMgr(object):
 
     @staticmethod
     def clear_app_data():
-        import os
-        import shutil
         listDirDel = [
             r"C:/Users/gzxiejinchun.GAME/AppData/Roaming/Listary/UserData",
-            r"C:/Users/gzxiejinchun.GAME/AppData/LocalLow/Unity/Caches",
+            r"C:/Users/gzxiejinchun.GAME/Documents/MuMu共享文件夹",
+            r"C:/Users/gzxiejinchun.GAME/Documents/NVIDIA Nsight/Captures",
+            r"C:/Users/gzxiejinchun.GAME/AppData/Local/Unity",
+            r"C:/Users/gzxiejinchun.GAME/AppData/LocalLow/Unity",
+            r"C:/Users/gzxiejinchun.GAME/AppData/Local/CrashDumps",
+            r"C:/Users/gzxiejinchun.GAME/AppData/Roaming/Unity",
+            r"C:/ProgramData/Unity",
         ]
 
         for szDir in listDirDel:
             if os.path.exists(szDir):
-                ClearWinMgr.del_dir(szDir)
-            else:
-                print("del dir failed, dir not exists:" + szDir)
+                ClearWinMgr.RunCmd("rm -rf " + szDir)
 
     @staticmethod
-    def del_dir(szDir):
-        listSubDir = os.listdir(szDir)
-        for szSubDir in listSubDir:
-            szFullPath = os.path.join(szDir, szSubDir)
-            if os.path.isfile(szFullPath):
-                try:
-                    os.remove(szFullPath)
-                except Exception as e:
-                    print("remove file failed:" + szFullPath)
-            else:
-                ClearWinMgr.del_dir(szFullPath)
+    def RunCmd(szCmd):
+        print "RunCmd:", szCmd
 
-        try:
-            shutil.rmtree(szDir)
-        except Exception as e:
-            print("remove dir failed:" + szDir)
+        p = subprocess.Popen(szCmd, shell=True)
+
+        return p.wait()
 
 
 def main():
