@@ -6,6 +6,7 @@ echo 本地备份
 
 f:\portable\cwRsync\rsync -av --delete --stats /cygdrive/E/Documents/yitian/ /cygdrive/G/local/yitian/
 f:\portable\cwRsync\rsync -av --delete --stats /cygdrive/E/Documents/doc/ /cygdrive/G/local/doc/
+f:\portable\cwRsync\rsync -av --delete --stats /cygdrive/E/Documents/work/ /cygdrive/G/local/work/
 
 f:\portable\cwRsync\rsync -av --delete --stats /cygdrive/C/Users/xx.GAME/.vim /cygdrive/G/local/users/.vim
 f:\portable\cwRsync\rsync -av --delete --stats /cygdrive/C/Users/xx.GAME/Desktop /cygdrive/G/local/users/Desktop
