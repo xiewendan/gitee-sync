@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# __author__ = stephenxjc@corp.netease.com
+# __author__ = xiaobao
 # __date__ = 2018/5/14 下午12:49
 
 # desc: 清理磁盘空间
