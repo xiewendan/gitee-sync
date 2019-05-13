@@ -1,0 +1,6 @@
+1 客户端同步.rar
+这个压缩包里面是cwRsync目录，将cwRsync目录解压放到D分区下面，最终的路径为 d:\cwRsync
+
+2 解压之后，进入cwRsync目录，有个 syncgac.bat 文件，右键-> 发送到 -> 桌面快捷方式
+
+3 修改syncgac.bat，使用文本编辑器编辑 syncgac.bat 文件， 将“/cygdrive/p/P1.255.255.255.255/” 中的 p/P1.255.255.255.255 修改为自己本地存放测试客户端的目录， 如 "E:\dtws测试客户端\" 则对应 "E\dtws测试客户端\"
