@@ -20,23 +20,21 @@ class ClearWinMgr(object):
     @staticmethod
     def clear_app_data():
         listDirDel = [
-            r"C:/Users/gzxiejinchun.GAME/AppData/Roaming/Listary/UserData",
-            r"C:/Users/gzxiejinchun.GAME/Documents/MuMu共享文件夹",
-            r"C:/Users/gzxiejinchun.GAME/Documents/NVIDIA Nsight/Captures",
-            r"C:/Users/gzxiejinchun.GAME/AppData/Local/Unity",
-            r"C:/Users/gzxiejinchun.GAME/AppData/LocalLow/Unity",
-            r"C:/Users/gzxiejinchun.GAME/AppData/Local/CrashDumps",
-            r"C:/Users/gzxiejinchun.GAME/AppData/Roaming/Unity",
-            r"C:/ProgramData/Unity",
+            r"C:/Users/gzxiejinchun/AppData/Roaming/Listary/UserData",
+            r"C:/Users/gzxiejinchun/Documents/MuMu共享文件夹",
+            r"C:/Users/gzxiejinchun/Documents/NVIDIA Nsight/Captures",
+            r"C:/Users/gzxiejinchun/AppData/Local/CrashDumps",
+            r"C:/Users/gzxiejinchun/AppData/Roaming/Unity",
         ]
 
+        import shutil
         for szDir in listDirDel:
             if os.path.exists(szDir):
-                ClearWinMgr.RunCmd("rm -rf " + szDir)
+                shutil.rmtree(szDir)
 
     @staticmethod
     def RunCmd(szCmd):
-        print "RunCmd:", szCmd
+        print( "RunCmd:", szCmd )
 
         p = subprocess.Popen(szCmd, shell=True)
 
