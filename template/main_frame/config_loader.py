@@ -9,7 +9,7 @@
 
 import os
 import logging
-import ConfigParser
+import configparser
 import common.my_exception as my_exception
 
 ARGS_NUM = 2
@@ -37,10 +37,10 @@ class ConfigLoader(object):
 
         logging.getLogger("myLog").debug("ConfigLoader.ParseConf:" + szConfFullPath)
 
-        configParser = ConfigParser.ConfigParser()
+        configParser = configparser.ConfigParser()
         try:
             configParser.read(szConfFullPath)
-        except Exception, e:
+        except Exception as e:
             logging.getLogger("myLog").debug(e.message)
             logging.getLogger("myLog").debug("Config parser failed:%s" % szConfFullPath)
             raise my_exception.MyException("create config parser failed!")
@@ -50,13 +50,13 @@ class ConfigLoader(object):
     def ParseStr(self, szSection, szKey):
         try:
             return self.m_configParser.get(szSection, szKey)
-        except Exception, e:
+        except Exception as e:
             return self.m_tempConfigParser.get(szSection, szKey)
 
     def ParseBool(self, szSection, szKey):
         try:
             return self.m_configParser.getboolean(szSection, szKey)
-        except Exception, e:
+        except Exception as e:
             return self.m_tempConfigParser.getboolean(szSection, szKey)
 
     def ParseConf(self):

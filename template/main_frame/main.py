@@ -20,7 +20,7 @@ def InitSysPath():
 
 def Main(args):
     print(os.getcwd())
-    print "Begin:\t" + time.strftime('%H:%M:%S', time.localtime(time.time()))
+    print("Begin:\t" + time.strftime('%H:%M:%S', time.localtime(time.time())))
     # 初始化log配置
     logging.config.fileConfig(os.getcwd() + "/conf/log.conf")
 
@@ -31,7 +31,7 @@ def Main(args):
     import logic.main
     logic.main.Main(args)
 
-    print "End:\t" + time.strftime('%H:%M:%S', time.localtime(time.time()))
+    print("End:\t" + time.strftime('%H:%M:%S', time.localtime(time.time())))
 
 
 if __name__ == "__main__":
