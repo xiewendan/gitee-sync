@@ -1,7 +1,7 @@
 # =========================
 # Operating System Files
 # =========================
-# =========================windows
+# ============ windows
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
@@ -21,7 +21,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# =========================OSX
+# ============= OSX
 
 .DS_Store
 .AppleDouble
@@ -54,3 +54,8 @@ Temporary Items
 # pycharm
 # =========================
 .idea
+
+# =========================
+# 项目文件
+# =========================
+*.log
