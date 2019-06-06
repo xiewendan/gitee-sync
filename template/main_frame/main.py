@@ -22,6 +22,8 @@ def Main(args):
     print(os.getcwd())
     print("Begin:\t" + time.strftime('%H:%M:%S', time.localtime(time.time())))
     # 初始化log配置
+    if not os.path.exists("log"):       # 不存在log目录，要创建
+        os.makedirs("log")
     logging.config.fileConfig(os.getcwd() + "/conf/log.conf")
 
     # 初始化python 路径
