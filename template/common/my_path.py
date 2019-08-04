@@ -11,5 +11,12 @@ import os
 def FileExt(szPath):
     return os.path.splitext(szPath)[1]
 
+
 def ParseDir(szPath):
     return os.path.split(szPath)[0]
+
+
+def CreateFileDir(szFilePath):
+    szDir = ParseDir(szFilePath)
+    if not os.path.exists(szDir):
+        os.makedirs(szDir)
