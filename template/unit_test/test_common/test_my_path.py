@@ -15,7 +15,7 @@ class TestMyPath(unittest.TestCase):
 
     def test_FileExt(self):
         self.assertEqual(my_path.FileExt("c:/123/xjc.txt"), ".txt")
-        self.assertEqual(my_path.FileExt("c:/123/xjc.txt"), ".jpg")
+        # self.assertEqual(my_path.FileExt("c:/123/xjc.txt"), ".jpg")
     
     def tearDown(self):
         logging.getLogger("myLog").debug("TestMyPath tearDown")
