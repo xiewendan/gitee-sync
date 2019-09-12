@@ -11,8 +11,37 @@ import json
 import logging
 import common.my_path as my_path
 
+import os
+from os.path import join, getsize
+
+
+def getdirsize(dir):
+    size = 0
+    for root, dirs, files in os.walk(dir):
+        size += sum([getsize(join(root, name)) for name in files])
+    return size
+
 
 def Main(args):
+    dir = "E:\\project\\dm109\\dm109_py3_2019\\trunk"
+    dictExt2Count = {}
+    for root, dirs, files in os.walk(dir):
+        for name in files:
+            szPath = join(root, name)
+            if not szPath.startswith("E:\\project\\dm109\\dm109_py3_2019\\trunk\\Client\\Unity\\WwiseProject\\.svn") and not szPath.startswith("E:\\project\\YY25\\YY25\\.git") and not szPath.startswith("E:\\project\\YY25\\YY25\\Client\\Unity\\Library"):
+                nSize = getsize(szPath)
+                if nSize > 1000000:
+                    # print(szPath, nSize)
+                    szExt = my_path.FileExt(szPath)
+                    if len(szExt) > 0:
+                        if szExt not in dictExt2Count:
+                            dictExt2Count[szExt] = 0
+                        dictExt2Count[szExt] += 1
+                pass
+        pass
+    listSortedExt2Count = sorted(dictExt2Count.items(), key=lambda d: d[1], reverse=True)
+    logging.getLogger("myLog").debug("Ext2Count:" + str(listSortedExt2Count))
+    pass
     logging.getLogger("myLog").debug("main start")
 
     # 加载配置表

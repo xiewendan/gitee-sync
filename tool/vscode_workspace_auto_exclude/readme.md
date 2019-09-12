@@ -24,4 +24,8 @@ ExcludeList = **/.vscode,**/.idea,**/__pycache__
 ## 运行
 bin/run.bat
 
+## 版本修改
+### 1.0
+* conf文件是配置文件，添加到白名单里面
+
 
