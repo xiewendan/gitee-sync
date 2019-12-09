@@ -72,7 +72,7 @@ def RenderConfig(szConfigPath, dictTemplatePath2TargetPath):
 
             RecursiveSetDict(dictConfig, "", dictOutputConfig)
 
-            dictOutputConfig["CWD"] = os.path.abspath(dictOutputConfig["CWD"])
+            dictOutputConfig["CWD"] = os.path.abspath(dictOutputConfig["CWD"]).replace("\\", "/")
 
             return dictOutputConfig
 

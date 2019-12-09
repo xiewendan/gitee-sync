@@ -29,6 +29,13 @@ def Main(args):
     # 初始化python 路径
     InitSysPath()
 
+    # 生成render配置文件
+    import common.util as util
+    dictTemplatePath2TargetPath = {
+        "conf/conf.conf":"conf/conf.conf"
+    }
+    util.RenderConfig("conf/render_template.yml", dictTemplatePath2TargetPath)
+
     # 进入logic模块
     import logic.main
     logic.main.Main(args)

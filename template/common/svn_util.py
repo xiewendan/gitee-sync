@@ -60,3 +60,9 @@ class SvnUtil(object):
         szCmd = "svn propset svn:externals {0} -F {1}".format(szWorkingDir, szCfgFile)
 
         util.AssertRunCmd(szCmd)
+    
+    @staticmethod
+    def SvnIgnoreByCfgFile(szSvnPath, szSvnIgnoreFile):
+        szCmd = "svn propset svn:ignore -F {0} {1}".format(szSvnIgnoreFile, szSvnPath)
+
+        util.AssertRunCmd(szCmd) 
