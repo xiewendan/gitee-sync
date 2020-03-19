@@ -12,7 +12,7 @@ import logging
 import configparser
 import common.my_exception as my_exception
 
-ARGS_NUM = 2
+ARGS_NUM = 1
 
 
 class ConfigLoader(object):
@@ -63,18 +63,15 @@ class ConfigLoader(object):
         return True
 
     @staticmethod
-    def CheckConf(args):
+    def CheckConf(szConfPath=None):
         import common.my_exception as my_exception
 
-        if len(args) == 1:
+        if szConfPath is None:
             szConfName = "conf/conf.conf"
             logging.getLogger("myLog").debug("use default conf:conf.conf")
-        elif len(args) == ARGS_NUM:
-            szConfName = args[1]
-            logging.getLogger("myLog").debug("Use define conf:%s", szConfName)
         else:
-            raise my_exception.MyException(
-                "[Error] Args num error! Need args num == %s. Give: %s" % (ARGS_NUM, len(args)))
+            szConfName = szConfPath
+            logging.getLogger("myLog").debug("Use define conf:%s", szConfName)
 
         szConfFullPath = os.getcwd() + "/" + szConfName
         if not os.path.exists(szConfFullPath):

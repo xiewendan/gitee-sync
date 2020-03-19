@@ -16,6 +16,10 @@ def ParseDir(szPath):
     return os.path.split(szPath)[0]
 
 
+def FileName(szPath):
+    return os.path.basename(szPath)
+
+
 def CreateFileDir(szFilePath):
     szDir = ParseDir(szFilePath)
     if not os.path.exists(szDir):

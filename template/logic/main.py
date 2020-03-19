@@ -8,16 +8,23 @@
 import sys
 import logging
 import common.util as util
+import common.command_line_arg_mgr as command_line_arg_mgr
 
 
 def Main(args):
     logging.getLogger("myLog").debug("main start")
 
+    # command line
+    commandLineArgMgr = command_line_arg_mgr.CommandLineArgMgr("hc:", ["help", "config="])
+    commandLineArgMgr.Parse(args)
+    szConf = commandLineArgMgr.GetOpt("-c", "-config")
+
     # 加载配置表
     import logic.my_config_loader as my_config_loader
-    szConfFullPath = my_config_loader.MyConfigLoader.CheckConf(args)
+    szConfFullPath = my_config_loader.MyConfigLoader.CheckConf(szConf)
     configLoader = my_config_loader.MyConfigLoader(szConfFullPath)
     configLoader.ParseConf()
+
 
     # todo
 
