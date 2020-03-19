@@ -97,7 +97,7 @@ def Main(args):
     # todo
     szMDPath = commandLineArgMgr.GetArg(0)
     if szMDPath is None:
-        szMDPath = input("请输入markdown文件路径:")
+        szMDPath = input("\n请输入markdown文件路径:")
     szKMPath = szMDPath.replace(".md", "_km.md")
 
     with open(szMDPath, "r", encoding="utf-8") as fpMD:
@@ -110,6 +110,7 @@ def Main(args):
                 fpKM.writelines(listLine)
                 listLine = fpMD.readlines(READ_FILE_NUM)
 
-    logging.getLogger("myLog").info("输出markdown文件路径:" + szKMPath)
+    print("\n输出markdown文件路径:" + szKMPath + "\n")
+    logging.getLogger("myLog").debug("输出markdown文件路径:" + szKMPath)
 
     logging.getLogger("myLog").debug("finished")
