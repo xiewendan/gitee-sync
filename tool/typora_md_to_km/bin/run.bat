@@ -1,7 +1,5 @@
 cd ..
 
-python main_frame/main.py
+python main_frame/main.py conf/conf.conf
 
 cd bin
-
-pause

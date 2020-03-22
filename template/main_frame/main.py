@@ -29,16 +29,11 @@ def Main(args):
     # 初始化python 路径
     InitSysPath()
 
-    # 生成render配置文件
-    import common.util as util
-    dictTemplatePath2TargetPath = {
-        "conf/conf.conf":"conf/conf.conf"
-    }
-    util.RenderConfig("conf/render_template.yml", dictTemplatePath2TargetPath)
-
-    # 进入logic模块
-    import logic.main
-    logic.main.Main(args)
+    import logic.main_app as main_app
+    AppCls = main_app.GetAppCls()
+    AppObj = AppCls()
+    AppObj.DoInit(args)
+    AppObj.DoLogic()
 
     print("End:\t" + time.strftime('%H:%M:%S', time.localtime(time.time())))
 

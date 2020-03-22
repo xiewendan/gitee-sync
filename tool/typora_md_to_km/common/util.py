@@ -48,10 +48,8 @@ def RemoveFileDir(szPath):
     else:
         shutil.rmtree(szPath)
 
-
 def RenderConfig(szConfigPath, dictTemplatePath2TargetPath):
-    assert (os.path.exists(szConfigPath) and os.path.isfile(szConfigPath), "render_template文件不存在" + szConfigPath)
-
+    assert(os.path.exists(szConfigPath) and os.path.isfile(szConfigPath), "render_template文件不存在" + szConfigPath)
     # 转换所有的配置文件，多层key合并为一个key，并用'_'连接
     # 比如 a["BOY"]["NAME"]="xjc" ==> a["BOY_NAME"]="xjc"
     def LoadConfig(szFilePath):
@@ -65,7 +63,7 @@ def RenderConfig(szConfigPath, dictTemplatePath2TargetPath):
 
             def RecursiveSetDict(dictConfigTemp, szPrefix, dictOutputConfigTemp):
                 for szKey, szValue in dictConfigTemp.items():
-                    if isinstance(szValue, dict):
+                    if isinstance(szValue , dict):
                         RecursiveSetDict(szValue, szPrefix + szKey + "_", dictOutputConfigTemp)
                     else:
                         dictOutputConfigTemp[szPrefix + szKey] = szValue
@@ -79,7 +77,7 @@ def RenderConfig(szConfigPath, dictTemplatePath2TargetPath):
             return dictOutputConfig
 
     def RenderConfig(szTemplatePath, szTargetPath, dictConfig):
-        assert (os.path.exists(szTemplatePath) and os.path.isfile(szTemplatePath), "template文件不存在" + szTemplatePath)
+        assert(os.path.exists(szTemplatePath) and os.path.isfile(szTemplatePath), "template文件不存在" + szTemplatePath)
 
         my_path.CreateFileDir(szTargetPath)
 
@@ -93,3 +91,7 @@ def RenderConfig(szConfigPath, dictTemplatePath2TargetPath):
     dictConfig = LoadConfig(szConfigPath)
     for szTemplatePath, szTargetPath in dictTemplatePath2TargetPath.items():
         RenderConfig(szTemplatePath, szTargetPath, dictConfig)
+
+
+
+

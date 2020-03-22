@@ -1,21 +1,15 @@
 # -*- coding: utf-8 -*-
 
 # __author__ = xiaobao
-# __date__ = 2019/4/25 11:22
+# __date__ = 3/22/2020 3:26 PM
 
-# desc: 主函数入口
+# desc:
 
 import re
-import shutil
-import sys
 import logging
-import common.util as util
-import common.command_line_arg_mgr as command_line_arg_mgr
+import main_frame.base_app as base_app
 
 READ_FILE_NUM = 100000  # 100k
-
-RefPattern = re.compile("^\[([0-9]+)\]: ([0-9a-zA-Z=#:\?\-\./]*) \"(.*)\"$")
-
 
 def SharpReplace(szLine):
     if szLine.startswith("#"):
@@ -65,7 +59,7 @@ def WordReplace(szLine):
 
 
 def RefProcess(szLine):
-    MatchObj = RefPattern.match(szLine)
+    MatchObj = re.match("^\[([0-9]+)\]: ([0-9a-zA-Z=#:\?\-\./]*) \"(.*)\"$", szLine)
     if MatchObj is None:
         return szLine
 
@@ -80,37 +74,32 @@ def LineProcess(szLine):
     return szLine
 
 
-def Main(args):
-    logging.getLogger("myLog").debug("main start")
+def GetAppCls():
+    return MainApp
 
-    # command line
-    commandLineArgMgr = command_line_arg_mgr.CommandLineArgMgr("hc:", ["help", "config="])
-    commandLineArgMgr.Parse(args)
-    szConf = commandLineArgMgr.GetOpt("-c", "-config")
 
-    # 加载配置表
-    import logic.my_config_loader as my_config_loader
-    szConfFullPath = my_config_loader.MyConfigLoader.CheckConf(szConf)
-    configLoader = my_config_loader.MyConfigLoader(szConfFullPath)
-    configLoader.ParseConf()
+class MainApp(base_app.BaseApp):
+    @staticmethod
+    def GetConfigLoaderCls():
+        import logic.my_config_loader as my_config_loader
+        return my_config_loader.MyConfigLoader
 
-    # todo
-    szMDPath = commandLineArgMgr.GetArg(0)
-    if szMDPath is None:
-        szMDPath = input("\n请输入markdown文件路径:")
-    szKMPath = szMDPath.replace(".md", "_km.md")
+    def OnLogic(self):
+        # todo
+        szMDPath = self.m_CLMObj.GetArg(0)
+        if szMDPath is None:
+            szMDPath = input("\n请输入markdown文件路径:")
+        szKMPath = szMDPath.replace(".md", "_km.md")
 
-    with open(szMDPath, "r", encoding="utf-8") as fpMD:
-        with open(szKMPath, "w", encoding="utf-8") as fpKM:
-            listLine = fpMD.readlines(READ_FILE_NUM)
-            while listLine:
-                for nIndex, szLine in enumerate(listLine):
-                    listLine[nIndex] = LineProcess(szLine)
-
-                fpKM.writelines(listLine)
+        with open(szMDPath, "r", encoding="utf-8") as fpMD:
+            with open(szKMPath, "w", encoding="utf-8") as fpKM:
                 listLine = fpMD.readlines(READ_FILE_NUM)
+                while listLine:
+                    for nIndex, szLine in enumerate(listLine):
+                        listLine[nIndex] = LineProcess(szLine)
 
-    print("\n输出markdown文件路径:" + szKMPath + "\n")
-    logging.getLogger("myLog").debug("输出markdown文件路径:" + szKMPath)
+                    fpKM.writelines(listLine)
+                    listLine = fpMD.readlines(READ_FILE_NUM)
 
-    logging.getLogger("myLog").debug("finished")
+        print("\n输出markdown文件路径:" + szKMPath + "\n")
+        logging.getLogger("myLog").debug("输出markdown文件路径:" + szKMPath)

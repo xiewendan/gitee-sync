@@ -49,6 +49,7 @@ Temporary Items
 # python
 # =========================
 *.pyc
+*.prof
 
 # =========================
 # pycharm
@@ -61,3 +62,6 @@ Temporary Items
 
 build/
 /tool/vscode_workspace_auto_exclude/log/logging.log
+
+
+
