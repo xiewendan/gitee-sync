@@ -41,31 +41,33 @@ class BaseApp:
         self.OnInit()
 
     def DoLogic(self):
-        szProfileName = self.m_CLMObj.GetOpt("-p", "--cProfile")
-        if szProfileName is not None:
-            self.BeginProfile()
+        self.BeginProfile()
 
         self.OnLogic()
 
-        if szProfileName is not None:
-            self.EndProfile(szProfileName)
+        self.EndProfile()
+
+    def GetProfileName(self):
+        return self.m_CLMObj.GetOpt("-p", "--cProfile")
 
     def BeginProfile(self):
-        import cProfile
-        self.m_ProfileObj = cProfile.Profile()
-        self.m_ProfileObj.enable()
+        szProfileName = self.GetProfileName()
+        if szProfileName is not None:
+            import cProfile
+            self.m_ProfileObj = cProfile.Profile()
+            self.m_ProfileObj.enable()
 
-    def EndProfile(self, szProfileName):
-        import pstats
-        self.m_ProfileObj.disable()
-        # Sort stat by internal time.
-        sortby = "tottime"
-        ps = pstats.Stats(self.m_ProfileObj).sort_stats(sortby)
-        ps.dump_stats(szProfileName)
-        ps.strip_dirs().sort_stats("cumtime").print_stats(10, 1.0, ".*")
-
-    def OnLogic(self):
-        pass
+    def EndProfile(self):
+        szProfileName = self.GetProfileName()
+        if szProfileName is not None:
+            import pstats
+            self.m_ProfileObj.disable()
+            # Sort stat by internal time.
+            sortby = "tottime"
+            ps = pstats.Stats(self.m_ProfileObj).sort_stats(sortby)
+            ps.dump_stats(szProfileName)
+            logging.getLogger("myLog").debug("\n\n\n\n")
+            ps.strip_dirs().sort_stats("cumtime").print_stats(10, 1.0, ".*")
 
     @staticmethod
     def GetCommandOpt():
@@ -78,6 +80,9 @@ class BaseApp:
 
     def GetConfigLoader(self):
         return self.m_ConfigLoader
+
+    def OnLogic(self):
+        pass
 
     def OnInit(self):
         pass

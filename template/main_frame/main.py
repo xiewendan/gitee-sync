@@ -12,28 +12,54 @@ import sys
 import time
 
 
+def CheckCWD():
+    print(os.getcwd())
+    szMainFilePath = os.getcwd() + "/main_frame/main.py"
+    if not os.path.exists(szMainFilePath):
+        print("current working dir is not right")
+        raise FileNotFoundError(szMainFilePath)
+
+
 def InitSysPath():
     sys.path.append(os.getcwd())
     sys.path.append(os.getcwd() + "/lib")
     logging.getLogger("myLog").debug("add sys path:" + os.getcwd() + "/lib")
 
 
-def Main(args):
-    print(os.getcwd())
-    print("Begin:\t" + time.strftime('%H:%M:%S', time.localtime(time.time())))
+def InitLog():
     # 初始化log配置
-    if not os.path.exists("log"):       # 不存在log目录，要创建
+    if not os.path.exists("log"):  # 不存在log目录，要创建
         os.makedirs("log")
+
+    szLogConfPath = os.getcwd() + "/conf/log.conf"
+    if not os.path.exists(szLogConfPath):
+        raise FileNotFoundError(szLogConfPath)
+
     logging.config.fileConfig(os.getcwd() + "/conf/log.conf")
 
-    # 初始化python 路径
-    InitSysPath()
 
+def StartApp(args):
     import logic.main_app as main_app
     AppCls = main_app.GetAppCls()
     AppObj = AppCls()
     AppObj.DoInit(args)
     AppObj.DoLogic()
+
+
+def Main(args):
+    print("Begin:\t" + time.strftime('%H:%M:%S', time.localtime(time.time())))
+
+    # 检查当前目录是否正常
+    CheckCWD()
+
+    # 初始化log配置
+    InitLog()
+
+    # 初始化python 路径
+    InitSysPath()
+
+    # start app
+    StartApp(args)
 
     print("End:\t" + time.strftime('%H:%M:%S', time.localtime(time.time())))
 

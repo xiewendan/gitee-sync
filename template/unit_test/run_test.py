@@ -11,36 +11,61 @@ import unittest
 import logging
 import logging.config
 
+
+def CheckCWD():
+    print(os.getcwd())
+    szMainFilePath = os.getcwd() + "/unit_test/run_test.py"
+    if not os.path.exists(szMainFilePath):
+        print("current working dir is not right")
+        raise FileNotFoundError(szMainFilePath)
+
+
 def InitLog():
     # 初始化log配置
-    if not os.path.exists("log"):       # 不存在log目录，要创建
+    if not os.path.exists("log"):  # 不存在log目录，要创建
         os.makedirs("log")
+
+    szLogConfPath = os.getcwd() + "/conf/log.conf"
+    if not os.path.exists(szLogConfPath):
+        raise FileNotFoundError(szLogConfPath)
+
     logging.config.fileConfig(os.getcwd() + "/conf/log.conf")
+
 
 def InitSysPath():
     sys.path.append(os.getcwd())
     sys.path.append(os.getcwd() + "/lib")
     sys.path.append(os.getcwd() + "/unit_test")
     logging.getLogger("myLog").info("sys path:" + str(sys.path))
-    
-def Main():
-    # 初始化log
-    InitLog()
 
-    # 初始化路径
-    InitSysPath()
 
+def StartUnitTest():
+    logging.getLogger("myLog").info("start unit test:\n\n\n")
     szTestDir = "./unit_test"
     discover = unittest.defaultTestLoader.discover(szTestDir, pattern="test*.py", top_level_dir="")
     runner = unittest.TextTestRunner()
     TestResultObj = runner.run(discover)
-
 
     logging.getLogger("myLog").info("unit test result:" + str(TestResultObj))
     if not TestResultObj.wasSuccessful():
         import common.my_exception as my_exception
         # print("unit test failed, result:" + "".join(TestResultObj.failures(),"\n"))
         raise my_exception.MyException("unit test failed")
+
+
+def Main():
+    # 检查当前目录
+    CheckCWD()
+
+    # 初始化log
+    InitLog()
+
+    # 初始化路径
+    InitSysPath()
+
+    # 开始执行单元测试
+    StartUnitTest()
+
 
 if __name__ == '__main__':
     print(Main())

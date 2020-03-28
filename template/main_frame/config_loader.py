@@ -30,7 +30,8 @@ class ConfigLoader(object):
     def ReplaceCWD(self, szStr):
         return szStr.replace("%cwd%", self.m_szCWD)
 
-    def CreateConfigParser(self, szConfFullPath):
+    @staticmethod
+    def CreateConfigParser(szConfFullPath):
         if not os.path.exists(szConfFullPath):
             raise my_exception.MyException(
                 "Conf file not exits:%s" % szConfFullPath)
@@ -79,7 +80,6 @@ class ConfigLoader(object):
                 "Conf file not exits:%s" % szConfFullPath)
 
         return szConfFullPath
-
 
     # ********************************************************************************
     # common
