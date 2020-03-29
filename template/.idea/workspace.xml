@@ -1,28 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="aae63aa9-e466-42ae-a529-33c35880885b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/common/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/enum_def.py" beforeDir="false" afterPath="$PROJECT_DIR$/common/enum_def.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/my_exception.py" beforeDir="false" afterPath="$PROJECT_DIR$/common/my_exception.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/stat_mgr.py" beforeDir="false" afterPath="$PROJECT_DIR$/common/stat_mgr.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/svn_util.py" beforeDir="false" afterPath="$PROJECT_DIR$/common/svn_util.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/util.py" beforeDir="false" afterPath="$PROJECT_DIR$/common/util.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conf/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/conf/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/tail.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/tail.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logic/my_config_loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/logic/my_config_loader.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_frame/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_frame/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_frame/base_app.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_frame/base_app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_frame/config_loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_frame/config_loader.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_frame/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_frame/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unit_test/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit_test/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unit_test/test_common/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit_test/test_common/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unit_test/test_common/test_my_path.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit_test/test_common/test_my_path.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unit_test/test_main/test_main.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit_test/test_main/test_main.py" afterDir="false" />
-    </list>
+    <list default="true" id="aae63aa9-e466-42ae-a529-33c35880885b" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
