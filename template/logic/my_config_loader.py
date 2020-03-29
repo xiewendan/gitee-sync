@@ -5,13 +5,10 @@
 
 # desc: 自己的配置文件加载器
 
-import logging
 import main_frame.config_loader as config_loader
 
 
 class MyConfigLoader(config_loader.ConfigLoader):
-    """"""
-    
     def __init__(self, szConfFullPath):
         super(MyConfigLoader, self).__init__(szConfFullPath)
 
@@ -26,4 +23,3 @@ class MyConfigLoader(config_loader.ConfigLoader):
     @property
     def Test(self):
         return self.m_szTest
-

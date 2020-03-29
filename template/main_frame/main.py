@@ -16,14 +16,7 @@ def CheckCWD():
     print(os.getcwd())
     szMainFilePath = os.getcwd() + "/main_frame/main.py"
     if not os.path.exists(szMainFilePath):
-        print("current working dir is not right")
-        raise FileNotFoundError(szMainFilePath)
-
-
-def InitSysPath():
-    sys.path.append(os.getcwd())
-    sys.path.append(os.getcwd() + "/lib")
-    logging.getLogger("myLog").debug("add sys path:" + os.getcwd() + "/lib")
+        raise Exception("current working dir is not right:" + os.getcwd())
 
 
 def InitLog():
@@ -38,7 +31,19 @@ def InitLog():
     logging.config.fileConfig(os.getcwd() + "/conf/log.conf")
 
 
+def InitSysPath():
+    sys.path.append(os.getcwd())
+
+    szLibPath = os.getcwd() + "/lib"
+    if not os.path.exists(szLibPath):
+        raise FileNotFoundError(szLibPath)
+
+    sys.path.append(szLibPath)
+    logging.getLogger("myLog").debug("add sys path:" + szLibPath)
+
+
 def StartApp(args):
+    logging.getLogger("myLog").info("Start app")
     import logic.main_app as main_app
     AppCls = main_app.GetAppCls()
     AppObj = AppCls()

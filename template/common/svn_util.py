@@ -6,11 +6,10 @@
 # desc: svn的工具库
 
 import subprocess
-import svn_clean
-# import lib.svn_clean as svn_clean
 
 
-import util
+import common.util as util
+
 
 class SvnUtil(object):
     def __init__(self):
@@ -18,7 +17,7 @@ class SvnUtil(object):
 
     @staticmethod
     def SvnUp(szFullPath):
-        szCmd = "svn up --accept tf \"%s\"" % (szFullPath)
+        szCmd = "svn up --accept tf \"%s\"" % szFullPath
 
         util.AssertRunCmd(szCmd)
 
@@ -28,8 +27,8 @@ class SvnUtil(object):
 
     @staticmethod
     def SvnClean(szFullPath):
-        print "SvnUtil.SvnClean:" + szFullPath
-        svn_clean.svn_clean(szFullPath)
+        print("SvnUtil.SvnClean:" + szFullPath)
+        raise NotImplementedError
 
     @staticmethod
     def SvnCopy(szBranchSrc, szBranchDest, szMsg):
@@ -60,9 +59,9 @@ class SvnUtil(object):
         szCmd = "svn propset svn:externals {0} -F {1}".format(szWorkingDir, szCfgFile)
 
         util.AssertRunCmd(szCmd)
-    
+
     @staticmethod
     def SvnIgnoreByCfgFile(szSvnPath, szSvnIgnoreFile):
         szCmd = "svn propset svn:ignore -F {0} {1}".format(szSvnIgnoreFile, szSvnPath)
 
-        util.AssertRunCmd(szCmd) 
+        util.AssertRunCmd(szCmd)

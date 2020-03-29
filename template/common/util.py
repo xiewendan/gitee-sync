@@ -48,50 +48,48 @@ def RemoveFileDir(szPath):
     else:
         shutil.rmtree(szPath)
 
+
 def RenderConfig(szConfigPath, dictTemplatePath2TargetPath):
-    assert(os.path.exists(szConfigPath) and os.path.isfile(szConfigPath), "render_template文件不存在" + szConfigPath)
+    assert (os.path.exists(szConfigPath) and os.path.isfile(szConfigPath), "render_template文件不存在" + szConfigPath)
+
     # 转换所有的配置文件，多层key合并为一个key，并用'_'连接
     # 比如 a["BOY"]["NAME"]="xjc" ==> a["BOY_NAME"]="xjc"
     def LoadConfig(szFilePath):
         logging.getLogger("myLog").debug("yaml file path:" + szFilePath)
 
         with open(szFilePath, 'r') as fp:
-            dictConfig = yaml.full_load(fp)
-            if dictConfig is None:
+            dictConfigYaml = yaml.full_load(fp)
+            if dictConfigYaml is None:
                 return {}
-            logging.getLogger("myLog").debug("file dictConfig:%s", str(dictConfig))
+            logging.getLogger("myLog").debug("file dictConfig:%s", str(dictConfigYaml))
 
             def RecursiveSetDict(dictConfigTemp, szPrefix, dictOutputConfigTemp):
                 for szKey, szValue in dictConfigTemp.items():
-                    if isinstance(szValue , dict):
+                    if isinstance(szValue, dict):
                         RecursiveSetDict(szValue, szPrefix + szKey + "_", dictOutputConfigTemp)
                     else:
                         dictOutputConfigTemp[szPrefix + szKey] = szValue
 
             dictOutputConfig = {}
 
-            RecursiveSetDict(dictConfig, "", dictOutputConfig)
+            RecursiveSetDict(dictConfigYaml, "", dictOutputConfig)
 
             dictOutputConfig["CWD"] = os.path.abspath(dictOutputConfig["CWD"]).replace("\\", "/")
 
             return dictOutputConfig
 
-    def RenderConfig(szTemplatePath, szTargetPath, dictConfig):
-        assert(os.path.exists(szTemplatePath) and os.path.isfile(szTemplatePath), "template文件不存在" + szTemplatePath)
+    def RenderSingleConfig(szTemplatePath1, szTargetPath1, dictConfig1):
+        assert (os.path.exists(szTemplatePath1) and os.path.isfile(szTemplatePath1), "template文件不存在" + szTemplatePath1)
 
-        my_path.CreateFileDir(szTargetPath)
+        my_path.CreateFileDir(szTargetPath1)
 
-        with open(szTemplatePath, "r") as fpTemplate:
+        with open(szTemplatePath1, "r") as fpTemplate:
             templateObj = Template(fpTemplate.read())
-            szContent = templateObj.render(dictConfig)
+            szContent = templateObj.render(dictConfig1)
 
-            with open(szTargetPath, "w") as fpTarget:
+            with open(szTargetPath1, "w") as fpTarget:
                 fpTarget.write(szContent)
 
     dictConfig = LoadConfig(szConfigPath)
     for szTemplatePath, szTargetPath in dictTemplatePath2TargetPath.items():
-        RenderConfig(szTemplatePath, szTargetPath, dictConfig)
-
-
-
-
+        RenderSingleConfig(szTemplatePath, szTargetPath, dictConfig)

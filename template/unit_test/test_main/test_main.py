@@ -7,6 +7,7 @@
 
 import logging
 import unittest
+
 import main_frame.main as main
 
 
@@ -19,5 +20,3 @@ class TestMain(unittest.TestCase):
 
     def tearDown(self):
         logging.getLogger("myLog").debug("TestMain tearDown\n\n\n")
-
-

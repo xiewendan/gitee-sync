@@ -43,9 +43,8 @@ class StatMgr(object):
         self.m_listTimeTag.append(timeTagObj)
 
     def GetTimeTagStat(self):
-        listTimeTagStr = []
+        listTimeTagStr = ["FromStart".ljust(15) + "FromLast".ljust(15) + "TagName".ljust(30)]
 
-        listTimeTagStr.append("FromStart".ljust(15) + "FromLast".ljust(15) + "TagName".ljust(30))
         if len(self.m_listTimeTag) == 0:
             return "\n".join(listTimeTagStr)
 
@@ -61,11 +60,13 @@ class StatMgr(object):
 
         return "\n".join(listTimeTagStr)
 
+
 def main():
     statMgrObj = StatMgr()
     statMgrObj.LogTimeTag("xjc")
     statMgrObj.LogTimeTag("xjc1")
     print(statMgrObj.GetTimeTagStat())
+
 
 if __name__ == '__main__':
     main()

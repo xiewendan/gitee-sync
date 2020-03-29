@@ -10,4 +10,3 @@ class EPlatform(object):
     eWin = "windows"
     eAndroid = "android"
     eIos = "ios"
-

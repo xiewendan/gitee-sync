@@ -5,6 +5,7 @@
 
 # desc: 异常
 
+
 class MyException(Exception):
     def __init__(self, *args):
         self.args = args

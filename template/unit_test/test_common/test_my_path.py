@@ -5,8 +5,9 @@
 
 # desc: desc
 
-import unittest
 import logging
+import unittest
+
 import common.my_path as my_path
 
 
