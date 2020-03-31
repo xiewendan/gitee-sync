@@ -33,7 +33,7 @@ class CommandLineArgMgr:
 
         return None
 
-    def GetArgs(self, nIndex):
+    def GetArg(self, nIndex):
         if nIndex >= self.m_nLenListArgs:
             return None
 
