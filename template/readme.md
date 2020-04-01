@@ -23,6 +23,7 @@
 * 支持添加命令行参数
 * 支持单元测试
 * 支持性能分析
+* 配置文件template化，支持变量
 
 ## 2.2. 待实现特性
 * UI框架：
@@ -32,6 +33,7 @@
 * slave客户端
 * 多线程框架
 * 多进程框架
+* https://github.com/semantic-release/semantic-release
 
 # 3. 使用
 
