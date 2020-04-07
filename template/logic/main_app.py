@@ -35,8 +35,7 @@ class MainApp(base_app.BaseApp):
         self.GetSchedulerMgr().RegisterNotify(szMsg,
                                               DatetimeDataObj,
                                               nPreNotifySecond=2 * datetime_data.ONE_DAY_SECOND,
-                                              nCycleType=datetime_data.ECycleType.eYearly,
-                                              nCalendarType=datetime_data.ECalendarType.eLunar)
+                                              nCycleType=datetime_data.ECycleType.eYearly)
 
         self.MainLoop()
 

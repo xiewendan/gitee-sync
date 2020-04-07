@@ -113,7 +113,7 @@ class BaseApp:
 
         import common.util as util
         dictTemplatePath2TargetPath = {
-            "conf/conf.conf": "conf/conf.conf"
+            "conf/conf_template.conf": "conf/conf.conf"
         }
 
         util.RenderConfig("conf/render.yml", dictTemplatePath2TargetPath)
