@@ -25,6 +25,7 @@
 * 支持性能分析
 * 配置文件template化，支持变量
 
+
 ## 2.2. 待实现特性
 * UI框架：
 * 网络：缺乏网络接口
@@ -34,6 +35,7 @@
 * 多线程框架
 * 多进程框架
 * https://github.com/semantic-release/semantic-release
+* 微信消息推送
 
 # 3. 使用
 

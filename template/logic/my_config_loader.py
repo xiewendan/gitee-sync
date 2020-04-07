@@ -15,6 +15,8 @@ class MyConfigLoader(config_loader.ConfigLoader):
         self.m_szTest = None
 
     def ParseConf(self):
+        super(MyConfigLoader, self).ParseConf()
+
         return True
 
     # ********************************************************************************

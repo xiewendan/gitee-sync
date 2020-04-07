@@ -23,8 +23,12 @@ class CommandLineArgMgr:
         self.m_listArgs = listArgs
         self.m_nLenListArgs = len(self.m_listArgs)
 
-    def HasOpt(self, szOptName):
-        return szOptName in self.m_dictOptions
+    def HasOpt(self, *tupleArg):
+        for szArg in tupleArg:
+            if szArg in self.m_dictOptions:
+                return True
+
+        return False
 
     def GetOpt(self, *tupleArg):
         for szArg in tupleArg:

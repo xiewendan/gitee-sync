@@ -49,6 +49,7 @@ def StartApp(args):
     AppObj = AppCls()
     AppObj.DoInit(args)
     AppObj.DoLogic()
+    AppObj.Destroy()
 
 
 def Main(args):

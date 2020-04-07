@@ -62,6 +62,8 @@ Temporary Items
 
 build/
 /tool/vscode_workspace_auto_exclude/log/logging.log
+render.yml
+conf.conf
 
 
 

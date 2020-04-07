@@ -20,7 +20,6 @@ class ConfigLoader(object):
     def __init__(self, szConfFullPath):
         logging.getLogger("myLog").debug("ConfigLoader.__init__:" + szConfFullPath)
 
-        self.m_szName = "default"
         self.m_szCWD = os.getcwd()
 
         self.m_szConfFullPath = szConfFullPath
@@ -28,6 +27,14 @@ class ConfigLoader(object):
 
         self.m_szConfTempFullPath = self.m_szCWD + "/conf/conf_template.conf"
         self.m_tempConfigParser = self.CreateConfigParser(self.m_szConfTempFullPath)
+
+        # 定义的配置
+        self.m_szName = "default"
+
+        # mail
+        self.m_szMailUser = None
+        self.m_szMailPassword = None
+        self.m_szMailHost = None
 
     def ReplaceCWD(self, szStr):
         return szStr.replace("%cwd%", self.m_szCWD)
@@ -61,6 +68,10 @@ class ConfigLoader(object):
             return self.m_tempConfigParser.getboolean(szSection, szKey)
 
     def ParseConf(self):
+        self.m_szMailHost = self.ParseStr("mail", "host")
+        self.m_szMailUser = self.ParseStr("mail", "user")
+        self.m_szMailPassword = self.ParseStr("mail", "password")
+
         return True
 
     @staticmethod
@@ -84,3 +95,15 @@ class ConfigLoader(object):
     @property
     def Name(self):
         return self.m_szName
+
+    @property
+    def MailHost(self):
+        return self.m_szMailHost
+
+    @property
+    def MailUser(self):
+        return self.m_szMailUser
+
+    @property
+    def MailPassword(self):
+        return self.m_szMailPassword
