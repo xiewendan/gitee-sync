@@ -31,11 +31,13 @@ class MainApp(base_app.BaseApp):
     def OnLogic(self):
         szMsg = "蛋仔生日:2020,3月18号"
         nCalendar = datetime_data.ECalendarType.eLunar
-        DatetimeDataObj = datetime_data.DatetimeData(2020, 3, 18, 12, 0, 0, 0, nCalendarType=nCalendar)
-        self.GetSchedulerMgr().RegisterNotify(szMsg,
-                                              DatetimeDataObj,
-                                              nPreNotifySecond=2 * datetime_data.ONE_DAY_SECOND,
-                                              nCycleType=datetime_data.ECycleType.eYearly)
+        DatetimeDataObj = datetime_data.DatetimeData(2020, 3, 18, 13, 0, 0, 0, nCalendarType=nCalendar)
+        nNotifyID = self.GetSchedulerMgr().RegisterNotify(szMsg,
+                                                           DatetimeDataObj,
+                                                           nPreNotifySecond=3 * datetime_data.ONE_DAY_SECOND,
+                                                           nCycleType=datetime_data.ECycleType.eYearly)
+
+        self.GetSchedulerMgr().TryCreateNotifyInst(nNotifyID)
 
         self.MainLoop()
 
