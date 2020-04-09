@@ -2,20 +2,23 @@
 
 # __author__ = xiaobao
 # __date__ = 2020/4/3 4:07 下午
-
-import datetime
 # desc:
+
+import os
+import datetime
+import json
 import logging
 
 import apscheduler.schedulers.background as background
 
 import common.scheduler.datetime_data as datetime_data
+import common.scheduler.notify_config as notify_config
 
 
 class SchedulerMgr:
     def __init__(self):
         # xjctodo 需要每次从数据库初始化，取上次存的值，之后递增，作为notify的唯一ID
-        self.m_nNotifyID = 0
+        self.m_nNotifyID = 0  # 正数为配置表注册，负数为动态新增
         self.m_nNotifyInstID = 0
 
         self.m_dictNotify = {}
@@ -26,6 +29,29 @@ class SchedulerMgr:
         self.m_dictJobCallback = {}
 
         self.m_LoggerObj = logging.getLogger("myLog")
+
+    def Init(self, szSchedulerPath):
+        if not os.path.exists(szSchedulerPath):
+            raise FileNotFoundError(szSchedulerPath)
+
+        listNotifyData = []
+        with open(szSchedulerPath, "r", encoding="utf-8") as fp:
+            listNotifyData = json.load(fp)
+
+        for NotifyData in listNotifyData:
+            NotifyConfigObj = notify_config.NotifyConfig(NotifyData)
+
+            nNotifyID = NotifyConfigObj.NotifyID
+            szMsg = NotifyConfigObj.Msg
+            nPreNotifySecond = NotifyConfigObj.PreNotifySecond
+            nCycleType = NotifyConfigObj.CycleType
+            DatetimeDataObj = NotifyConfigObj.DatetimeData
+
+            self.RegisterNotify(szMsg,
+                                DatetimeDataObj,
+                                nPreNotifySecond=nPreNotifySecond,
+                                nCycleType=nCycleType,
+                                nNotifyID=nNotifyID)
 
     def Start(self):
         self.m_LoggerObj.info("Start")
@@ -46,10 +72,12 @@ class SchedulerMgr:
     def RegisterNotify(self, szMsg,
                        DatetimeDataObj: datetime_data.DatetimeData,
                        nPreNotifySecond=0,
-                       nCycleType=datetime_data.ECycleType.eOnce):
+                       nCycleType=datetime_data.ECycleType.eOnce,
+                       nNotifyID=None):
 
         import common.scheduler.base_notify as base_notify
-        nNotifyID = self._GenNotifyID()
+        if nNotifyID is None:
+            nNotifyID = self._GenNotifyID()
         self.m_dictNotify[nNotifyID] = base_notify.BaseNotify(szMsg,
                                                               DatetimeDataObj,
                                                               nPreNotifySecond,
@@ -102,7 +130,7 @@ class SchedulerMgr:
         return "%s_%s" % (nNotifyID, self._GenNotifyInstID())
 
     def _GenNotifyID(self):
-        self.m_nNotifyID += 1
+        self.m_nNotifyID -= 1
         return self.m_nNotifyID
 
     def _GenNotifyInstID(self):

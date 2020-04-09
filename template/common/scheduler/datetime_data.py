@@ -5,6 +5,7 @@
 
 # desc:weekday: Monday:0, Sunday:6
 
+import re
 import enum
 import datetime
 import borax.calendars.lunardate as lunardate
@@ -55,6 +56,18 @@ class DateData:
         self.m_nMonth = nMonth
         self.m_nDay = nDay
         self.m_nCalendarType = nCalendarType
+
+    @classmethod
+    def FromDateStr(cls, szDate, nCalendarType):
+        MatchObj = re.match('^([0-9]+)-([0-9]+)-([0-9]+)$', szDate)
+        if MatchObj is None:
+            return False
+
+        nYear = int(MatchObj.group(1))
+        nMonth = int(MatchObj.group(2))
+        nDay = int(MatchObj.group(3))
+
+        return cls(nYear, nMonth, nDay, nCalendarType)
 
     @property
     def Year(self):
@@ -134,6 +147,18 @@ class TimeData:
         self.m_nSecond = nSecond
         self.m_nMicroSecond = nMicroSecond
 
+    @classmethod
+    def FromTimeStr(cls, szTime):
+        MatchObj = re.match('^([0-9]+):([0-9]+):([0-9]+)$', szTime)
+        if MatchObj is None:
+            return False
+
+        nHour = int(MatchObj.group(1))
+        nMinute = int(MatchObj.group(2))
+        nSecond = int(MatchObj.group(3))
+
+        return cls(nHour, nMinute, nSecond)
+
     @property
     def Hour(self):
         return self.m_nHour
@@ -182,12 +207,20 @@ class TimeData:
 
 
 class DatetimeData:
-    def __init__(self, nYear=2000, nMonth=1, nDay=1, nHour=0, nMinute=0, nSecond=0, nMicroSecond=0, nWeekday=-1,
+    def __init__(self, nYear=2000, nMonth=1, nDay=1, nHour=0, nMinute=0, nSecond=0, nMicroSecond=0, nWeekday=0,
                  nCalendarType=ECalendarType.eSolar):
+        self._CheckWeekDay(nWeekday)
+
         self.m_DateDataObj = DateData(nYear=nYear, nMonth=nMonth, nDay=nDay, nCalendarType=nCalendarType)
         self.m_TimeDataObj = TimeData(nHour=nHour, nMinute=nMinute, nSecond=nSecond, nMicroSecond=nMicroSecond)
 
         self.m_nWeekday = nWeekday
+
+    @classmethod
+    def FromDateDataTimeData(cls, DateDataObj, TimeDataObj, nWeekday):
+        return cls(DateDataObj.Year, DateDataObj.Month, DateDataObj.Day,
+                   TimeDataObj.Hour, TimeDataObj.Minute, TimeDataObj.Second, TimeDataObj.MicroSecond,
+                   nWeekday=nWeekday, nCalendarType=DateDataObj.CalendarType)
 
     @property
     def Year(self):
@@ -266,3 +299,9 @@ class DatetimeData:
     def __eq__(self, OtherObj):
         return self.DateData == OtherObj.DateData and self.TimeData == OtherObj.TimeData and \
                self.Weekday == OtherObj.Weekday
+
+    @staticmethod
+    def _CheckWeekDay(nWeekday):
+        """weekday: Monday:0, Sunday:6"""
+        if not 0 <= nWeekday <= 23:
+            raise ValueError('weekday must be in 0..6', nWeekday)

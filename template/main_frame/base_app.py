@@ -67,7 +67,6 @@ class BaseApp:
 
         self.Info("End load config file\n")
 
-
     def InitMailMgr(self):
         if not self.m_CLMObj.HasOpt("-m", "--mail"):
             return
@@ -86,11 +85,15 @@ class BaseApp:
     def InitSchedulerMgr(self):
         if not self.m_CLMObj.HasOpt("-s", "--scheduler"):
             return
+
         self.Info("Start scheduler mgr")
-        self.m_SchedulerMgr = scheduler_mgr.SchedulerMgr()
         assert self.m_MailMgr is not None, "scheduler mgr depend on mail mgr"
+
+        self.m_SchedulerMgr = scheduler_mgr.SchedulerMgr()
         self.m_SchedulerMgr.SetMailMgr(self.m_MailMgr)
+        self.m_SchedulerMgr.Init(self.ConfigLoader.SchedulerPath)
         self.m_SchedulerMgr.Start()
+
         self.Info("End scheduler mgr\n")
 
     def DestroySchedulerMgr(self):
@@ -174,7 +177,8 @@ class BaseApp:
         # noinspection SpellCheckingInspection
         ps.strip_dirs().sort_stats("cumtime").print_stats(10, 1.0, ".*")
 
-    def GetConfigLoader(self):
+    @property
+    def ConfigLoader(self):
         return self.m_ConfigLoader
 
     # ############################# log

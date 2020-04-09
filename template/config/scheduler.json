@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "date": "2020-3-18",
+    "calendar_type": "lunar",
+    "time": "12:0:0",
+    "weekday": 1,
+    "pre_notify": 86400,
+    "cycle_type": "yearly",
+    "msg": "蛋仔3天后生日"
+  }
+]
