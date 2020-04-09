@@ -28,9 +28,8 @@ class MailMgr:
 
     def Login(self, szMailHost, szMailUser, szMailPassword):
         logging.getLogger("myLog").info("Start login:%s, %s", szMailHost, szMailUser)
-        self.m_smtpObj = smtplib.SMTP()
-
-        nCode, szError = self.m_smtpObj.connect(szMailHost, 25)
+        self.m_smtpObj = smtplib.SMTP_SSL()
+        nCode, szError = self.m_smtpObj.connect(szMailHost, 465)
         if nCode == -1:
             logging.getLogger("myLog").error(szError)
             raise
