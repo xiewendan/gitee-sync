@@ -35,6 +35,7 @@ class ConfigLoader(object):
         self.m_szMailUser = None
         self.m_szMailPassword = None
         self.m_szMailHost = None
+        self.m_szMailTo = None
 
         # scheduler
         self.m_szSchedulerPath = None
@@ -74,6 +75,7 @@ class ConfigLoader(object):
         self.m_szMailHost = self.ParseStr("mail", "host")
         self.m_szMailUser = self.ParseStr("mail", "user")
         self.m_szMailPassword = self.ParseStr("mail", "password")
+        self.m_szMailTo = self.ParseStr("mail", "to")
 
         self.m_szSchedulerPath = self.ParseStr("scheduler", "path")
 
@@ -112,6 +114,10 @@ class ConfigLoader(object):
     @property
     def MailPassword(self):
         return self.m_szMailPassword
+
+    @property
+    def MailTo(self):
+        return self.m_szMailTo
 
     @property
     def SchedulerPath(self):

@@ -73,14 +73,22 @@ class BaseApp:
 
         self.Info("Start mail mgr")
         self.m_MailMgr = mail_mgr.MailMgr()
-        self.m_MailMgr.Login(self.m_ConfigLoader.MailHost, self.m_ConfigLoader.MailUser,
-                             self.m_ConfigLoader.MailPassword)
+        self.m_MailMgr.Login(self.ConfigLoader.MailHost, self.ConfigLoader.MailUser,
+                             self.ConfigLoader.MailPassword)
+        self.m_MailMgr.SetDefaultTo(self.ConfigLoader.MailTo)
 
         self.Info("End mail mgr\n")
 
     def DestroyMailMgr(self):
         if self.m_MailMgr is not None:
             self.m_MailMgr.Destroy()
+
+    def GetMailMgr(self):
+        assert self.m_MailMgr is not None, "未初始化"
+        return self.m_MailMgr
+
+    def SendMail(self, szTitle, szMsg, listTo=None):
+        self.m_MailMgr.Send(szTitle, szMsg, listTo=listTo)
 
     def InitSchedulerMgr(self):
         if not self.m_CLMObj.HasOpt("-s", "--scheduler"):
@@ -103,9 +111,6 @@ class BaseApp:
     def GetSchedulerMgr(self):
         assert self.m_SchedulerMgr is not None, "未初始化"
         return self.m_SchedulerMgr
-
-    def SendMail(self, szFrom, listTo, szTitle, szMsg):
-        self.m_MailMgr.Send(szFrom, listTo, szTitle, szMsg)
 
     def ParseCommandArg(self, args):
         self.Info("Start parse command line")

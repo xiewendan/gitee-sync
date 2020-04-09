@@ -168,7 +168,7 @@ class SchedulerMgr:
         self.m_JobMgr.remove_job(szJobID)
 
     def _NotifyMsg(self, szMsg):
-        self.m_MailMgr.Send("jinchunxie@126.com", ["jinchunxie@126.com"], "小宝通知", szMsg)
+        self.m_MailMgr.Send("小宝通知", szMsg)
 
     def _DailyUpdateNotifyIns(self, DatetimeObj=None):
         self.m_LoggerObj.info("Daily update notify ins")
