@@ -3,6 +3,8 @@ CWD: .
 mail:
   user: xx
   password: xx
+  host: xx
+  to: xx
 
 
 
