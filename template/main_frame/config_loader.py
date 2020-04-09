@@ -25,7 +25,7 @@ class ConfigLoader(object):
         self.m_szConfFullPath = szConfFullPath
         self.m_configParser = self.CreateConfigParser(self.m_szConfFullPath)
 
-        self.m_szConfTempFullPath = self.m_szCWD + "/conf/conf_template.conf"
+        self.m_szConfTempFullPath = self.m_szCWD + "/config/config_template.conf"
         self.m_tempConfigParser = self.CreateConfigParser(self.m_szConfTempFullPath)
 
         # 定义的配置
@@ -77,11 +77,11 @@ class ConfigLoader(object):
     @staticmethod
     def CheckConf(szConfPath=None):
         if szConfPath is None:
-            szConfName = "conf/conf.conf"
-            logging.getLogger("myLog").debug("use default conf:conf.conf")
+            szConfName = "config/config.conf"
+            logging.getLogger("myLog").debug("use default config:config.conf")
         else:
             szConfName = szConfPath
-            logging.getLogger("myLog").debug("Use define conf:%s", szConfName)
+            logging.getLogger("myLog").debug("Use define config:%s", szConfName)
 
         szConfFullPath = os.getcwd() + "/" + szConfName
         if not os.path.exists(szConfFullPath):

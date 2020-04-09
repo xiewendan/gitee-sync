@@ -1,5 +1,5 @@
 cd ..
 
-python main_frame/main.py conf/conf.conf
+python main_frame/main.py config/config.conf
 
 cd bin

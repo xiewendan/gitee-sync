@@ -3,9 +3,9 @@
 
 - [1. 配置文件](#1-%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6)
     - [1.1. rendertemplate.yml](#11-rendertemplateyml)
-    - [1.2. conftemplate.conf](#12-conftemplateconf)
+    - [1.2. configtemplate.conf](#12-configtemplateconf)
     - [1.3. render.yml](#13-renderyml)
-    - [1.4. conf.conf](#14-confconf)
+    - [1.4. config.conf](#14-configconf)
 
 <!-- /TOC -->
 
@@ -14,19 +14,19 @@
 ```mermaid
 graph LR;
 
-    conf(conf.conf)
-    conf_template(conf_template.conf)
+    config(config.conf)
+    config_template(config_template.conf)
     render(render.yml)
     render_template(render_template.yml)
 
     render_template --> render
-    conf_template-->conf
-    render-->conf
+    config_template-->config
+    render-->config
 ```
 
 * render_template.yml：the template of all variable, include all variable
 * render.yml：copy from render_template.yml, you can set value for each variable.
-* conf_template.conf：the template of the config, it has variable such as {{CWD}} which will be replace by the value in render.yml.
+* config_template.conf：the template of the config, it has variable such as {{CWD}} which will be replace by the value in render.yml.
 
 ## 1.1. render_template.yml
 the indent is two space.
@@ -60,7 +60,7 @@ mail:
 ~~~
 
 
-## 1.2. conf_template.conf
+## 1.2. config_template.conf
 it's format is the common config by configparser. it define the section and option name.
 
 for example,
@@ -77,7 +77,7 @@ type1 = {{mail_type_type1}}
 ## 1.3. render.yml
 
 
-## 1.4. conf.conf
+## 1.4. config.conf
 
 after render, the output is
 

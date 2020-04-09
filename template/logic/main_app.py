@@ -39,7 +39,8 @@ class MainApp(base_app.BaseApp):
 
         self.GetSchedulerMgr().TryCreateNotifyInst(nNotifyID)
 
-        self.MainLoop()
+        if not self.IsTest():
+            self.MainLoop()
 
     def MainLoop(self):
         try:

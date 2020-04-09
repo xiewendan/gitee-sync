@@ -16,7 +16,7 @@ class TestMain(unittest.TestCase):
         logging.getLogger("myLog").debug("TestMain setUp:")
 
     def test_Main(self):
-        main.Main(["-p", "1.prof"])
+        main.Main(["run_test.py", "-m", "-s", "-t", "-p", "1.prof"])
 
     def tearDown(self):
         logging.getLogger("myLog").debug("TestMain tearDown\n\n\n")

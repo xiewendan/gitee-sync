@@ -24,11 +24,11 @@ def InitLog():
     if not os.path.exists("log"):  # 不存在log目录，要创建
         os.makedirs("log")
 
-    szLogConfPath = os.getcwd() + "/conf/log.conf"
+    szLogConfPath = os.getcwd() + "/config/log.conf"
     if not os.path.exists(szLogConfPath):
         raise FileNotFoundError(szLogConfPath)
 
-    logging.config.fileConfig(os.getcwd() + "/conf/log.conf")
+    logging.config.fileConfig(os.getcwd() + "/config/log.conf")
 
 
 def InitSysPath():

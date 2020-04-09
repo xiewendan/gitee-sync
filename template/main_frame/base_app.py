@@ -14,8 +14,9 @@ import common.scheduler.scheduler_mgr as scheduler_mgr
 class BaseApp:
     def __init__(self):
         self.m_LoggerObj = logging.getLogger("myLog")
-        self.m_ConfigLoader = None
         self.m_CLMObj = None
+        self.m_bTest = False
+        self.m_ConfigLoader = None
         self.m_ProfileObj = None
         self.m_MailMgr = None
         self.m_SchedulerMgr = None
@@ -29,6 +30,9 @@ class BaseApp:
 
         # command line
         self.ParseCommandArg(args)
+
+        # test flag
+        self.SetTestFlag()
 
         # 加载配置表
         self.LoadConfig()
@@ -44,6 +48,14 @@ class BaseApp:
 
         self.Info("Do init end\n")
 
+    def SetTestFlag(self):
+        self.Info("Start set test flag")
+        self.m_bTest = self.m_CLMObj.HasOpt("-t", "--test")
+        self.Info("End set test flag")
+
+    def IsTest(self):
+        return self.m_bTest
+
     def LoadConfig(self):
         self.Info("Start load config file")
 
@@ -54,6 +66,7 @@ class BaseApp:
         self.m_ConfigLoader.ParseConf()
 
         self.Info("End load config file\n")
+
 
     def InitMailMgr(self):
         if not self.m_CLMObj.HasOpt("-m", "--mail"):
@@ -106,17 +119,17 @@ class BaseApp:
     def RenderConfig(self):
         self.Info("Start rendering config")
 
-        szRenderYmlPath = "conf/render.yml"
+        szRenderYmlPath = "config/render.yml"
         if not os.path.exists(szRenderYmlPath):
-            self.Error("copy conf/render_template.yml to conf/render.yml, then config it")
+            self.Error("copy config/render_template.yml to config/render.yml, then config it")
             raise FileNotFoundError(szRenderYmlPath)
 
         import common.util as util
         dictTemplatePath2TargetPath = {
-            "conf/conf_template.conf": "conf/conf.conf"
+            "config/config_template.conf": "config/config.conf"
         }
 
-        util.RenderConfig("conf/render.yml", dictTemplatePath2TargetPath)
+        util.RenderConfig("config/render.yml", dictTemplatePath2TargetPath)
         self.Info("End rendering config\n")
 
     def DoLogic(self):
@@ -179,7 +192,7 @@ class BaseApp:
 
     @staticmethod
     def GetBaseCommandOpt():
-        return "hc:p:ms", ["help", "config=", "cProfile=", "mail", "scheduler"]
+        return "hc:p:mst", ["help", "config=", "cProfile=", "mail", "scheduler", "test"]
 
     # ############################# override function
     @staticmethod
