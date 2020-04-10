@@ -8,6 +8,7 @@
     - [3.1. 配置](#31-%E9%85%8D%E7%BD%AE)
     - [3.2. 运行准备](#32-%E8%BF%90%E8%A1%8C%E5%87%86%E5%A4%87)
     - [3.3. 运行](#33-%E8%BF%90%E8%A1%8C)
+    - [3.4. linux发布](#34-linux%E5%8F%91%E5%B8%83)
 - [4. 文献](#4-%E6%96%87%E7%8C%AE)
 
 <!-- /TOC -->
@@ -28,10 +29,9 @@
 
 
 ## 2.2. 待实现特性
-* 配置所有的任务
-* excel配置表转json文件
+* 帮助文档
+* excel配置表转py
 * 发布到外网
-* json配置表化所有的notify
 * UI框架：
 * 网络：缺乏网络接口
 * 数据库存储
@@ -41,18 +41,37 @@
 * 多进程框架
 * https://github.com/semantic-release/semantic-release
 * 微信消息推送
+* 微信公众号整合：https://mp.weixin.qq.com/s/iMPUC0yxI-zuf4AjtyAu6g
 
 # 3. 使用
 
 ## 3.1. 配置
 
-* 配置文件路径：config/config.conf
+* 配置文件路径：
+~~~
+cp config/render_template.yml config/render.yml
+对render.yml配置
+~~~
 
 ## 3.2. 运行准备
 
 
 ## 3.3. 运行
+* windows运行
+~~~
 bin/run.bat
+~~~
+
+## 3.4. linux发布
+* 通过git pull更新代码
+* linux后台运行
+~~~
+nohup python3 -u main_frame/main.py  2>&1 &
+~~~
+
+> -u可以避免cache 输出
+> 2>&1：把错误输出也输出到一起
+> nohup command &：做到后台运行，并且控制台关闭也不会停止
 
 # 4. 文献
 

@@ -15,6 +15,8 @@ def GetAppCls():
     return MainApp
 
 
+
+
 class MainApp(base_app.BaseApp):
     @staticmethod
     def GetCommandOpt():
@@ -36,7 +38,7 @@ class MainApp(base_app.BaseApp):
         try:
             # 其他任务是独立的线程执行
             while True:
-                time.sleep(5)
+                time.sleep(10)
                 self.Info("main loop")
         except (KeyboardInterrupt, SystemExit):
             self.Destroy()

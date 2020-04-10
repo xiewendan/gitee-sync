@@ -7,7 +7,7 @@
     "weekday": 1,
     "pre_notify": 0,
     "cycle_type": "yearly",
-    "msg": "小宝今天生日"
+    "msg": "我今天生日"
   },
   {
     "id": 2,
@@ -108,5 +108,35 @@
     "pre_notify": 86400,
     "cycle_type": "yearly",
     "msg": "小橙子明天后生日"
+  },
+  {
+    "id": 12,
+    "date": "2020-12-10",
+    "calendar_type": "solar",
+    "time": "12:0:0",
+    "weekday": 1,
+    "pre_notify": 0,
+    "cycle_type": "monthly",
+    "msg": "存钱到工行两张卡，买流量，房租，还信用卡，还花呗"
+  },
+  {
+    "id": 13,
+    "date": "2021-3-30",
+    "calendar_type": "solar",
+    "time": "12:0:0",
+    "weekday": 1,
+    "pre_notify": 0,
+    "cycle_type": "once",
+    "msg": "取消89元套餐"
+  },
+  {
+    "id": 14,
+    "date": "2020-4-23",
+    "calendar_type": "solar",
+    "time": "12:0:0",
+    "weekday": 1,
+    "pre_notify": 0,
+    "cycle_type": "monthly",
+    "msg": "打卡提醒"
   }
 ]
