@@ -31,6 +31,9 @@ class ConfigLoader(object):
         # 定义的配置
         self.m_szName = "default"
 
+        # common
+        self.m_szHelpPath = None
+
         # mail
         self.m_szMailUser = None
         self.m_szMailPassword = None
@@ -72,6 +75,8 @@ class ConfigLoader(object):
             return self.m_tempConfigParser.getboolean(szSection, szKey)
 
     def ParseConf(self):
+        self.m_szHelpPath = self.ParseStr("common", "help_path")
+
         self.m_szMailHost = self.ParseStr("mail", "host")
         self.m_szMailUser = self.ParseStr("mail", "user")
         self.m_szMailPassword = self.ParseStr("mail", "password")
@@ -99,6 +104,10 @@ class ConfigLoader(object):
     # ********************************************************************************
     # common
     # ********************************************************************************
+    @property
+    def HelpPath(self):
+        return self.m_szHelpPath
+
     @property
     def Name(self):
         return self.m_szName

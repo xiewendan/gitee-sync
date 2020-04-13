@@ -37,6 +37,9 @@ class BaseApp:
         # 加载配置表
         self.LoadConfig()
 
+        # help action
+        self.Help()
+
         # 邮件系统初始化
         self.InitMailMgr()
 
@@ -66,6 +69,20 @@ class BaseApp:
         self.m_ConfigLoader.ParseConf()
 
         self.Info("End load config file\n")
+
+    def Help(self):
+        bHelp = self.m_CLMObj.HasOpt("-h", "--help")
+        self.Info("Help option:%s", bHelp)
+
+        if not bHelp:
+            return
+
+        self.Info("Help msg")
+        with open(self.ConfigLoader.HelpPath, "r", encoding="utf-8") as fp:
+            self.Info("\n\n%s\n\n", "".join(fp.readlines()))
+
+        self.Info("Help msg end and exit(0)")
+        exit(0)
 
     def InitMailMgr(self):
         if not self.m_CLMObj.HasOpt("-m", "--mail"):
