@@ -40,9 +40,6 @@ class ConfigLoader(object):
         self.m_szMailHost = None
         self.m_szMailTo = None
 
-        # scheduler
-        self.m_szSchedulerPath = None
-
     def ReplaceCWD(self, szStr):
         return szStr.replace("%cwd%", self.m_szCWD)
 
@@ -81,8 +78,6 @@ class ConfigLoader(object):
         self.m_szMailUser = self.ParseStr("mail", "user")
         self.m_szMailPassword = self.ParseStr("mail", "password")
         self.m_szMailTo = self.ParseStr("mail", "to")
-
-        self.m_szSchedulerPath = self.ParseStr("scheduler", "path")
 
         return True
 
@@ -131,7 +126,3 @@ class ConfigLoader(object):
     @property
     def MailTo(self):
         return self.m_szMailTo
-
-    @property
-    def SchedulerPath(self):
-        return self.m_szSchedulerPath

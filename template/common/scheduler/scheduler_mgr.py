@@ -30,15 +30,9 @@ class SchedulerMgr:
 
         self.m_LoggerObj = logging.getLogger("myLog")
 
-    def Init(self, szSchedulerPath):
-        if not os.path.exists(szSchedulerPath):
-            raise FileNotFoundError(szSchedulerPath)
-
-        listNotifyData = []
-        with open(szSchedulerPath, "r", encoding="utf-8") as fp:
-            listNotifyData = json.load(fp)
-
-        for NotifyData in listNotifyData:
+    def Init(self):
+        import config.setting.scheduler as scheduler
+        for nNotifyID, NotifyData in scheduler.scheduler.items():
             NotifyConfigObj = notify_config.NotifyConfig(NotifyData)
 
             nNotifyID = NotifyConfigObj.NotifyID

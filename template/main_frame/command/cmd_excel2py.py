@@ -58,7 +58,7 @@ class CmdExcel2Py:
     def _FilterExcelFile(listChangeFile):
         listExcelFile = []
         for szFile in listChangeFile:
-            MatchObj = re.match("^[?MA]+ ([0-9a-zA-Z_/]+.xlsx)$", szFile)
+            MatchObj = re.match("^[ ?MA][ ?MA] ([0-9a-zA-Z_/]+.xlsx)$", szFile)
             if MatchObj is None:
                 continue
 

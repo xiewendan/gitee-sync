@@ -50,7 +50,8 @@ class NotifyConfig:
             "yearly": datetime_data.ECycleType.eYearly
         }
 
-        assert szCycleType in dictCycle, "循环值范围是：once, daily, weekly, monthly, yearly"
+        assert szCycleType in dictCycle, \
+            "Error value: {0}, 循环值范围是：once, daily, weekly, monthly, yearly".format(szCycleType, )
         return dictCycle[szCycleType]
 
     @property

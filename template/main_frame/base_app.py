@@ -219,7 +219,7 @@ class BaseApp:
 
         self.m_SchedulerMgr = scheduler_mgr.SchedulerMgr()
         self.m_SchedulerMgr.SetMailMgr(self.m_MailMgr)
-        self.m_SchedulerMgr.Init(self.ConfigLoader.SchedulerPath)
+        self.m_SchedulerMgr.Init()
         self.m_SchedulerMgr.Start()
 
         self.Info("End scheduler mgr\n")
