@@ -28,10 +28,11 @@
 * 配置scheduler任务
 * 发布到外网
 * 帮助文档：输出一份帮助文档。main.py -h，直接输出帮助文档。doc下的一个markdown文档
+* excel配置表转py
 
 
 ## 2.2. 待实现特性
-* excel配置表转py
+* 自动发现command下面的所有命令
 * unity python和服务器连接，构建一个有模型有动作的助理，他会有ui的输出，和场景的指引
 * 数据库
 * UI框架：
@@ -73,6 +74,9 @@ nohup python3 -u main_frame/main.py  2>&1 &
 > -u可以避免cache 输出
 > 2>&1：把错误输出也输出到一起
 > nohup command &：做到后台运行，并且控制台关闭也不会停止
+>
+>
+
 
 # 4. 文献
 

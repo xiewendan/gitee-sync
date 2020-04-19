@@ -15,8 +15,6 @@ def GetAppCls():
     return MainApp
 
 
-
-
 class MainApp(base_app.BaseApp):
     @staticmethod
     def GetCommandOpt():

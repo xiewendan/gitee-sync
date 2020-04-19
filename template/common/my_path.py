@@ -8,6 +8,7 @@
 import os
 
 
+# "a/b/c.txt -> .txt"
 def FileExt(szPath):
     return os.path.splitext(szPath)[1]
 
@@ -16,7 +17,14 @@ def ParseDir(szPath):
     return os.path.split(szPath)[0]
 
 
+# "a/b/c.txt -> c"
+# "a/b/c     -> c"
 def FileName(szPath):
+    szBaseName = os.path.basename(szPath)
+    return os.path.splitext(szBaseName)[0]
+
+
+def FileNameWithExt(szPath):
     return os.path.basename(szPath)
 
 

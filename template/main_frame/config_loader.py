@@ -105,6 +105,10 @@ class ConfigLoader(object):
     # common
     # ********************************************************************************
     @property
+    def CWD(self):
+        return self.m_szCWD
+
+    @property
     def HelpPath(self):
         return self.m_szHelpPath
 
