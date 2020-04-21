@@ -61,7 +61,6 @@ def RenderConfig(szConfigPath, dictTemplatePath2TargetPath):
             dictConfigYaml = yaml.full_load(fp)
             if dictConfigYaml is None:
                 return {}
-            logging.getLogger("myLog").debug("file dictConfig:%s", str(dictConfigYaml))
 
             def RecursiveSetDict(dictConfigTemp, szPrefix, dictOutputConfigTemp):
                 for szKey, szValue in dictConfigTemp.items():
