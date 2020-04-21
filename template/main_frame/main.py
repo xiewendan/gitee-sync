@@ -65,10 +65,16 @@ def Main(args):
     InitSysPath()
 
     # start app
-    StartApp(args)
+    try:
+        StartApp(args)
+    except Exception as e:
+        import traceback
+        logging.getLogger("myLog").error("\n\n{0}\n".format(traceback.format_exc()))
+        raise
 
     print("End:\t" + time.strftime('%H:%M:%S', time.localtime(time.time())))
 
 
 if __name__ == "__main__":
     Main(sys.argv)
+
