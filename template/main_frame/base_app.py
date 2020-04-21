@@ -229,7 +229,7 @@ class BaseApp:
             self.m_SchedulerMgr.Destroy()
 
     def _GetCommand(self, szName):
-        assert szName in self.m_dictCommand
+        assert szName in self.m_dictCommand, "command not register:{0}".format(szName)
         return self.m_dictCommand[szName]
 
     def _ParseCommandArg(self, args):
