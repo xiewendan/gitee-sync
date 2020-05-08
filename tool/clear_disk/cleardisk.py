@@ -38,8 +38,8 @@ def deleteFileInDirWithLeftFile(szDirPath, szMatchStr, nLeftFileCount, bDir=Fals
     listFileSorted = sorted(dictName2ModifyTime.items(), key=lambda d: d[1], reverse=True)
 
     # 删除比较早的文件，仅保留n个
-    for nIndex in xrange(nLeftFileCount, len(listFileSorted)):
-        print "client pkg is deleted:", nIndex, listFileSorted[nIndex][0]
+    for nIndex in range(nLeftFileCount, len(listFileSorted)):
+        print ("client pkg is deleted:", nIndex, listFileSorted[nIndex][0])
         if bDir:
             shutil.rmtree(listFileSorted[nIndex][0])
         else:
@@ -69,7 +69,7 @@ def deleteFileInDirWithLeftDay(szDirPath, szMatchStr, nLeftDay, bDir=False):
 
     for szPath, nModifyTime in dictName2ModifyTime.iteritems():
         if time.time() - nModifyTime > nLeftSec:
-            print "client pkg is deleted:", szPath
+            print ("client pkg is deleted:", szPath)
             if bDir:
                 shutil.rmtree(szPath)
             else:
@@ -83,15 +83,14 @@ def TestReg():
 
 if __name__ == '__main__':
     # ############################# 清除android
-    deleteFileInDirWithLeftFile(r"E:\g87\Package\android\trunk", r"g87-full-[0-9]*-[0-9]*.apk", 5, False)
-    deleteFileInDirWithLeftFile(r"E:\g87\Package\android\trunk\patch", r"^[0-9]+.[0-9]+.[0-9]+.[0-9]+$", 2, True)
-    deleteFileInDirWithLeftDay(r"E:\g87\Package\android\release", r"g87r-full-[0-9]*-[0-9]*.apk", 8, False)
-    deleteFileInDirWithLeftDay(r"E:\g87\Package\android\release\patch", r"^[0-9]+.[0-9]+.[0-9]+.[0-9]+$", 8, True)
+    deleteFileInDirWithLeftFile(r"D:\project\dm109\ReleasePkg\android\yy25trunk", r"trunk_[0-9a-z]*_[0-9a-z]*.apk", 10, False)
+    deleteFileInDirWithLeftFile(r"D:\project\dm109\ReleasePkg\android\yy25trunk", r"trunk_[0-9a-z]*_[0-9a-z]*", 0, True)
+    deleteFileInDirWithLeftFile(r"D:\project\ReleasePkg\DM132\android\trunk", r"trunk_[a-z0-9A-Z-]*_[0-9a-z]*_[0-9a-z]*.apk", 20, False)    
+    # deleteFileInDirWithLeftFile(r"D:\project\ReleasePkg\DM132\android\trunk", r"trunk_[a-z0-9A-Z-]*_[0-9a-z]*_[0-9a-z]*", 0, True)
 
     # ############################# 清除ios
-    deleteFileInDirWithLeftFile(r"E:\g87\Package\ios\trunk", r"g87-full-[0-9]*-[0-9]*.apk", 5, False)
-    deleteFileInDirWithLeftFile(r"E:\g87\Package\ios\trunk\patch", r"^[0-9]+.[0-9]+.[0-9]+.[0-9]+$", 2, True)
-    deleteFileInDirWithLeftDay(r"E:\g87\Package\ios\release", r"g87r-full-[0-9]*-[0-9]*.apk", 8, False)
-    deleteFileInDirWithLeftDay(r"E:\g87\Package\ios\release\patch", r"^[0-9]+.[0-9]+.[0-9]+.[0-9]+$", 8, True)
+    deleteFileInDirWithLeftFile(r"D:\project\dm109\ReleasePkg\ios\yy25trunk", r"trunk_[0-9a-z]*_[0-9a-z]*.ipa", 20, False)
+    deleteFileInDirWithLeftFile(r"D:\project\dm109\ReleasePkg\ios\trunk", r"trunk_[0-9a-z]*_[0-9a-z]*.ipa", 10, False)
+    deleteFileInDirWithLeftFile(r"D:\project\ReleasePkg\DM132\ios\trunk", r"trunk_[a-z0-9A-Z-]*_[0-9a-z]*_[0-9a-z]*.ipa", 20, False)
 
     # ############################# 清除系统
