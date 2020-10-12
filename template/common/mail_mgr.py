@@ -23,7 +23,7 @@ class MailMgr:
         self.m_listMailTo = None
 
     def SetDefaultConfig(self, szDefaultHost, szDefaultUser, szDefaultPassword, szDefaultTo):
-        logging.getLogger("myLog").info("Host, User, To", szDefaultHost, szDefaultUser, szDefaultTo)
+        logging.getLogger("myLog").info("Host:%s, User:%s, To:%s", szDefaultHost, szDefaultUser, szDefaultTo)
 
         self.m_szMailHost = szDefaultHost
         self.m_szMailUser = szDefaultUser
@@ -33,9 +33,7 @@ class MailMgr:
         assert len(self.m_listMailTo) > 0
 
     def _Login(self):
-        logging.getLogger("myLog").info("Start login:%s, %s", szMailHost, szMailUser)
         self.m_smtpObj = smtplib.SMTP_SSL()
-
         nCode, szError = self.m_smtpObj.connect(self.m_szMailHost, 465)
         if nCode == -1:
             logging.getLogger("myLog").error(szError)
@@ -47,6 +45,9 @@ class MailMgr:
         logging.getLogger("myLog").info("Login succeed: %s", self.m_szMailUser)
     
     def _CheckLogin(self):
+        if self.m_smtpObj is None:
+            return False
+
         try:
             nStatus = self.m_smtpObj.noop()[0]
         except:
@@ -69,10 +70,10 @@ class MailMgr:
             logging.getLogger("myLog").error("Send mail failed: no receiver")
             return
 
-        assert self.m_smtpObj is not None, "You did not login success, try call Login"
-
         if not self._CheckLogin():
             self._Login()
+
+        assert self.m_smtpObj is not None, "You did not login success, try call Login"
 
         MTextObj = MIMEText(szMsg, 'plain', 'utf-8')
         MTextObj['From'] = self.m_szMailUser
@@ -85,4 +86,5 @@ class MailMgr:
 
     def Destroy(self):
         logging.getLogger("myLog").info("Destroy mail obj")
-        self.m_smtpObj.quit()
+        if self._CheckLogin():
+            self.m_smtpObj.quit()
