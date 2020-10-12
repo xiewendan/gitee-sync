@@ -44,7 +44,7 @@ class NotifyConfig:
     def _GetCycleType(szCycleType):
         dictCycle = {
             "once": datetime_data.ECycleType.eOnce,
-            "daily:": datetime_data.ECycleType.eDaily,
+            "daily": datetime_data.ECycleType.eDaily,
             "weekly": datetime_data.ECycleType.eWeekly,
             "monthly": datetime_data.ECycleType.eMonthly,
             "yearly": datetime_data.ECycleType.eYearly
