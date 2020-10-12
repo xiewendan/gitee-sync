@@ -17,30 +17,42 @@ class MailMgr:
     def __init__(self):
         self.m_smtpObj = None
 
+        self.m_szMailHost = None
         self.m_szMailUser = None
         self.m_szMailPassword = None
         self.m_listMailTo = None
 
-    def SetDefaultTo(self, szDefaultTo):
-        print(szDefaultTo)
+    def SetDefaultConfig(self, szDefaultHost, szDefaultUser, szDefaultPassword, szDefaultTo):
+        logging.getLogger("myLog").info("Host, User, To", szDefaultHost, szDefaultUser, szDefaultTo)
+
+        self.m_szMailHost = szDefaultHost
+        self.m_szMailUser = szDefaultUser
+        self.m_szMailPassword = szDefaultPassword
         self.m_listMailTo = szDefaultTo.split(",")
+
         assert len(self.m_listMailTo) > 0
 
-    def Login(self, szMailHost, szMailUser, szMailPassword):
+    def _Login(self):
         logging.getLogger("myLog").info("Start login:%s, %s", szMailHost, szMailUser)
         self.m_smtpObj = smtplib.SMTP_SSL()
-        nCode, szError = self.m_smtpObj.connect(szMailHost, 465)
+
+        nCode, szError = self.m_smtpObj.connect(self.m_szMailHost, 465)
         if nCode == -1:
             logging.getLogger("myLog").error(szError)
             raise
         else:
-            logging.getLogger("myLog").info("Connect %s succeed", szMailHost)
+            logging.getLogger("myLog").info("Connect %s succeed", self.m_szMailHost)
 
-        self.m_szMailUser = szMailUser
-        self.m_szMailPassword = szMailPassword
+        self.m_smtpObj.login(self.m_szMailUser, self.m_szMailPassword)
+        logging.getLogger("myLog").info("Login succeed: %s", self.m_szMailUser)
+    
+    def _CheckLogin(self):
+        try:
+            nStatus = self.m_smtpObj.noop()[0]
+        except:
+            nStatus = -1
 
-        self.m_smtpObj.login(szMailUser, szMailPassword)
-        logging.getLogger("myLog").info("Login succeed: %s", szMailUser)
+        return nStatus == 250
 
     def Send(self, szTitle, szMsg, listTo=None):
         logging.getLogger("myLog").info("Send mail! From: %s, To: %s, DefaultTo: %s, szTitle: %s, szMsg: %s",
@@ -49,7 +61,7 @@ class MailMgr:
                                         ",".join(self.m_listMailTo),
                                         szTitle,
                                         szMsg)
-
+        
         if listTo is None:
             listTo = self.m_listMailTo
 
@@ -58,6 +70,9 @@ class MailMgr:
             return
 
         assert self.m_smtpObj is not None, "You did not login success, try call Login"
+
+        if not self._CheckLogin():
+            self._Login()
 
         MTextObj = MIMEText(szMsg, 'plain', 'utf-8')
         MTextObj['From'] = self.m_szMailUser

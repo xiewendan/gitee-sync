@@ -200,9 +200,9 @@ class BaseApp:
 
         self.Info("Start mail mgr")
         self.m_MailMgr = mail_mgr.MailMgr()
-        self.m_MailMgr.Login(self.ConfigLoader.MailHost, self.ConfigLoader.MailUser,
-                             self.ConfigLoader.MailPassword)
-        self.m_MailMgr.SetDefaultTo(self.ConfigLoader.MailTo)
+        self.m_MailMgr.SetDefaultConfig(self.ConfigLoader.MailHost, self.ConfigLoader.MailUser,
+                             self.ConfigLoader.MailPassword, self.ConfigLoader.MailTo)
+        self.m_MailMgr.Send("启动小小服务", "你好，我是小小助手，我已经启动了，你可以直接找我哈")
 
         self.Info("End mail mgr\n")
 

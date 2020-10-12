@@ -41,8 +41,9 @@
 * 多线程框架
 * 多进程框架
 * https://github.com/semantic-release/semantic-release
-* 微信消息推送
-* 微信公众号整合：https://mp.weixin.qq.com/s/iMPUC0yxI-zuf4AjtyAu6g
+* 搜索：
+    [实打实的谷歌搜索技巧](https://zhuanlan.zhihu.com/p/25525658)
+    [google api](https://developers.google.com/apis-explorer)
 
 # 3. 使用
 

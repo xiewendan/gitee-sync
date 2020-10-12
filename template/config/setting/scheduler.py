@@ -164,5 +164,15 @@ scheduler = {
 		Key6: 'monthly',
 		Key7: '公司打开提醒',
 	},
+	15: {
+		Key0: 15,
+		Key1: '2020-4-23',
+		Key2: 'solar',
+		Key3: '12:0:0',
+		Key4: 1,
+		Key5: 0,
+		Key6: 'daily',
+		Key7: '每日通知提醒,谢锦春加油，你真棒',
+	},
 
 }
