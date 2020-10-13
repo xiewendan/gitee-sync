@@ -6,5 +6,10 @@ mail:
   host: xx
   to: xx
 
+dingding:
+  webhook: xx
+  secret: xx
+  keyword: xx
+  to: xx
 
 

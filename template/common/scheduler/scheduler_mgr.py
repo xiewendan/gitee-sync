@@ -25,6 +25,7 @@ class SchedulerMgr:
 
         self.m_JobMgr = None
         self.m_MailMgr = None
+        self.m_DingDingMgr = None
 
         self.m_dictJobCallback = {}
 
@@ -61,6 +62,9 @@ class SchedulerMgr:
 
     def SetMailMgr(self, MailMgrObj):
         self.m_MailMgr = MailMgrObj
+    
+    def SetDingDingMgr(self, DingDingMgrObj):
+        self.m_DingDingMgr = DingDingMgrObj
 
     # 日期，时间，提前多久提醒，提醒的内容（支持中英文）
     def RegisterNotify(self, szMsg,
@@ -163,6 +167,8 @@ class SchedulerMgr:
 
     def _NotifyMsg(self, szMsg):
         self.m_MailMgr.Send("小宝通知", szMsg)
+        if self.m_DingDingMgr is not None:
+            self.m_DingDingMgr.Send(szMsg)
 
     def _DailyUpdateNotifyIns(self, DatetimeObj=None):
         self.m_LoggerObj.info("Daily update notify ins")

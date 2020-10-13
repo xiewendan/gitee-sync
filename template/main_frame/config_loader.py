@@ -40,6 +40,12 @@ class ConfigLoader(object):
         self.m_szMailHost = None
         self.m_szMailTo = None
 
+        # dingding
+        self.m_szDingDingWebhook = None
+        self.m_szDingDingSecret = None
+        self.m_szDingDingKeyword = None
+        self.m_szDingDingTo = None
+
     def ReplaceCWD(self, szStr):
         return szStr.replace("%cwd%", self.m_szCWD)
 
@@ -79,6 +85,11 @@ class ConfigLoader(object):
         self.m_szMailPassword = self.ParseStr("mail", "password")
         self.m_szMailTo = self.ParseStr("mail", "to")
 
+        self.m_szDingDingWebhook = self.ParseStr("dingding", "webhook")
+        self.m_szDingDingSecret = self.ParseStr("dingding", "secret")
+        self.m_szDingDingKeyword = self.ParseStr("dingding", "keyword")
+        self.m_szDingDingTo = self.ParseStr("dingding", "to")
+
         return True
 
     @staticmethod
@@ -111,6 +122,7 @@ class ConfigLoader(object):
     def Name(self):
         return self.m_szName
 
+    #mail
     @property
     def MailHost(self):
         return self.m_szMailHost
@@ -126,3 +138,20 @@ class ConfigLoader(object):
     @property
     def MailTo(self):
         return self.m_szMailTo
+
+    #dingding
+    @property
+    def DingDingWebhook(self):
+        return self.m_szDingDingWebhook 
+    
+    @property
+    def DingDingSecret(self):
+        return self.m_szDingDingSecret 
+    
+    @property
+    def DingDingKeyword(self):
+        return self.m_szDingDingKeyword 
+    
+    @property
+    def DingDingTo(self):
+        return self.m_szDingDingTo 

@@ -9,6 +9,7 @@ import logging
 import logging.config
 import common.mail_mgr as mail_mgr
 import common.scheduler.scheduler_mgr as scheduler_mgr
+import common.notify.ding_ding_mgr as ding_ding_mgr
 
 
 class BaseApp:
@@ -19,6 +20,7 @@ class BaseApp:
         self.m_ConfigLoader = None
         self.m_ProfileObj = None
         self.m_MailMgr = None
+        self.m_DingDingMgr = None
         self.m_SchedulerMgr = None
         self.m_dictCommand = {}
 
@@ -40,6 +42,9 @@ class BaseApp:
 
         # 邮件系统初始化
         self._InitMailMgr()
+
+        # 钉钉系统初始化
+        self._InitDingDingMgr()
 
         # 定时器
         self._InitSchedulerMgr()
@@ -89,12 +94,19 @@ class BaseApp:
         assert self.m_MailMgr is not None, "未初始化"
         return self.m_MailMgr
 
+    def GetDingDingMgr(self):
+        assert self.m_DingDingMgr is not None, "未初始化"
+        return self.m_DingDingMgr
+
     def GetSchedulerMgr(self):
         assert self.m_SchedulerMgr is not None, "未初始化"
         return self.m_SchedulerMgr
 
     def SendMail(self, szTitle, szMsg, listTo=None):
         self.m_MailMgr.Send(szTitle, szMsg, listTo=listTo)
+    
+    def SendDingDing(self, szMsg, listTo=None):
+        self.m_DingDingMgr.Send(szMsg, listTo)
 
     # ############################# log
     def Debug(self, szMsg, *listArgs, **dictArgs):
@@ -158,7 +170,7 @@ class BaseApp:
     # ############################# help function
     @staticmethod
     def _GetBaseCommandOpt():
-        return "hc:p:mst", ["help", "config=", "cProfile=", "mail", "scheduler", "test"]
+        return "hc:p:mstd", ["help", "config=", "cProfile=", "mail", "scheduler", "test", "dingding"]
 
     def _GetCommandName(self):
         return self.m_CLMObj.GetArg(0)
@@ -201,7 +213,7 @@ class BaseApp:
         self.Info("Start mail mgr")
         self.m_MailMgr = mail_mgr.MailMgr()
         self.m_MailMgr.SetDefaultConfig(self.ConfigLoader.MailHost, self.ConfigLoader.MailUser,
-                             self.ConfigLoader.MailPassword, self.ConfigLoader.MailTo)
+                                        self.ConfigLoader.MailPassword, self.ConfigLoader.MailTo)
         self.m_MailMgr.Send("启动小小服务", "你好，我是小小助手，我已经启动了，你可以直接找我哈")
 
         self.Info("End mail mgr\n")
@@ -209,6 +221,28 @@ class BaseApp:
     def _DestroyMailMgr(self):
         if self.m_MailMgr is not None:
             self.m_MailMgr.Destroy()
+
+    def _InitDingDingMgr(self):
+        if not self.m_CLMObj.HasOpt("-d", "--dingding"):
+            return
+
+        self.Info("Start dingding mgr")
+        self.m_DingDingMgr = ding_ding_mgr.DingDingMgr(
+            self.ConfigLoader.DingDingWebhook,
+            self.ConfigLoader.DingDingSecret,
+            self.ConfigLoader.DingDingKeyword,
+            [self.ConfigLoader.DingDingTo]
+        )
+
+        self.m_DingDingMgr.Send(
+            "你好，我是小小助手，我已经启动了，你可以直接找我哈"
+        )
+
+        self.Info("End dingding mgr\n")
+
+    def _DestroyDingDingMgr(self):
+        if self.m_DingDingMgr is not None:
+            self.m_DingDingMgr.Destroy()
 
     def _InitSchedulerMgr(self):
         if not self.m_CLMObj.HasOpt("-s", "--scheduler"):
@@ -219,6 +253,8 @@ class BaseApp:
 
         self.m_SchedulerMgr = scheduler_mgr.SchedulerMgr()
         self.m_SchedulerMgr.SetMailMgr(self.m_MailMgr)
+        if self.m_DingDingMgr is not None:
+            self.m_SchedulerMgr.SetDingDingMgr(self.m_DingDingMgr)
         self.m_SchedulerMgr.Init()
         self.m_SchedulerMgr.Start()
 
@@ -229,7 +265,8 @@ class BaseApp:
             self.m_SchedulerMgr.Destroy()
 
     def _GetCommand(self, szName):
-        assert szName in self.m_dictCommand, "command not register:{0}".format(szName)
+        assert szName in self.m_dictCommand, "command not register:{0}".format(
+            szName)
         return self.m_dictCommand[szName]
 
     def _ParseCommandArg(self, args):
@@ -249,7 +286,8 @@ class BaseApp:
 
         szRenderYmlPath = "config/render.yml"
         if not os.path.exists(szRenderYmlPath):
-            self.Error("copy config/render_template.yml to config/render.yml, then config it")
+            self.Error(
+                "copy config/render_template.yml to config/render.yml, then config it")
             raise FileNotFoundError(szRenderYmlPath)
 
         import common.util as util

@@ -44,6 +44,17 @@ OPTIONS
                     to: xx
             ~~~
 
+        -d or --dingding
+            open the dingding system. you should set dingding variable(webhook, secret, keyword, to) in config/render.yml
+
+            ~~~
+                dingding:
+                    webhook: xx
+                    secret: xx
+                    keyword: xx
+                    to: xx
+            ~~~
+
         -s or --scheduler
             open the scheduler. you can config the scheduler in scheduler.json.
 
