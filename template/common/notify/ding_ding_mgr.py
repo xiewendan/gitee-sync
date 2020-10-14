@@ -7,6 +7,8 @@ import requests
 import json  # 导入依赖库
 import logging
 
+import common.my_exception as my_exception
+
 g_szKeyWord = "xiaoxiao"
 g_szSecret = "SEC3ec7794df9406701df3307b96877e8868f7bb883e442ad15b66032e5d0218d11"
 # 定义webhook，从钉钉群机器人设置页面复制获得
@@ -24,17 +26,18 @@ class DingDingMgr:
         assert self._CheckListTo(listTo), "目标列表有问题"
         self.m_listTo = listTo
 
-    def Send(self, szMsg, listTargetMobile=None):
-        logging.getLogger("myLog").info("msg:%s, listTo:%s", szMsg, repr(listTargetMobile))
+    def Send(self, szMsg, listTo=None):
+        logging.getLogger("myLog").info(
+            "msg:%s, listTo:%s", szMsg, repr(listTo))
 
         if len(szMsg) == 0:
             logging.getLogger("myLog").info("send msg is empty")
             return
 
-        if listTargetMobile is None:
-            listTargetMobile = self.m_listTo
+        if listTo is None:
+            listTo = self.m_listTo
 
-        if not self._CheckListTo(listTargetMobile):
+        if not self._CheckListTo(listTo):
             return
 
         szTimeStamp, szSign = self._GetTimeStampSign()
@@ -45,10 +48,10 @@ class DingDingMgr:
         dictData = {
             "msgtype": "text",
             "text": {
-                "content": "@%s\n%s\n%s" % ("@".join(listTargetMobile), szMsg, self.m_szKeyword)
+                "content": "@%s\n%s\n%s" % ("@".join(listTo), szMsg, self.m_szKeyword)
             },
             "at": {
-                "atMobiles": listTargetMobile,
+                "atMobiles": listTo,
                 "isAtAll": False
             }
         }
@@ -79,11 +82,18 @@ class DingDingMgr:
         #   "errmsg": "ip X.X.X.X not in whitelist"
         # }
 
-        requests.post(szWebhook, data=json.dumps(dictData),
-                                headers=dictHeaders)  # 发送post请求
+        logging.getLogger("myLog").info(
+            "dingding post\n webhook:%s,\n data:%s,\n headers:%s", szWebhook, repr(dictData), repr(dictHeaders))
+        ResponseObj = requests.post(szWebhook, data=json.dumps(dictData),
+                                    headers=dictHeaders)  # 发送post请求
+        logging.getLogger("myLog").info(
+            "dingding post webhook ret:\n%s",
+            '\n'.join(['%s:%s' % item for item in ResponseObj.__dict__.items()])
+        )
 
-        # if dictRet.errcode == 310000:
-        #     raise dictRet.errmsg
+        dictRet = json.loads(ResponseObj._content)
+        if dictRet["errcode"] == 310000:
+            raise my_exception.MyException(dictRet["errmsg"])
 
     def _GetTimeStampSign(self):
         szTimeStamp = str(round(time.time() * 1000))

@@ -7,7 +7,7 @@
 import os
 import logging
 import logging.config
-import common.mail_mgr as mail_mgr
+import common.notify.mail_mgr as mail_mgr
 import common.scheduler.scheduler_mgr as scheduler_mgr
 import common.notify.ding_ding_mgr as ding_ding_mgr
 
