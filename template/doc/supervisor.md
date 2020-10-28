@@ -76,6 +76,8 @@ stopasgroup=false     ;默认为false,进程被杀死时，是否向这个进程
 killasgroup=false     ;默认为false，向进程组发送kill信号，包括子进程
 ~~~
 
+> echo_supervisord_conf > 1.txt，指令可以得到默认配置，在此基础上做修改会方便很多
+
 ## 封装对外脚本
 * start_supervisord.sh:启动supervisord后台
 ~~~
