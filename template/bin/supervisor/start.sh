@@ -1,1 +1,1 @@
-supervisorctl start all
+supervisorctl -c etc/supervisor.conf start all

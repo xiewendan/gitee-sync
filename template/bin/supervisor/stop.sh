@@ -1,1 +1,1 @@
-supervisorctl stop all
+supervisorctl -c etc/supervisor.conf stop all

@@ -1,1 +1,1 @@
-supervisorctl status
+supervisorctl -c etc/supervisor.conf status
