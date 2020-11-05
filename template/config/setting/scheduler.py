@@ -162,7 +162,40 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'monthly',
-		Key7: '公司打开提醒',
+		Key7: '公司打卡提醒',
+	},
+
+	15: {
+		Key0: 15,
+		Key1: '2020-5-1',
+		Key2: 'solar',
+		Key3: '10:0:0',
+		Key4: 1,
+		Key5: 0,
+		Key6: 'monthly',
+		Key7: '团队月初报告提醒',
+	},
+
+	16: {
+		Key0: 16,
+		Key1: '2020-1-1',
+		Key2: 'solar',
+		Key3: '10:0:0',
+		Key4: 1,
+		Key5: 0,
+		Key6: 'monthly',
+		Key7: 'PMP PDU找曾老师更新',
+	},
+
+	17: {
+		Key0: 17,
+		Key1: '2020-12-1',
+		Key2: 'solar',
+		Key3: '10:0:0',
+		Key4: 1,
+		Key5: 0,
+		Key6: 'once',
+		Key7: '领取社保卡',
 	},
 
 }
