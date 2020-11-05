@@ -1,0 +1,14 @@
+[
+  {
+    "from": "E:\\project\\DM132\\DM132-git-android3f6-back\\manifest.json",
+    "to": "E:\\project\\DM132\\DM132-git-android3f6\\Client\\Unity\\Packages\\manifest.json"
+  },
+  {
+    "from": "E:\\project\\DM132\\DM132-git-android3f6-back\\GraphicsSettings.asset",
+    "to": "E:\\project\\DM132\\DM132-git-android3f6\\Client\\Unity\\ProjectSettings\\GraphicsSettings.asset"
+  },
+  {
+    "from": "E:\\project\\DM132\\DM132-git-android3f6-back\\ProjectVersion.txt",
+    "to": "E:\\project\\DM132\\DM132-git-android3f6\\Client\\Unity\\ProjectSettings\\ProjectVersion.txt"
+  }
+]
