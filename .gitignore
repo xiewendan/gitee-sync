@@ -65,5 +65,5 @@ build/
 render.yml
 config.conf
 
-
-
+/tool/merge_monthly_report/data/src
+/tool/merge_monthly_report/data/xx月贡献评分.xlsx
