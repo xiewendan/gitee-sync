@@ -20,7 +20,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 g_ErrorLog = []
 
 
-def GetLastMonth():
+def _GetLastMonth():
     nMonth = datetime.datetime.now().month
     nLastMonth = nMonth - 1
 
@@ -30,7 +30,7 @@ def GetLastMonth():
     return nLastMonth
 
 
-def CopyCell(SrcCellObj, DestCellObj):
+def _CopyCell(SrcCellObj, DestCellObj):
     DestCellObj.value = SrcCellObj.value
     DestCellObj.data_type = SrcCellObj.data_type
     DestCellObj.fill = copy(SrcCellObj.fill)
@@ -56,6 +56,12 @@ class SheetName:
 
 
 class CmdMergeMonthlyReport(cmd_base.CmdBase):
+    """
+    参数1：命令名，即：merge_monthly_report
+    参数2：数据源目录：data/src
+    参数3：输出目录：data/dest
+    参数4：有效天数：一个月有效天数根据当月工作天数，外部输入
+    """
     def __init__(self):
         self.m_AppObj = None
 
@@ -98,7 +104,7 @@ class MrWorkbook:
         self.m_szSrcDir = szSrcDir
         self.m_listMemberName = []
 
-    def CheckData(self):
+    def _CheckData(self):
         listSheetName = self.m_WorkbookObj.sheetnames
         self.m_AppObj.Info("{0}, {1}".format(SheetName.eSummary, SheetName.eTemplate))
 
@@ -132,7 +138,7 @@ class MrWorkbook:
     def Handle(self):
         self.m_AppObj.Debug("begin workbook handle")
 
-        if not self.CheckData():
+        if not self._CheckData():
             raise my_exception.MyException("missing member excel")
 
         TemplateSheetObj = self.m_WorkbookObj[SheetName.eTemplate]
@@ -177,31 +183,31 @@ class TmSheet:
         self.m_AppObj.Debug("begin tmsheet handle:{0}".format(self.m_SheetObj.title))
 
         # 数据修改
-        self.UpdateData()
+        self._UpdateData()
 
         # 格式修改
-        self.UpdateFormat()
+        self._UpdateFormat()
 
         # 数据检查
-        self.CheckDataValidate()
+        self._CheckDataValidate()
 
         self.m_AppObj.Debug("end tmsheet handle:{0}".format(self.m_SheetObj.title))
 
-    def UpdateData(self):
+    def _UpdateData(self):
         self.m_AppObj.Debug("update data")
 
         nMaxRow = self.m_SrcSheetObj.max_row
         # 时间
-        self.m_SheetObj["A2"].value = "{0}月".format(GetLastMonth())
+        self.m_SheetObj["A2"].value = "{0}月".format(_GetLastMonth())
 
         # 工作内容
         # 天数
         for nRowIndex in range(2, nMaxRow + 1):
             szCellPos = "B{0}".format(nRowIndex)
-            CopyCell(self.m_SrcSheetObj[szCellPos], self.m_SheetObj[szCellPos])
+            _CopyCell(self.m_SrcSheetObj[szCellPos], self.m_SheetObj[szCellPos])
 
             szCellPos = "C{0}".format(nRowIndex)
-            CopyCell(self.m_SrcSheetObj[szCellPos], self.m_SheetObj[szCellPos])
+            _CopyCell(self.m_SrcSheetObj[szCellPos], self.m_SheetObj[szCellPos])
 
             if self.m_SheetObj[szCellPos].value is not None:
                 self.m_nMaxRow = nRowIndex
@@ -217,7 +223,7 @@ class TmSheet:
             for szChar in listCharacter:
                 szDefaultPos = "{0}2".format(szChar)
                 szCellPos = "{0}{1}".format(szChar, nRowIndex)
-                CopyCell(self.m_SheetObj[szDefaultPos], self.m_SheetObj[szCellPos])
+                _CopyCell(self.m_SheetObj[szDefaultPos], self.m_SheetObj[szCellPos])
 
         # 评分：公式
         szScoreFormat = "=C{0} * IF(D{0} =\"核心\",1.3,IF(D{0}=\"基本\",1.1,IF(D{0}=\"次要\",0.9,IF(D{0}=\"周边\",0.7,IF(D{0}=\"改bug\",0.5,IF(D{0}=\"自学\",0.2,IF(D{0}=\"无关\",0,0))))))) \
@@ -234,10 +240,10 @@ class TmSheet:
         # 总计
         self.m_SheetObj["J2"] = "=SUM(H2:H{0}, I2)".format(nMaxRow)
 
-    def UpdateFormat(self):
+    def _UpdateFormat(self):
         self.m_AppObj.Debug("update format")
 
-        self.m_SheetObj["A2"].value = "{0}月".format(GetLastMonth())
+        self.m_SheetObj["A2"].value = "{0}月".format(_GetLastMonth())
 
         nMaxRow = self.m_nMaxRow
         self.m_AppObj.Debug("max row:{0}".format(nMaxRow))
@@ -263,7 +269,7 @@ class TmSheet:
             DataValidationObj.add('{0}1:{0}1048576'.format(szColName))
             self.m_SheetObj.add_data_validation(DataValidationObj)
 
-    def CheckDataValidate(self):
+    def _CheckDataValidate(self):
         self.m_AppObj.Debug("update data validate")
 
         # 天数检查
@@ -272,7 +278,8 @@ class TmSheet:
         for nRowIndex in range(2, nMaxRow + 1):
             nSum += int(self.m_SheetObj["C{0}".format(nRowIndex)].value)
 
-        if nSum > 22:
+        nValidDay = int(self.m_AppObj.CLM.GetArg(4))  # 有效天数
+        if nSum > nValidDay:
             szError = "天数总和异常:{0}, {1}".format(self.m_SheetObj.title, nSum)
             self.m_AppObj.Error(szError)
             g_ErrorLog.append(szError)
