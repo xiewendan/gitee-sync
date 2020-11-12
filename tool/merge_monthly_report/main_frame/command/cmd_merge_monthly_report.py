@@ -17,6 +17,9 @@ import main_frame.cmd_base as cmd_base
 from openpyxl.worksheet.datavalidation import DataValidation
 
 
+g_ErrorLog = []
+
+
 def GetLastMonth():
     nMonth = datetime.datetime.now().month
     nLastMonth = nMonth - 1
@@ -151,6 +154,9 @@ class MrWorkbook:
 
         self.m_AppObj.Debug("end workbook handle")
 
+        if len(g_ErrorLog) > 0:
+            print("报错信息:\n", "\n".join(g_ErrorLog))
+
     def Save(self, szPath):
         self.m_WorkbookObj.save(szPath)
 
@@ -267,7 +273,9 @@ class TmSheet:
             nSum += int(self.m_SheetObj["C{0}".format(nRowIndex)].value)
 
         if nSum > 22:
-            self.m_AppObj.Error("天数总和异常:{0}, {1}".format(self.m_SheetObj.title, nSum))
+            szError = "天数总和异常:{0}, {1}".format(self.m_SheetObj.title, nSum)
+            self.m_AppObj.Error(szError)
+            g_ErrorLog.append(szError)
 
 
 # 汇总表
