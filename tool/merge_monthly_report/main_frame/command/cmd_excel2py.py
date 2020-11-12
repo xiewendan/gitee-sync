@@ -13,9 +13,10 @@ import xlrd
 import common.git_util as git_util
 import common.my_exception as my_exception
 import common.my_path as my_path
+import main_frame.cmd_base as cmd_base
 
 
-class CmdExcel2Py:
+class CmdExcel2Py(cmd_base.CmdBase):
     def __init__(self):
         self.m_AppObj = None
         pass

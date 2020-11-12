@@ -302,6 +302,9 @@ class BaseApp:
         import main_frame.command.cmd_excel2py as cmd_excel2py
         Excel2PyCmdObj = cmd_excel2py.CmdExcel2Py()
         self._RegisterCommmand(Excel2PyCmdObj)
+        import main_frame.command.cmd_merge_monthly_report as cmd_merge_monthly_report
+        MergeMonthlyReportCmdObj = cmd_merge_monthly_report.CmdMergeMonthlyReport()
+        self._RegisterCommmand(MergeMonthlyReportCmdObj)
 
     def _RegisterCommmand(self, CommandObj):
         szName = CommandObj.GetName()
