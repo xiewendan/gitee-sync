@@ -56,7 +56,7 @@ def Main(args):
     print("Begin:\t" + time.strftime('%H:%M:%S', time.localtime(time.time())))
 
     # 检查当前目录是否正常
-    CheckCWD()
+    # CheckCWD()
 
     # 初始化log配置
     InitLog()
