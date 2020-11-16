@@ -298,10 +298,24 @@ class BaseApp:
         util.RenderConfig("config/render.yml", dictTemplatePath2TargetPath)
         self.Info("End rendering config\n")
 
+    def _AutoRegisterAllCommand(self):
+        # self._AutoRegisterCommand("main_fram/command")
+        import main_frame.command as command
+        isinstance(dir(command))
+
+    def _AutoRegisterCommand(self, szPath):
+        for szParentPath, listDirName, listFileName in os.walk("E:/project/xiewendan/tools/template/main_frame/command"):
+            for szFileName in listFileName:
+                szFullPath = os.path.join(szParentPath, szFileName)
+                print(szFullPath)
+
+        pass
+
     def _RegisterAllCommand(self):
         import main_frame.command.cmd_excel2py as cmd_excel2py
         Excel2PyCmdObj = cmd_excel2py.CmdExcel2Py()
         self._RegisterCommmand(Excel2PyCmdObj)
+        # self._AutoRegisterAllCommand()
 
     def _RegisterCommmand(self, CommandObj):
         szName = CommandObj.GetName()
