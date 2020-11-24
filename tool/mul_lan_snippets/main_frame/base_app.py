@@ -315,6 +315,9 @@ class BaseApp:
         import main_frame.command.cmd_excel2py as cmd_excel2py
         Excel2PyCmdObj = cmd_excel2py.CmdExcel2Py()
         self._RegisterCommmand(Excel2PyCmdObj)
+        import main_frame.command.cmd_mul_lan_snippets as cmd_mul_lan_snippets
+        MulLanSnippetsObj = cmd_mul_lan_snippets.CmdMulLanSnippets()
+        self._RegisterCommmand(MulLanSnippetsObj)
         # self._AutoRegisterAllCommand()
 
     def _RegisterCommmand(self, CommandObj):

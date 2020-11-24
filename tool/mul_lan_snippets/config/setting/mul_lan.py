@@ -16,7 +16,7 @@ mul_lan = {
 		Key0: 1,
 		Key1: 'include',
 		Key2: '包含库',
-		Key3: '*include;*import',
+		Key3: '*import',
 		Key4: '#include <iostream>',
 		Key5: 'import sys',
 		Key6: '',
@@ -41,9 +41,19 @@ mul_lan = {
 		Key1: 'function',
 		Key2: '定义函数',
 		Key3: '*fun',
-		Key4: 'int main()\n{\n    cout << "Hello World"; \n    return 0;\n}',
-		Key5: 'def Main():\n    print("Hello World")\n\n',
-		Key6: 'static void Main(string[] args)\n{\n        System.Console.WriteLine("Hello World");\n}',
+		Key4: '''int main()
+{
+    cout << "Hello World\r"; 
+    return 0;
+}''',
+		Key5: '''def Main():
+    print("Hello World\r")
+
+''',
+		Key6: '''static void Main(string[] args)
+{
+        System.Console.WriteLine("Hello World\r");
+}''',
 		Key7: '',
 		Key8: '',
 	},

@@ -229,7 +229,7 @@ class ExcelCfg:
 
             for szKey, CellValue in dictData.items():
                 szType = self.m_dictKey2Type[szKey]
-                if szID == 513008 and szKey == "cn":
+                if szID == 3 and szKey == "cpp":
                     print("xjc")
                 NewCellValue = self._ConvertValueType(CellValue, szType)
                 dictCellValue[szNewID][szKey] = NewCellValue
@@ -240,7 +240,8 @@ class ExcelCfg:
     def _ConvertValueType(CellValue, szType):
         if szType in ("all", "str", "bytes"):
             if type(CellValue) in (str, bytes):
-                return CellValue.replace("\n", "\\n")
+                # return CellValue.replace("\n", "\\n")
+                return CellValue.replace("\n", "\n")
             else:
                 return CellValue
 
@@ -329,7 +330,10 @@ class ExcelCfg:
     def _ChangeToString(data):
         if type(data) in (int, float, bool, list, dict, tuple):
             return ExcelCfg._StringObj(data)
-        szNewData = "'" + data + "'"
+        if data.find("\n") >= 0:
+            szNewData = "'''" + data + "'''"
+        else:
+            szNewData = "'" + data + "'"
         return szNewData
 
     @staticmethod

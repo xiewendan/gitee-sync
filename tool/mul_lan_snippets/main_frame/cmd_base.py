@@ -32,8 +32,8 @@ class CmdBase:
 
     def Init(self, AppObj):
         """初始化AppObj"""
-        self.m_AppObj.Info("Init AppObj")
         self.m_AppObj = AppObj
+        self.m_AppObj.Info("Init AppObj")
 
     def Do(self):
         """执行命令"""
