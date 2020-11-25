@@ -50,7 +50,7 @@ class SchedulerMgr:
 
     def Start(self):
         self.m_LoggerObj.info("Start")
-        self.m_JobMgr = background.BackgroundScheduler()
+        self.m_JobMgr = background.BackgroundScheduler(logger=self.m_LoggerObj)
         self.m_JobMgr.start()
 
         self._DailyUpdateNotifyIns()
