@@ -71,3 +71,5 @@ config.conf
 /template/binexe/main.exe
 
 /tool/mul_lan_snippets/output
+
+*.exe
