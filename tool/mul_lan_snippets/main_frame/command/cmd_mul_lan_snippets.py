@@ -6,7 +6,6 @@
 # desc:
 import os
 import json
-import config.setting.mul_lan as mul_lan
 import main_frame.cmd_base as cmd_base
 
 
@@ -35,6 +34,7 @@ class CmdMulLanSnippets(cmd_base.CmdBase):
         # Key1 = 'name'
         # Key2 = 'desc'
         # Key3 = 'prefix'
+        import config.setting.mul_lan as mul_lan
         dictNotLanKey = {mul_lan.Key0: True, mul_lan.Key1: True, mul_lan.Key2: True, mul_lan.Key3: True}
         listLanName = self.ParseLanNameList(mul_lan.mul_lan, dictNotLanKey)
 
