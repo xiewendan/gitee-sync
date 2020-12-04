@@ -166,9 +166,9 @@ class SchedulerMgr:
         self.m_JobMgr.remove_job(szJobID)
 
     def _NotifyMsg(self, szMsg):
-        self.m_MailMgr.Send("小宝通知", szMsg)
         if self.m_DingDingMgr is not None:
             self.m_DingDingMgr.Send(szMsg)
+        self.m_MailMgr.Send("小宝通知", szMsg)
 
     def _DailyUpdateNotifyIns(self, DatetimeObj=None):
         self.m_LoggerObj.info("Daily update notify ins")
