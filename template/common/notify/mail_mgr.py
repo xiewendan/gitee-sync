@@ -6,8 +6,11 @@
 # desc:
 
 import json
+import time
 import logging
+import queue
 import smtplib
+import threading
 from email.mime.text import MIMEText
 from email.header import Header
 import email.utils as email_utils
@@ -21,6 +24,35 @@ class MailMgr:
         self.m_szMailUser = None
         self.m_szMailPassword = None
         self.m_listMailTo = None
+
+        self.m_queueObj = queue.Queue()
+
+        # 销毁
+        self.m_bDestroying = False
+        self.m_DestroyingThreadLockObj = threading.Lock()
+
+        # 发送线程
+        self.m_SendingThreadObj = threading.Thread(target=self._Sending)
+        self.m_SendingThreadObj.start()
+
+    def Destroy(self):
+        logging.getLogger("myLog").info("Destroy mail obj")
+
+        self.m_DestroyingThreadLockObj.acquire()
+        self.m_bDestroying = True
+        self.m_DestroyingThreadLockObj.release()
+
+        logging.getLogger("myLog").info("join sending mail thread")
+        self.m_SendingThreadObj.join()
+        logging.getLogger("myLog").info("join sending mail thread end")
+
+        self.UnLogin()
+
+    def UnLogin(self):
+        logging.getLogger("myLog").info("unlogin")
+        if self._CheckLogin():
+            self.m_smtpObj.quit()
+            self.m_smtpObj = None
 
     def SetDefaultConfig(self, szDefaultHost, szDefaultUser, szDefaultPassword, szDefaultTo):
         logging.getLogger("myLog").info("Host:%s, User:%s, To:%s", szDefaultHost, szDefaultUser, szDefaultTo)
@@ -56,6 +88,30 @@ class MailMgr:
         return nStatus == 250
 
     def Send(self, szTitle, szMsg, listTo=None):
+        logging.getLogger("myLog").info(
+            "Send mail add to queue! From: %s, To: %s, DefaultTo: %s, szTitle: %s, szMsg: %s",
+            self.m_szMailUser,
+            listTo,
+            ",".join(self.m_listMailTo),
+            szTitle,
+            szMsg)
+
+        self.m_DestroyingThreadLockObj.acquire()
+        if self.m_bDestroying:
+            logging.getLogger("myLog").error(
+                "destroying, send failed, From: %s, To: %s, DefaultTo: %s, szTitle: %s, szMsg: %s",
+                self.m_szMailUser,
+                listTo,
+                ",".join(self.m_listMailTo),
+                szTitle,
+                szMsg)
+            self.m_DestroyingThreadLockObj.release()
+            return
+
+        self.m_queueObj.put((szTitle, szMsg, listTo))
+        self.m_DestroyingThreadLockObj.release()
+
+    def _Send(self, szTitle, szMsg, listTo=None):
         logging.getLogger("myLog").info("Send mail! From: %s, To: %s, DefaultTo: %s, szTitle: %s, szMsg: %s",
                                         self.m_szMailUser,
                                         listTo,
@@ -84,7 +140,21 @@ class MailMgr:
         if len(listToError) > 0:
             logging.getLogger("myLog").error("Send mail failed list: %s", listToError)
 
-    def Destroy(self):
-        logging.getLogger("myLog").info("Destroy mail obj")
-        if self._CheckLogin():
-            self.m_smtpObj.quit()
+    def _Sending(self):
+        while True:
+            # 锁
+            self.m_DestroyingThreadLockObj.acquire()
+            bEmpty = self.m_queueObj.empty()
+            bDestroying = self.m_bDestroying
+            self.m_DestroyingThreadLockObj.release()
+
+            if bEmpty:
+                if bDestroying:
+                    logging.getLogger("myLog").info("sending mail thread close")
+                    break
+                else:
+                    time.sleep(1)
+            else:
+                szTitle, szMsg, listTo = self.m_queueObj.get()
+                self._Send(szTitle, szMsg, listTo)
+                self.m_queueObj.task_done()

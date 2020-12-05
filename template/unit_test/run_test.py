@@ -10,6 +10,7 @@ import sys
 import unittest
 import logging
 import logging.config
+import builtins
 
 
 def CheckCWD():
@@ -53,7 +54,7 @@ def StartUnitTest():
         raise my_exception.MyException("unit test failed")
 
 
-def Main():
+def Main(args):
     # 检查当前目录
     CheckCWD()
 
@@ -63,9 +64,18 @@ def Main():
     # 初始化路径
     InitSysPath()
 
+    # app初始化
+    import logic.main_app as main_app
+    AppCls = main_app.GetAppCls()
+    builtins.g_AppObj = AppCls()
+    g_AppObj.DoInit(args)
+
     # 开始执行单元测试
     StartUnitTest()
 
+    # app销毁
+    g_AppObj.Destroy()
+
 
 if __name__ == '__main__':
-    print(Main())
+    print(Main(sys.argv))
