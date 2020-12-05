@@ -315,6 +315,19 @@ class BaseApp:
         import main_frame.command.cmd_excel2py as cmd_excel2py
         Excel2PyCmdObj = cmd_excel2py.CmdExcel2Py()
         self._RegisterCommmand(Excel2PyCmdObj)
+
+        import main_frame.command.cmd_net_client as cmd_net_client
+        NetClientObj = cmd_net_client.CmdNetClient()
+        self._RegisterCommmand(NetClientObj)
+
+        import main_frame.command.cmd_net_server as cmd_net_server
+        NetServerObj = cmd_net_server.CmdNetServer()
+        self._RegisterCommmand(NetServerObj)
+
+        import main_frame.command.cmd_test_code as cmd_test_code
+        TestCodeObj = cmd_test_code.CmdTestCode()
+        self._RegisterCommmand(TestCodeObj)
+
         # self._AutoRegisterAllCommand()
 
     def _RegisterCommmand(self, CommandObj):

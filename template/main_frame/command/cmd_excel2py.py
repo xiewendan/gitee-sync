@@ -25,9 +25,6 @@ class CmdExcel2Py(cmd_base.CmdBase):
     def GetName():
         return "excel2py"
 
-    def Init(self, AppObj):
-        self.m_AppObj = AppObj
-
     def Do(self):
         self.m_AppObj.Info("Start DoExcel2Py")
 

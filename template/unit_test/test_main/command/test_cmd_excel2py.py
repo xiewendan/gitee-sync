@@ -15,8 +15,8 @@ class TestCmdExcel2Py(unittest.TestCase):
     def setUp(self):
         logging.getLogger("myLog").debug("TestCmdExcel2Py setUp:")
 
-    def test_FileExt(self):
-        main.Main(["run_test.py", "excel2py", "config/excel", "config/setting"])
+    def test_execel2py(self):
+        main.Main(["main_frame/main.py", "excel2py", "config/excel", "config/setting"])
 
     def tearDown(self):
         logging.getLogger("myLog").debug("TestCmdExcel2Py tearDown\n\n\n")
