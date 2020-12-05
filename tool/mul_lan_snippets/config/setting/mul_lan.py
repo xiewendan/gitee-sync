@@ -7,8 +7,7 @@ Key3 = 'prefix'
 Key4 = 'python'
 Key5 = 'csharp'
 Key6 = 'cpp'
-Key7 = 'markdown'
-Key8 = 'java'
+Key7 = 'java'
 
 mul_lan = {
 
@@ -21,7 +20,6 @@ mul_lan = {
 		Key5: '',
 		Key6: '#include <iostream>',
 		Key7: '',
-		Key8: '',
 	},
 
 	10002: {
@@ -33,7 +31,6 @@ mul_lan = {
 		Key5: 'using System;',
 		Key6: 'using namespace std;',
 		Key7: '',
-		Key8: '',
 	},
 
 	10003: {
@@ -55,7 +52,6 @@ mul_lan = {
     return 0;
 }''',
 		Key7: '',
-		Key8: '',
 	},
 
 	10004: {
@@ -73,7 +69,6 @@ mul_lan = {
 }''',
 		Key6: '',
 		Key7: '',
-		Key8: '',
 	},
 
 	10005: {
@@ -87,7 +82,6 @@ mul_lan = {
 		Key5: '',
 		Key6: '',
 		Key7: '',
-		Key8: '',
 	},
 
 	10006: {
@@ -99,7 +93,6 @@ mul_lan = {
 		Key5: '//################### $1',
 		Key6: '',
 		Key7: '',
-		Key8: '',
 	},
 
 	10007: {
@@ -111,7 +104,6 @@ mul_lan = {
 		Key5: '//########## $1',
 		Key6: '',
 		Key7: '',
-		Key8: '',
 	},
 
 	10008: {
@@ -133,7 +125,6 @@ mul_lan = {
 
 # desc: desc''',
 		Key7: '',
-		Key8: '',
 	},
 
 	10009: {
@@ -145,7 +136,6 @@ mul_lan = {
 		Key5: '',
 		Key6: '',
 		Key7: '',
-		Key8: '',
 	},
 
 	10010: {
@@ -157,7 +147,6 @@ mul_lan = {
 		Key5: 'Debug.Log("xjclog-$TM_FILENAME_BASE"$1)',
 		Key6: '',
 		Key7: '',
-		Key8: '',
 	},
 
 	10011: {
@@ -169,7 +158,6 @@ mul_lan = {
 		Key5: '',
 		Key6: '',
 		Key7: '',
-		Key8: '',
 	},
 
 	10012: {
@@ -184,7 +172,6 @@ except Exception as e:
 		Key5: '',
 		Key6: '',
 		Key7: '',
-		Key8: '',
 	},
 
 	10013: {
@@ -202,7 +189,6 @@ except Exception as e:
 		Key5: '',
 		Key6: '',
 		Key7: '',
-		Key8: '',
 	},
 
 	10014: {
@@ -222,7 +208,6 @@ assert(solution)''',
 		Key5: '',
 		Key6: '',
 		Key7: '',
-		Key8: '',
 	},
 
 	10015: {
@@ -235,7 +220,6 @@ assert(solution)''',
 		Key5: '',
 		Key6: '',
 		Key7: '',
-		Key8: '',
 	},
 
 	10016: {
@@ -259,7 +243,6 @@ class TestXXXX(unittest.TestCase):
 		Key5: '',
 		Key6: '',
 		Key7: '',
-		Key8: '',
 	},
 
 	10017: {
@@ -271,7 +254,6 @@ class TestXXXX(unittest.TestCase):
 		Key5: '',
 		Key6: '',
 		Key7: '',
-		Key8: '',
 	},
 
 	10018: {
@@ -283,7 +265,6 @@ class TestXXXX(unittest.TestCase):
 		Key5: '// xjctodo',
 		Key6: '// xjctodo',
 		Key7: '',
-		Key8: '',
 	},
 
 	10019: {
@@ -295,7 +276,6 @@ class TestXXXX(unittest.TestCase):
 		Key5: '',
 		Key6: '',
 		Key7: '',
-		Key8: '',
 	},
 
 	20001: {
@@ -309,7 +289,6 @@ $1Stopwatch.Start();
 $1Stopwatch.Stop();''',
 		Key6: '',
 		Key7: '',
-		Key8: '',
 	},
 
 }

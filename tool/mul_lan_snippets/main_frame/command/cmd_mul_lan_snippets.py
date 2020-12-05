@@ -40,7 +40,7 @@ class CmdMulLanSnippets(cmd_base.CmdBase):
 
         # 遍历语言名字列表，生成对应的snippet
         for szLanName in listLanName:
-            SnippetFileConverterObj = SnippetFileConverter(szLanName, mul_lan.mul_lan)
+            SnippetFileConverterObj = SnippetFileConverter(szLanName, mul_lan.mul_lan, self.m_AppObj)
             SnippetFileConverterObj.ConvertSnippetDict()
             SnippetFileConverterObj.SaveSnippet(szOutputFullDir)
 
@@ -59,10 +59,11 @@ class CmdMulLanSnippets(cmd_base.CmdBase):
 
 
 class SnippetFileConverter:
-    def __init__(self, szLanName, dictMulLan):
+    def __init__(self, szLanName, dictMulLan, AppObj):
         self.m_szLanName = szLanName
         self.m_dictMulLan = dictMulLan
         self.m_dictName2Snippet = {}
+        self.m_AppObj = AppObj
 
     def ConvertSnippetDict(self):
         for nID, dictValue in self.m_dictMulLan.items():
@@ -74,7 +75,10 @@ class SnippetFileConverter:
             SnippetNodeObj = SnippetNode(szName, szDesc, szPrefix, szBody)
             szSnippetName, dictSnippet = SnippetNodeObj.Convert()
 
-            self.m_dictName2Snippet[szSnippetName] = dictSnippet
+            if SnippetNodeObj.IsValid():
+                self.m_dictName2Snippet[szSnippetName] = dictSnippet
+            else:
+                self.m_AppObj.Warning("empty body:%s, %s", self.m_szLanName, szName)
 
     def SaveSnippet(self, szDir):
         szSnippetPath = "{}/{}.json".format(szDir, self.m_szLanName)
@@ -108,6 +112,18 @@ class SnippetNode:
         self.m_dictSnippet["body"] = listBody
 
         return self.m_szName, self.m_dictSnippet
+
+    def IsValid(self):
+        listBody = self.m_dictSnippet["body"]
+        nLenListBody = len(listBody)
+
+        if nLenListBody > 1:
+            return True
+
+        elif nLenListBody == 1:
+            return listBody[0] != ""
+        else:
+            return False
 
     @staticmethod
     def _HandleBodyLine(szLine):
