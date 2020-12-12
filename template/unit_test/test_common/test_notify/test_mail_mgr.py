@@ -19,8 +19,8 @@ class TestMailMgr(unittest.TestCase):
         logging.getLogger("myLog").debug("TestMailMgr setUp:")
 
         self.m_MailMgrObj = mail_mgr.MailMgr()
-        self.m_MailMgrObj.SetDefaultConfig(g_AppObj.ConfigLoader.MailHost, g_AppObj.ConfigLoader.MailUser,
-                                           g_AppObj.ConfigLoader.MailPassword, g_AppObj.ConfigLoader.MailTo)
+        self.m_MailMgrObj.SetDefaultConfig(g_TestAppObj.ConfigLoader.MailHost, g_TestAppObj.ConfigLoader.MailUser,
+                                           g_TestAppObj.ConfigLoader.MailPassword, g_TestAppObj.ConfigLoader.MailTo)
         self.m_MailMgrObj.UnLogin()
 
     def SendMsg(self, nIndex):

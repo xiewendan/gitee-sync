@@ -67,14 +67,14 @@ def Main(args):
     # app初始化
     import logic.main_app as main_app
     AppCls = main_app.GetAppCls()
-    builtins.g_AppObj = AppCls()
-    g_AppObj.DoInit(args)
+    builtins.g_TestAppObj = AppCls()
+    g_TestAppObj.DoInit(args)
 
     # 开始执行单元测试
     StartUnitTest()
 
     # app销毁
-    g_AppObj.Destroy()
+    g_TestAppObj.Destroy()
 
 
 if __name__ == '__main__':
