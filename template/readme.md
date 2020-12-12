@@ -30,6 +30,7 @@
 * 帮助文档：输出一份帮助文档。main.py -h，直接输出帮助文档。doc下的一个markdown文档
 * excel配置表转py
 * 可以发布成exe
+* 新增traceback报错,如果有报错，会发dingding提醒
 
 ## 2.2. 待实现特性
 * unity python和服务器连接，构建一个有模型有动作的助理，他会有ui的输出，和场景的指引

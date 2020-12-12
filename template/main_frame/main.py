@@ -5,6 +5,7 @@
 
 # desc: 主流程
 
+import builtins
 import logging
 import logging.config
 import os
@@ -31,6 +32,11 @@ def InitLog():
     logging.config.fileConfig(os.getcwd() + "/config/log.conf")
 
 
+def InitTraceback():
+    import common.my_trackback as my_traceback
+    my_traceback.Init()
+
+
 def InitSysPath():
     sys.path.append(os.getcwd())
 
@@ -47,6 +53,7 @@ def StartApp(args):
     import logic.main_app as main_app
     AppCls = main_app.GetAppCls()
     AppObj = AppCls()
+    builtins.g_AppObj = AppObj
     AppObj.DoInit(args)
     AppObj.DoLogic()
     AppObj.Destroy()
@@ -61,16 +68,14 @@ def Main(args):
     # 初始化log配置
     InitLog()
 
+    # 初始化异常处理
+    InitTraceback()
+
     # 初始化python 路径
     InitSysPath()
 
     # start app
-    try:
-        StartApp(args)
-    except Exception as e:
-        import traceback
-        logging.getLogger("myLog").error("\n\n{0}\n".format(traceback.format_exc()))
-        raise
+    StartApp(args)
 
     print("End:\t" + time.strftime('%H:%M:%S', time.localtime(time.time())))
 
