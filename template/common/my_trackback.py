@@ -97,10 +97,20 @@ def _Code(TracebackObj):
 
 
 def _LocalVar(TracebackObj):
+    listRet = []
+
     # ref cgitb.text https://svn.python.org/projects/python/trunk/Lib/cgitb.py
     listRecords = inspect.getinnerframes(TracebackObj, 10)
     FrameObj, szSourceFullPath, nNum, szFunName, szLines, nIndex = listRecords[-1]
-    _, _, _, listLocals = inspect.getargvalues(FrameObj)
+    _, _, _, dictLocal = inspect.getargvalues(FrameObj)
+
+    dictDone = {}
+    for szKey, ValueObj in dictLocal.items():
+        if szKey in dictDone:
+            continue
+
+        listRet.append('    %s = %s' %(szKey, pydoc.text.repr(ValueObj)))
+        dictDone[szKey] = 1
 
     dictHighlight = {}
 
@@ -113,9 +123,8 @@ def _LocalVar(TracebackObj):
         finally:
             listNum[0] += 1
 
-    listVars = cgitb.scanvars(ReaderFun, FrameObj, listLocals)
+    listVars = cgitb.scanvars(ReaderFun, FrameObj, dictLocal)
 
-    dictDone, listLocalValue = {}, []
     for szKey, szWhere, ValueObj in listVars:
         if szKey in dictDone:
             continue
@@ -125,9 +134,9 @@ def _LocalVar(TracebackObj):
                 szKey = 'global ' + szKey
             elif szWhere != 'local':
                 szKey = szWhere + szKey.split('.')[-1]
-            listLocalValue.append('    %s = %s' % (szKey, pydoc.text.repr(ValueObj)))
+            listRet.append('    %s = %s' % (szKey, pydoc.text.repr(ValueObj)))
         else:
-            listLocalValue.append('    undefined: ' + szKey)
+            listRet.append('    undefined: ' + szKey)
 
-    return "\n".join(listLocalValue)
+    return "\n".join(listRet)
 

@@ -13,7 +13,9 @@ import apscheduler.schedulers.background as background
 
 import common.scheduler.datetime_data as datetime_data
 import common.scheduler.notify_config as notify_config
+from common.my_exception import MyException
 
+g_DayStartDelta = 10    # 每日开始时间为00:00:10秒，避免误差导致每日通知扫描注册失败，启动服务器前的十秒通知，会延后十秒通知
 
 class SchedulerMgr:
     def __init__(self):
@@ -110,11 +112,22 @@ class SchedulerMgr:
         self.AddTimeJob(self._NotifyMsg, NotifyDatetimeObj, nNotifyID, tupleArgs=(NotifyObj.Msg,))
 
         return True
+    
+    def _DiffWithCurTime(self, DatetimeObj):
+        CurDatetimeObj = datetime.datetime.now()
+        TimeDeltaObj = DatetimeObj - CurDatetimeObj
+        return TimeDeltaObj.total_seconds()
+    
+    def _CheckJobTimeValid(self, DatetimeObj):
+        return self._DiffWithCurTime(DatetimeObj) > 0
 
     def AddTimeJob(self, CallbackObj, DatetimeObj, nNotifyID, tupleArgs=None):
         szJobID = self._GenJobID(nNotifyID)
 
         self.m_LoggerObj.info("Add job! time:%s, jobid:%s, args:%s", DatetimeObj.isoformat(), szJobID, str(tupleArgs))
+        if not self._CheckJobTimeValid(DatetimeObj):
+            self.m_LoggerObj.error("Add job failed, time error! time:%s, jobid:%s, args:%s", DatetimeObj.isoformat(), szJobID, str(tupleArgs))
+            raise MyException("Add job failed, time error! time:%s, jobid:%s, args:%s".format(DatetimeObj.isoformat(), szJobID, str(tupleArgs)))
 
         self._AddTimeJobCB(szJobID, CallbackObj, tupleArgs)
 
@@ -139,7 +152,7 @@ class SchedulerMgr:
     def _GetNextDayStart():
         DatetimeObj = datetime.datetime.now()
         TimedeltaObj = datetime.timedelta(days=1)
-        StartOfToday = datetime.datetime(DatetimeObj.year, DatetimeObj.month, DatetimeObj.day)
+        StartOfToday = datetime.datetime(DatetimeObj.year, DatetimeObj.month, DatetimeObj.day, 0, 0, g_DayStartDelta) 
 
         return StartOfToday + TimedeltaObj
 
@@ -177,8 +190,9 @@ class SchedulerMgr:
     def _DailyUpdateNotifyIns(self, DatetimeObj=None):
         self.m_LoggerObj.info("Daily update notify ins")
 
+        CurDatetimeObj = datetime.datetime.now()
         if DatetimeObj is None:
-            DatetimeObj = datetime.datetime.now()
+            DatetimeObj = CurDatetimeObj
 
         self.AddTimeJob(self._DailyUpdateNotifyIns, self._GetNextDayStart(), 0)
 
@@ -186,5 +200,12 @@ class SchedulerMgr:
             NotifyDatetimeObj = NotifyObj.GetNotifyDatetime(DatetimeObj)
             if NotifyDatetimeObj is None:
                 continue
-
+            
+            if not self._CheckJobTimeValid(NotifyDatetimeObj):
+                if self._DiffWithCurTime(NotifyDatetimeObj) > -g_DayStartDelta:
+                    NotifyDatetimeObj = CurDatetimeObj + datetime.timedelta(seconds=g_DayStartDelta)
+                else:
+                    self.m_LoggerObj.debug("today notify，but need not notify: %d", nNotifyID)
+                    continue
+                    
             self.AddTimeJob(self._NotifyMsg, NotifyDatetimeObj, nNotifyID, tupleArgs=(NotifyObj.Msg,))

@@ -68,11 +68,11 @@ def Main(args):
     # 初始化log配置
     InitLog()
 
-    # 初始化异常处理
-    InitTraceback()
-
     # 初始化python 路径
     InitSysPath()
+
+    # 初始化异常处理
+    InitTraceback()
 
     # start app
     StartApp(args)
