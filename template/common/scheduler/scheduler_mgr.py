@@ -15,7 +15,9 @@ import common.scheduler.datetime_data as datetime_data
 import common.scheduler.notify_config as notify_config
 from common.my_exception import MyException
 
-g_DayStartDelta = 10    # 每日开始时间为00:00:10秒，避免误差导致每日通知扫描注册失败，启动服务器前的十秒通知，会延后十秒通知
+
+g_DayStartDelta = 0    # 每日开始时间为00:00:10秒，避免误差导致每日通知扫描注册失败，启动服务器前的十秒通知，会延后十秒通知
+
 
 class SchedulerMgr:
     def __init__(self):
@@ -135,7 +137,9 @@ class SchedulerMgr:
                               args=[szJobID],
                               trigger="date",
                               run_date=DatetimeObj,
-                              id=szJobID)
+                              id=szJobID,
+                              misfire_grace_time=3600,
+                              )
 
     def _GenJobID(self, nNotifyID):
         return "%s_%s" % (nNotifyID, self._GenNotifyInstID())
@@ -167,12 +171,13 @@ class SchedulerMgr:
         assert szJobID in self.m_dictJobCallback
 
         CallbackObj, tupleArgs = self.m_dictJobCallback[szJobID]
-        # self._RemoveTimeJob(szJobID)
 
         if tupleArgs is None:
             CallbackObj()
         else:
             CallbackObj(*tupleArgs)
+
+        self._RemoveTimeJobCB(szJobID)
 
     def _RemoveTimeJob(self, szJobID):
         self.m_LoggerObj.info("Remove job! jobid:%s", szJobID)
