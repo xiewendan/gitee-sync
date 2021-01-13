@@ -5,19 +5,21 @@
 
 # desc:
 
+import common.my_log as my_log
 import main_frame.cmd_base as cmd_base
 
 
 class CmdTestCode(cmd_base.CmdBase):
     def __init__(self):
-        self.m_AppObj = None
+        super().__init__()
+        self.m_LoggerObj = my_log.MyLog(__file__)
 
     @staticmethod
     def GetName():
         return "test_code"
 
     def Do(self):
-        self.m_AppObj.Info("Start do %s", self.GetName())
+        self.m_LoggerObj.info("Start do %s", self.GetName())
 
         szCWD = self.m_AppObj.ConfigLoader.CWD
         szFilePath = self.m_AppObj.CLM.GetArg(1)

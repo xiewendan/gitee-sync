@@ -21,10 +21,13 @@
 # 3、启动脚本如下，其中excel2py是命令名，即GetName返回的名字，后面两个是在命令类中需要用到的参数
 #   python main_frame/main.py excel2py config/excel config/setting
 
+import common.my_log as my_log
+
 
 class CmdBase:
     def __init__(self):
         self.m_AppObj = None
+        self.m_LoggerObj = my_log.MyLog(__file__)
 
     @staticmethod
     def GetName():
@@ -33,11 +36,11 @@ class CmdBase:
     def Init(self, AppObj):
         """初始化AppObj"""
         self.m_AppObj = AppObj
-        self.m_AppObj.Info("Init AppObj")
+        self.m_LoggerObj.info("Init AppObj")
 
     def Do(self):
         """执行命令"""
-        self.m_AppObj.Info("Start DoExcel2Py")
+        self.m_LoggerObj.info("Start DoExcel2Py")
 
         szCWD = self.m_AppObj.ConfigLoader.CWD
 

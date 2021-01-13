@@ -5,16 +5,20 @@
 
 # desc:
 import os
+import re
+import importlib
+import os
 import logging
 import logging.config
 import common.notify.mail_mgr as mail_mgr
 import common.scheduler.scheduler_mgr as scheduler_mgr
 import common.notify.ding_ding_mgr as ding_ding_mgr
+import common.my_log as my_log
 
 
 class BaseApp:
     def __init__(self):
-        self.m_LoggerObj = logging.getLogger("myLog")
+        self.m_LoggerObj = my_log.MyLog(__file__)
         self.m_CLMObj = None
         self.m_bTest = False
         self.m_ConfigLoader = None
@@ -26,7 +30,7 @@ class BaseApp:
 
     # ############################# main process
     def DoInit(self, args):
-        self.Info("Do init")
+        self.m_LoggerObj.info("Do init")
 
         # 生成render配置文件
         self._RenderConfig()
@@ -55,7 +59,7 @@ class BaseApp:
         # 初始化
         self.OnInit()
 
-        self.Info("Do init end\n")
+        self.m_LoggerObj.info("Do init end\n")
 
     def DoLogic(self):
         self._BeginProfile()
@@ -108,19 +112,6 @@ class BaseApp:
     def SendDingDing(self, szMsg, listTo=None):
         self.m_DingDingMgr.Send(szMsg, listTo)
 
-    # ############################# log
-    def Debug(self, szMsg, *listArgs, **dictArgs):
-        self.m_LoggerObj.debug(szMsg, *listArgs, **dictArgs)
-
-    def Info(self, szMsg, *listArgs, **dictArgs):
-        self.m_LoggerObj.info(szMsg, *listArgs, **dictArgs)
-
-    def Warning(self, szMsg, *listArgs, **dictArgs):
-        self.m_LoggerObj.warning(szMsg, *listArgs, **dictArgs)
-
-    def Error(self, szMsg, *listArgs, **dictArgs):
-        self.m_LoggerObj.error(szMsg, *listArgs, **dictArgs)
-
     # ############################# override function
     @staticmethod
     def GetConfigLoaderCls():
@@ -163,7 +154,7 @@ class BaseApp:
         szSortBy = "tottime"
         ps = pstats.Stats(self.m_ProfileObj).sort_stats(szSortBy)
         ps.dump_stats(szProfileName)
-        self.Debug("\n\n\n\n")
+        self.m_LoggerObj.debug("\n\n\n\n")
         # noinspection SpellCheckingInspection
         ps.strip_dirs().sort_stats("cumtime").print_stats(10, 1.0, ".*")
 
@@ -176,12 +167,12 @@ class BaseApp:
         return self.m_CLMObj.GetArg(0)
 
     def _SetTestFlag(self):
-        self.Info("Start set test flag")
+        self.m_LoggerObj.info("Start set test flag")
         self.m_bTest = self.m_CLMObj.HasOpt("-t", "--test")
-        self.Info("End set test flag")
+        self.m_LoggerObj.info("End set test flag")
 
     def _LoadConfig(self):
-        self.Info("Start load config file")
+        self.m_LoggerObj.info("Start load config file")
 
         ConfigLoaderCls = self.GetConfigLoaderCls()
         szConf = self.m_CLMObj.GetOpt("-c", "--config")
@@ -189,20 +180,20 @@ class BaseApp:
         self.m_ConfigLoader = ConfigLoaderCls(szConfFullPath)
         self.m_ConfigLoader.ParseConf()
 
-        self.Info("End load config file\n")
+        self.m_LoggerObj.info("End load config file\n")
 
     def _DoHelp(self):
         bHelp = self.m_CLMObj.HasOpt("-h", "--help")
-        self.Info("Help option:%s", bHelp)
+        self.m_LoggerObj.info("Help option:%s", bHelp)
 
         if not bHelp:
             return False
 
-        self.Info("Help msg")
+        self.m_LoggerObj.info("Help msg")
         with open(self.ConfigLoader.HelpPath, "r", encoding="utf-8") as fp:
-            self.Info("\n\n%s\n\n", "".join(fp.readlines()))
+            self.m_LoggerObj.info("\n\n%s\n\n", "".join(fp.readlines()))
 
-        self.Info("Help msg end and exit(0)")
+        self.m_LoggerObj.info("Help msg end and exit(0)")
 
         return True
 
@@ -210,13 +201,13 @@ class BaseApp:
         if not self.m_CLMObj.HasOpt("-m", "--mail"):
             return
 
-        self.Info("Start mail mgr")
+        self.m_LoggerObj.info("Start mail mgr")
         self.m_MailMgr = mail_mgr.MailMgr()
         self.m_MailMgr.SetDefaultConfig(self.ConfigLoader.MailHost, self.ConfigLoader.MailUser,
                                         self.ConfigLoader.MailPassword, self.ConfigLoader.MailTo)
         self.m_MailMgr.Send("启动小小服务", "你好，我是小小助手，我已经启动了，你可以直接找我哈")
 
-        self.Info("End mail mgr\n")
+        self.m_LoggerObj.info("End mail mgr\n")
 
     def _DestroyMailMgr(self):
         if self.m_MailMgr is not None:
@@ -226,7 +217,7 @@ class BaseApp:
         if not self.m_CLMObj.HasOpt("-d", "--dingding"):
             return
 
-        self.Info("Start dingding mgr")
+        self.m_LoggerObj.info("Start dingding mgr")
         self.m_DingDingMgr = ding_ding_mgr.DingDingMgr(
             self.ConfigLoader.DingDingWebhook,
             self.ConfigLoader.DingDingSecret,
@@ -238,7 +229,7 @@ class BaseApp:
             "你好，我是小小助手，我已经启动了，你可以直接找我哈"
         )
 
-        self.Info("End dingding mgr\n")
+        self.m_LoggerObj.info("End dingding mgr\n")
 
     def _DestroyDingDingMgr(self):
         if self.m_DingDingMgr is not None:
@@ -248,7 +239,7 @@ class BaseApp:
         if not self.m_CLMObj.HasOpt("-s", "--scheduler"):
             return
 
-        self.Info("Start scheduler mgr")
+        self.m_LoggerObj.info("Start scheduler mgr")
         assert self.m_MailMgr is not None, "scheduler mgr depend on mail mgr"
 
         self.m_SchedulerMgr = scheduler_mgr.SchedulerMgr()
@@ -258,7 +249,7 @@ class BaseApp:
         self.m_SchedulerMgr.Init()
         self.m_SchedulerMgr.Start()
 
-        self.Info("End scheduler mgr\n")
+        self.m_LoggerObj.info("End scheduler mgr\n")
 
     def _DestroySchedulerMgr(self):
         if self.m_SchedulerMgr is not None:
@@ -270,7 +261,7 @@ class BaseApp:
         return self.m_dictCommand[szName]
 
     def _ParseCommandArg(self, args):
-        self.Info("Start parse command line")
+        self.m_LoggerObj.info("Start parse command line")
 
         import common.command_line_arg_mgr as command_line_arg_mgr
         szBaseShortOpt, listBaseLongOpt = self._GetBaseCommandOpt()
@@ -279,14 +270,14 @@ class BaseApp:
                                                                listBaseLongOpt + listLongOpt)
         self.m_CLMObj.Parse(args)
 
-        self.Info("End parse command line\n")
+        self.m_LoggerObj.info("End parse command line\n")
 
     def _RenderConfig(self):
-        self.Info("Start rendering config")
+        self.m_LoggerObj.info("Start rendering config")
 
         szRenderYmlPath = "config/render.yml"
         if not os.path.exists(szRenderYmlPath):
-            self.Error(
+            self.m_LoggerObj.error(
                 "copy config/render_template.yml to config/render.yml, then config it")
             raise FileNotFoundError(szRenderYmlPath)
 
@@ -296,39 +287,45 @@ class BaseApp:
         }
 
         util.RenderConfig("config/render.yml", dictTemplatePath2TargetPath)
-        self.Info("End rendering config\n")
+        self.m_LoggerObj.info("End rendering config\n")
 
-    def _AutoRegisterAllCommand(self):
-        # self._AutoRegisterCommand("main_fram/command")
-        import main_frame.command as command
-        isinstance(dir(command))
+    def _AutoRegisterCommand(self, szFullPath, szRegPattern):
+        listCommandClassObj = self._FilterCommandObj(szFullPath, szRegPattern)
 
-    def _AutoRegisterCommand(self, szPath):
-        for szParentPath, listDirName, listFileName in os.walk("E:/project/xiewendan/tools/template/main_frame/command"):
+        for CommandClassObj in listCommandClassObj:
+            CommandObj = CommandClassObj()
+            self._RegisterCommmand(CommandObj)
+
+    @staticmethod
+    def _FilterCommandObj(szCommandFullDir, szRegPattern):
+        assert os.path.exists(szCommandFullDir), "目录不存在:" + szCommandFullDir
+        import main_frame.cmd_base as cmd_base
+
+        listCommandObj = []
+
+        szCwd = os.getcwd()
+        for szParentPath, listDirName, listFileName in os.walk(szCommandFullDir):
             for szFileName in listFileName:
                 szFullPath = os.path.join(szParentPath, szFileName)
-                print(szFullPath)
 
-        pass
+                if not re.match(szRegPattern, szFileName):
+                    continue
+
+                szRelPath = os.path.relpath(szFullPath, szCwd)
+                szRelPathNoExt = os.path.splitext(szRelPath)[0]
+                szModuleName = szRelPathNoExt.replace("\\", "/").replace("/", ".")
+
+                ModuleObj = importlib.import_module(szModuleName)
+
+                for szAttr in dir(ModuleObj):
+                    CommandClassObj = getattr(ModuleObj, szAttr)
+                    if isinstance(CommandClassObj, type) and issubclass(CommandClassObj, cmd_base.CmdBase):
+                        listCommandObj.append(CommandClassObj)
+
+        return listCommandObj
 
     def _RegisterAllCommand(self):
-        import main_frame.command.cmd_excel2py as cmd_excel2py
-        Excel2PyCmdObj = cmd_excel2py.CmdExcel2Py()
-        self._RegisterCommmand(Excel2PyCmdObj)
-
-        import main_frame.command.cmd_net_client as cmd_net_client
-        NetClientObj = cmd_net_client.CmdNetClient()
-        self._RegisterCommmand(NetClientObj)
-
-        import main_frame.command.cmd_net_server as cmd_net_server
-        NetServerObj = cmd_net_server.CmdNetServer()
-        self._RegisterCommmand(NetServerObj)
-
-        import main_frame.command.cmd_test_code as cmd_test_code
-        TestCodeObj = cmd_test_code.CmdTestCode()
-        self._RegisterCommmand(TestCodeObj)
-
-        # self._AutoRegisterAllCommand()
+        self._AutoRegisterCommand(os.path.join(os.getcwd(), "main_frame/command"), r"^cmd[_a-zA-Z0-9]*.py$")
 
     def _RegisterCommmand(self, CommandObj):
         szName = CommandObj.GetName()

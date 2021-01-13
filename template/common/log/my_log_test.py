@@ -19,7 +19,8 @@
 #   logger.critical("critical")
 
 
-def main():
+
+if __name__ == '__main__':
     import logging
     import logging.config
 
@@ -35,7 +36,3 @@ def main():
     logger.warn("warn")
     logger.error("error")
     logger.critical("critical")
-
-
-if __name__ == '__main__':
-    main()

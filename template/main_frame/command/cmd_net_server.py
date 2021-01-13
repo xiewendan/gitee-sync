@@ -8,12 +8,15 @@
 import time
 import threading
 import socket
+
+import common.my_log as my_log
 import main_frame.cmd_base as cmd_base
 
 
 class CmdNetServer(cmd_base.CmdBase):
     def __init__(self):
-        self.m_AppObj = None
+        super().__init__()
+        self.m_LoggerObj = my_log.MyLog(__file__)
 
     @staticmethod
     def GetName():
@@ -21,19 +24,19 @@ class CmdNetServer(cmd_base.CmdBase):
 
     def SocketThread(self, ConnObj, szAddr):
         time.sleep(10)
-        self.m_AppObj.Info("socket thread running, ip: %s", szAddr)
+        self.m_LoggerObj.info("socket thread running, ip: %s", szAddr)
         while True:
             szRecvData = ConnObj.recv(1024)
             if len(szRecvData) == 0:
-                self.m_AppObj.Info("socket disconnect: %s", szAddr)
+                self.m_LoggerObj.info("socket disconnect: %s", szAddr)
                 break
 
-            self.m_AppObj.Info("socket data recv:%s", szRecvData.decode("utf-8"))
+            self.m_LoggerObj.info("socket data recv:%s", szRecvData.decode("utf-8"))
 
         ConnObj.close()
 
     def Do(self):
-        self.m_AppObj.Info("Start do %s", self.GetName())
+        self.m_LoggerObj.info("Start do %s", self.GetName())
 
         szCWD = self.m_AppObj.ConfigLoader.CWD
 
@@ -47,14 +50,14 @@ class CmdNetServer(cmd_base.CmdBase):
             SocketObj.bind((szIP, nPort))
             SocketObj.listen(5)
 
-            self.m_AppObj.Info("socket listen, backlog %d, ip %s, port %d", 5, szIP, nPort)
+            self.m_LoggerObj.info("socket listen, backlog %d, ip %s, port %d", 5, szIP, nPort)
 
             while True:
                 ConnObj, szAddr = SocketObj.accept()
-                self.m_AppObj.Info("socket connect: %s", szAddr)
+                self.m_LoggerObj.info("socket connect: %s", szAddr)
                 SocketThreadObj = threading.Thread(target=self.SocketThread, args=(ConnObj, szAddr))
                 SocketThreadObj.start()
-                self.m_AppObj.Info("socket thread start run: %s", szAddr)
+                self.m_LoggerObj.info("socket thread start run: %s", szAddr)
 
 
 

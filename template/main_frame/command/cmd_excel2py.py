@@ -14,37 +14,39 @@ import common.git_util as git_util
 import common.my_exception as my_exception
 import common.my_path as my_path
 import main_frame.cmd_base as cmd_base
+import common.my_log as my_log
 
 
 class CmdExcel2Py(cmd_base.CmdBase):
     def __init__(self):
-        self.m_AppObj = None
-        pass
+        super().__init__()
+
+        self.m_LoggerObj = my_log.MyLog(__file__)
 
     @staticmethod
     def GetName():
         return "excel2py"
 
     def Do(self):
-        self.m_AppObj.Info("Start DoExcel2Py")
+        self.m_LoggerObj.info("Start DoExcel2Py")
 
         szCWD = self.m_AppObj.ConfigLoader.CWD
 
         szExcelPath = self.m_AppObj.CLM.GetArg(1)
         szSettingPath = self.m_AppObj.CLM.GetArg(2)
-        self.m_AppObj.Info("DoExcel2Py! ExcelPath:%s, SettingPath:%s", szExcelPath, szSettingPath)
+        self.m_LoggerObj.info("DoExcel2Py! ExcelPath:%s, SettingPath:%s", szExcelPath, szSettingPath)
 
         szExcelFullPath = os.path.join(szCWD, szExcelPath)
         szSettingFullPath = os.path.join(szCWD, szSettingPath)
-        self.m_AppObj.Info("DoExcel2Py! ExcelFullPath:%s, SettingFullPath:%s", szExcelFullPath, szSettingFullPath)
+        self.m_LoggerObj.info("DoExcel2Py! ExcelFullPath:%s, SettingFullPath:%s", szExcelFullPath, szSettingFullPath)
 
         # get change file
         listChangeFile = git_util.GitUtil.GetChangeFiles(os.path.join(szCWD, szExcelPath))
-        self.m_AppObj.Debug("change files:%s", str(listChangeFile))
+        self.m_LoggerObj.debug("change files:%s", str(listChangeFile))
 
         # filter excel file
         listExcelChangeFile = self._FilterExcelFile(listChangeFile)
-        self.m_AppObj.Debug("excel change files:%s", str(listExcelChangeFile))
+        self.m_LoggerObj.debug("excel change files:%s", str(listExcelChangeFile))
 
         # convert
         for szExcelFile in listExcelChangeFile:

@@ -5,22 +5,26 @@
 
 # desc:
 
-import main_frame.cmd_base as cmd_base
 import socket
+
+import main_frame.cmd_base as cmd_base
+import common.my_log as my_log
 
 TCP_MAX_BYTE = 1448
 
 
 class CmdNetClient(cmd_base.CmdBase):
     def __init__(self):
-        self.m_AppObj = None
+        super().__init__()
+
+        self.m_LoggerObj = my_log.MyLog(__file__)
 
     @staticmethod
     def GetName():
         return "net_client"
 
     def Do(self):
-        self.m_AppObj.Info("Start do %s", self.GetName())
+        self.m_LoggerObj.info("Start do %s", self.GetName())
 
         szCWD = self.m_AppObj.ConfigLoader.CWD
         szIP = self.m_AppObj.CLM.GetArg(1)
@@ -31,10 +35,10 @@ class CmdNetClient(cmd_base.CmdBase):
 
         with socket.socket() as SocketObj:
             SocketObj.connect((szIP, nPort))
-            self.m_AppObj.Info("connect, ip %s, port %d", szIP, nPort)
+            self.m_LoggerObj.info("connect, ip %s, port %d", szIP, nPort)
             szMsg = "你好，我是小宝"
             SocketObj.send(szMsg.encode("utf-8"))
-            self.m_AppObj.Debug("send msg: %s", szMsg.encode("gbk"))
+            self.m_LoggerObj.debug("send msg: %s", szMsg.encode("gbk"))
 
     def Copy(self, szInFullPath, szOutFullPath):
         with open(szOutFullPath, "wb") as fwp:
