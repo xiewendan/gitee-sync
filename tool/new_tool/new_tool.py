@@ -11,7 +11,34 @@ def main():
         return
 
     szTemplatePath = "template"
-    shutil.copytree(szTemplatePath, szProjectPath)
+    listFileOrDir = [
+        "bin/supervisor",
+        "bin/run.bat",
+        "common",
+        "config/config_template.conf",
+        "config/render_template.yml",
+        "config/log.conf",
+        "config/__init__.py",
+        "lib",
+        "logic",
+        "main_frame",
+        "__init__.py",
+        "requirements.txt",
+    ]
+
+    for szFileOrDir in listFileOrDir:
+        szSrcFull = os.path.join(szTemplatePath, szFileOrDir)
+        szDestFull = os.path.join(szProjectPath, szFileOrDir)
+        assert os.path.exists(szSrcFull), "目录或文件不存在:" + szSrcFull
+        print(szSrcFull)
+
+        if os.path.isfile(szSrcFull):
+            szDestDir = os.path.split(szDestFull)[0]
+            if not os.path.exists(szDestDir):
+                os.makedirs(szDestDir)
+            shutil.copyfile(szSrcFull, szDestFull)
+        else:
+            shutil.copytree(szSrcFull, szDestFull)
 
 
 if __name__ == '__main__':
