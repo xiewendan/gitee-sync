@@ -37,6 +37,6 @@ class MainApp(base_app.BaseApp):
             # 其他任务是独立的线程执行
             while True:
                 time.sleep(10)
-                self.Info("main loop")
+                self.m_LoggerObj.info("main loop")
         except (KeyboardInterrupt, SystemExit):
             self.Destroy()
