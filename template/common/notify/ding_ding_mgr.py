@@ -9,11 +9,6 @@ import logging
 
 import common.my_exception as my_exception
 
-g_szKeyWord = "xiaoxiao"
-g_szSecret = "SEC3ec7794df9406701df3307b96877e8868f7bb883e442ad15b66032e5d0218d11"
-# 定义webhook，从钉钉群机器人设置页面复制获得
-g_szWebhook = 'https://oapi.dingtalk.com/robot/send?access_token=e5dbbb8cc5a8206dba1b8d16c9b6691224e9afc71b959aa688df081b3242f72e'
-
 
 class DingDingMgr:
     def __init__(self, szWebhook, szSecret, szKeyword, listTo):
