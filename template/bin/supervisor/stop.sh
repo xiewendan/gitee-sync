@@ -1,1 +1,1 @@
-supervisorctl -c etc/supervisor.conf stop flask
+supervisorctl -c etc/supervisor.conf stop template

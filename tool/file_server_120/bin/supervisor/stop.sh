@@ -1,1 +1,1 @@
-supervisorctl -c etc/supervisor.conf stop all
+supervisorctl -c etc/supervisor.conf stop flask_server

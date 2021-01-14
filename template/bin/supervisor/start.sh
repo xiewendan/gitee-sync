@@ -1,1 +1,1 @@
-supervisorctl -c etc/supervisor.conf start flask_server
+supervisorctl -c etc/supervisor.conf start template
