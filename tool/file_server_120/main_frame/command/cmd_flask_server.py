@@ -52,7 +52,7 @@ def Upload():
     _GetLoggerObj().info("upload file name:%s", secure_filename(FileObj.filename))
 
     szCWD = os.getcwd()
-    szUploadFileFullPath = os.path.join(szCWD, 'data\\uploads', secure_filename(FileObj.filename))
+    szUploadFileFullPath = os.path.join(szCWD, 'data/uploads', secure_filename(FileObj.filename))
     my_path.CreateFileDir(szUploadFileFullPath)
 
     FileObj.save(szUploadFileFullPath)
