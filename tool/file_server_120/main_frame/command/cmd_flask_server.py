@@ -34,6 +34,7 @@ class CmdFlaskServer(cmd_base.CmdBase):
         szCWD = self.m_AppObj.ConfigLoader.CWD
         szHost = self.m_AppObj.CLM.GetArg(1)
         szPort = self.m_AppObj.CLM.GetArg(2)
+        self.m_LoggerObj.info("flask app host:%s, port:%s", szHost, szPort)
 
         g_FlaskApp.run(debug=True, host=szHost, port=szPort)
 
