@@ -24,6 +24,7 @@ def main():
         "main_frame",
         "__init__.py",
         "requirements.txt",
+        ".gitignore",
     ]
 
     for szFileOrDir in listFileOrDir:
