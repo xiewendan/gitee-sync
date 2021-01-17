@@ -306,6 +306,10 @@ class BaseApp:
         MergeMonthlyReportCmdObj = cmd_merge_monthly_report.CmdMergeMonthlyReport()
         self._RegisterCommmand(MergeMonthlyReportCmdObj)
 
+        import main_frame.command.cmd_merge_monthly_report2 as cmd_merge_monthly_report2
+        MergeMonthlyReport2CmdObj = cmd_merge_monthly_report2.CmdMergeMonthlyReport2()
+        self._RegisterCommmand(MergeMonthlyReport2CmdObj)
+
     def _RegisterCommmand(self, CommandObj):
         szName = CommandObj.GetName()
         assert szName not in self.m_dictCommand

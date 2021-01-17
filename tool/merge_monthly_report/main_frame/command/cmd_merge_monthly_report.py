@@ -3,7 +3,7 @@
 # __author__ = xiaobao
 # __date__ = 2020/4/18 8:58 下午
 
-# desc: 
+# desc: 版本1，数据原目录下的个人每月工作内容，合并成团队工作月报。
 
 import datetime
 import os
@@ -15,7 +15,6 @@ import common.my_exception as my_exception
 import common.my_path as my_path
 import main_frame.cmd_base as cmd_base
 from openpyxl.worksheet.datavalidation import DataValidation
-
 
 g_ErrorLog = []
 
@@ -62,8 +61,9 @@ class CmdMergeMonthlyReport(cmd_base.CmdBase):
     参数3：输出目录：data/dest
     参数4：有效天数：一个月有效天数根据当月工作天数，外部输入
     """
+
     def __init__(self):
-        self.m_AppObj = None
+        super().__init__()
 
     @staticmethod
     def GetName():
@@ -301,7 +301,6 @@ class SummarySheet:
             szCellPos1 = "{0}1".format(szColumnChar)
             szCellPos2 = "{0}2".format(szColumnChar)
             self.m_SheetObj[szCellPos2].value = "={0}!J2".format(self.m_SheetObj[szCellPos1].value)
-
 
 # 单元格填充自动拓展算法：
 # 1、匹配特殊序列
