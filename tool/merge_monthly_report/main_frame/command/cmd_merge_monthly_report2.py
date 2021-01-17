@@ -233,9 +233,6 @@ class CmdMergeMonthlyReport2(cmd_base.CmdBase):
             )
 
         # 将多张半月绩效汇总表合并成月报
-        # if os.path.exists(self.m_InputDataObj.OutputFileFPath):
-        #     logging.getLogger("myLog").warning("monthly report exist:%s", self.m_InputDataObj.OutputFileFPath)
-        # else:
         self.DoMergeHalfMonthlyToMonthly(
             self.m_InputDataObj.OutTemplateFPath,
             listMergeFileFPath,
