@@ -173,19 +173,11 @@ class InputData(object):
 
         self.m_szMergeTemplateFPath = "%s/template/xx月贡献评分-半月.xlsx" % szDataPath
 
-        logging.getLogger("myLog").debug("SrcFDir:\n" + "\n".join(self.m_listSrcFDir))  # TODO dict 格式化输出对象
+        logging.getLogger("myLog").debug("SrcFDir:\n" + "\n".join(self.m_listSrcFDir))
         logging.getLogger("myLog").debug("MergeFileFPath:\n" + "\n".join(self.m_listMergeFileFPath))
         logging.getLogger("myLog").debug("MergeTemplateFPath:" + self.m_szMergeTemplateFPath)
         logging.getLogger("myLog").debug("OutputTemplateFPath:" + self.m_szOutputTemplateFPath)
         logging.getLogger("myLog").debug("OutputFileFPath:" + self.m_szOutputFileFPath)
-        # dictMsg = {
-        #     "SrcFDir": "\n".join(self.m_listSrcFDir),
-        #     "MergeFileFPath": "\n".join(self.m_listMergeFileFPath),
-        #     "MergeTemplateFPath": self.m_szMergeTemplateFPath,
-        #     "OutputTemplateFPath": self.m_szOutputTemplateFPath,
-        #     "OutputFileFPath": self.m_szOutputFileFPath
-        # }
-        # logging.getLogger("myLog").debug("InputData:\n%s", str(dictMsg))
 
 
 class CmdMergeMonthlyReport2(cmd_base.CmdBase):
@@ -369,6 +361,8 @@ class TmSheet:
         self.m_SheetObj = SheetObj
         self.m_SrcSheetObj = SrcSheetObj
         self.m_ValidDay = nValidDay
+
+        self.m_nOldMaxRow = self.m_SheetObj.max_row
         self.m_nMaxRow = 0
 
     def Handle(self):
@@ -432,22 +426,86 @@ class TmSheet:
         # 总计
         self.m_SheetObj["J2"] = "=SUM(H2:H{0}, I2)".format(nMaxRow)
 
+    def Merge(self):
+        self.m_AppObj.Debug("begin tmsheet merge:{0}".format(self.m_SheetObj.title))
+
+        # 数据修改
+        self._MergeData()
+
+        # 格式修改
+        self._UpdateFormat()
+
+        # 数据检查
+        self._CheckDataValidate()
+
+        self.m_AppObj.Debug("end tmsheet merge:{0}".format(self.m_SheetObj.title))
+
+    def _MergeData(self):
+        self.m_AppObj.Debug("update data")
+
+        nSrcMaxRow = self.m_SrcSheetObj.max_row
+
+        # 时间
+        self.m_SheetObj["A2"].value = "{0}月".format(_GetLastMonth())
+
+        # 工作内容
+        # 天数
+        # 重要程度
+        # 代码质量
+        # 实现难度
+        # 交付效率
+        listCharacter = ["B", "C", "D", "E", "F", "G"]
+        for szChar in listCharacter:
+            for nRowIndex in range(2, nSrcMaxRow + 1):
+                szSrcCellPos = "{0}{1}".format(szChar, nRowIndex)
+                szCellPos = "{0}{1}".format(szChar, self.m_nOldMaxRow + nRowIndex - 1)
+
+                _CopyCell(self.m_SrcSheetObj[szSrcCellPos], self.m_SheetObj[szCellPos])
+
+                if self.m_SheetObj[szCellPos].value is not None:
+                    self.m_nMaxRow = self.m_nOldMaxRow + nRowIndex - 1
+
+        self.m_AppObj.Info("max row:{0}".format(self.m_nMaxRow))
+
+        # 评分：公式
+        szScoreFormat = "=C{0} * IF(D{0} =\"核心\",1.3,IF(D{0}=\"基本\",1.1,IF(D{0}=\"次要\",0.9,IF(D{0}=\"周边\",0.7,IF(D{0}=\"改bug\",0.5,IF(D{0}=\"自学\",0.2,IF(D{0}=\"无关\",0,0))))))) \
+            * IF(E{0} =\"超水准\",1.3,IF(E{0}=\"基本达标\",1,IF(E{0}=\"少量问题\",0.8,IF(E{0}=\"引发事故\",0.6,IF(E{0}=\"\",0))))) \
+            * IF(F{0} =\"噩梦\",1.5,IF(F{0}=\"困难\",1.3,IF(F{0}=\"普通\",1,IF(F{0}=\"简单\",0.8,IF(F{0}=\"小白\",0.6,0)))) \
+            * IF(G{0} =\"超前\",1.2,IF(G{0}=\"按时\",1,IF(G{0}=\"稍晚\",0.8,IF(G{0}=\"延期\",0.6,IF(G{0}=\"中止\",0.5,0))))))"
+
+        for nRowIndex in range(2, self.m_nMaxRow + 1):
+            szCellPos = "H{0}".format(nRowIndex)
+            self.m_SheetObj[szCellPos].value = szScoreFormat.format(nRowIndex)
+
+        # 微调
+
+        # 总计
+        self.m_SheetObj["J2"] = "=SUM(H2:H{0}, I2)".format(self.m_nMaxRow)
+
     def _UpdateFormat(self):
         self.m_AppObj.Debug("update format")
 
         self.m_SheetObj["A2"].value = "{0}月".format(_GetLastMonth())
 
         nMaxRow = self.m_nMaxRow
-        self.m_AppObj.Debug("max row:{0}".format(nMaxRow))
+        nOldMaxRow = self.m_nOldMaxRow
+        self.m_AppObj.Debug("max row:{0}, old max row:{1}".format(nMaxRow, nOldMaxRow))
 
         # 时间合并单元格
-        self.m_SheetObj.merge_cells('A2:A{0}'.format(nMaxRow))
-
         # 微调合并单元格
-        self.m_SheetObj.merge_cells('I2:I{0}'.format(nMaxRow))
-
         # 总计合并单元格
-        self.m_SheetObj.merge_cells('J2:J{0}'.format(nMaxRow))
+        listChar = ['A', 'I', 'J']
+        for szChar in listChar:
+            szOldCellRange = "{0}2:{0}{1}".format(szChar, nOldMaxRow)
+            szCellRange = "{0}2:{0}{1}".format(szChar, nMaxRow)
+            try:
+                self.m_SheetObj.unmerge_cells(szOldCellRange)
+            except ValueError:
+                # logging.getLogger("myLog").debug("unmerge_cells failed:%s", szCellRange)
+                pass
+
+            self.m_SheetObj.merge_cells(szCellRange)
+            logging.getLogger("myLog").debug("cell range:%s", szCellRange)
 
         # 更新数据验证
         dictDataValidation = {
@@ -468,7 +526,12 @@ class TmSheet:
         nSum = 0
         nMaxRow = self.m_nMaxRow
         for nRowIndex in range(2, nMaxRow + 1):
-            nSum += int(self.m_SheetObj["C{0}".format(nRowIndex)].value)
+            try:
+                nSum += int(self.m_SheetObj["C{0}".format(nRowIndex)].value)
+            except TypeError:
+                szError = "天数类型错误:{0}, {1}".format(self.m_SheetObj.title, "C{0}".format(nRowIndex))
+                self.m_AppObj.Error(szError)
+                g_ErrorLog.append(szError)
 
         if nSum > self.m_ValidDay:
             szError = "天数总和异常:{0}, {1}".format(self.m_SheetObj.title, nSum)
@@ -571,7 +634,7 @@ class MonthlyWorkbook:
             MemberSheetObj = self.m_WorkbookObj[szMemberName]
             SrcMemberSheetObj = MergeFileWorkbookObj[szMemberName]
 
-            MonthlyTmSheetObj = MonthlyTmSheet(self.m_AppObj, MemberSheetObj, SrcMemberSheetObj, self.m_nValidDay)
+            MonthlyTmSheetObj = TmSheet(self.m_AppObj, MemberSheetObj, SrcMemberSheetObj, self.m_nValidDay)
             MonthlyTmSheetObj.Merge()
 
     def Save(self, szPath):
@@ -580,186 +643,6 @@ class MonthlyWorkbook:
     def Close(self):
         self.m_WorkbookObj.close()
         self.m_WorkbookObj = None
-
-
-# TeamMemberSheet：每个成员表
-class MonthlyTmSheet:
-    def __init__(self, AppObj, SheetObj, SrcSheetObj, nValidDay):
-        self.m_AppObj = AppObj
-        self.m_SheetObj = SheetObj
-        self.m_SrcSheetObj = SrcSheetObj
-        self.m_nValidDay = nValidDay
-
-        self.m_nOldMaxRow = self.m_SheetObj.max_row
-        self.m_nMaxRow = 0
-
-    def Handle(self):
-        self.m_AppObj.Debug("begin tmsheet handle:{0}".format(self.m_SheetObj.title))
-
-        # 数据修改
-        self._UpdateData()
-
-        # 格式修改
-        self._UpdateFormat()
-
-        # 数据检查
-        self._CheckDataValidate()
-
-        self.m_AppObj.Debug("end tmsheet handle:{0}".format(self.m_SheetObj.title))
-
-    def Merge(self):
-        self.m_AppObj.Debug("begin tmsheet merge:{0}".format(self.m_SheetObj.title))
-
-        # 数据修改
-        self._MergeData()
-
-        # 格式修改
-        self._UpdateFormat()
-
-        # 数据检查
-        self._CheckDataValidate()
-
-        self.m_AppObj.Debug("end tmsheet merge:{0}".format(self.m_SheetObj.title))
-        pass
-
-    def _UpdateData(self):
-        self.m_AppObj.Debug("update data")
-
-        nMaxRow = self.m_SrcSheetObj.max_row
-        # 时间
-        self.m_SheetObj["A2"].value = "{0}月".format(_GetLastMonth())
-
-        # 工作内容
-        # 天数
-        for nRowIndex in range(2, nMaxRow + 1):
-            szCellPos = "B{0}".format(nRowIndex)
-            _CopyCell(self.m_SrcSheetObj[szCellPos], self.m_SheetObj[szCellPos])
-
-            szCellPos = "C{0}".format(nRowIndex)
-            _CopyCell(self.m_SrcSheetObj[szCellPos], self.m_SheetObj[szCellPos])
-
-            if self.m_SheetObj[szCellPos].value is not None:
-                self.m_nMaxRow = nRowIndex
-
-        self.m_AppObj.Info("max row:{0}".format(self.m_nMaxRow))
-
-        # 重要程度
-        # 代码质量
-        # 实现难度
-        # 交付效率
-        listCharacter = ["D", "E", "F", "G"]
-        for nRowIndex in range(3, self.m_nMaxRow + 1):
-            for szChar in listCharacter:
-                szDefaultPos = "{0}2".format(szChar)
-                szCellPos = "{0}{1}".format(szChar, nRowIndex)
-                _CopyCell(self.m_SheetObj[szDefaultPos], self.m_SheetObj[szCellPos])
-
-        # 评分：公式
-        szScoreFormat = "=C{0} * IF(D{0} =\"核心\",1.3,IF(D{0}=\"基本\",1.1,IF(D{0}=\"次要\",0.9,IF(D{0}=\"周边\",0.7,IF(D{0}=\"改bug\",0.5,IF(D{0}=\"自学\",0.2,IF(D{0}=\"无关\",0,0))))))) \
-            * IF(E{0} =\"超水准\",1.3,IF(E{0}=\"基本达标\",1,IF(E{0}=\"少量问题\",0.8,IF(E{0}=\"引发事故\",0.6,IF(E{0}=\"\",0))))) \
-            * IF(F{0} =\"噩梦\",1.5,IF(F{0}=\"困难\",1.3,IF(F{0}=\"普通\",1,IF(F{0}=\"简单\",0.8,IF(F{0}=\"小白\",0.6,0)))) \
-            * IF(G{0} =\"超前\",1.2,IF(G{0}=\"按时\",1,IF(G{0}=\"稍晚\",0.8,IF(G{0}=\"延期\",0.6,IF(G{0}=\"中止\",0.5,0))))))"
-
-        for nRowIndex in range(2, self.m_nMaxRow + 1):
-            szCellPos = "H{0}".format(nRowIndex)
-            self.m_SheetObj[szCellPos].value = szScoreFormat.format(nRowIndex)
-
-        # 微调
-
-        # 总计
-        self.m_SheetObj["J2"] = "=SUM(H2:H{0}, I2)".format(nMaxRow)
-
-    def _MergeData(self):
-        self.m_AppObj.Debug("update data")
-
-        nSrcMaxRow = self.m_SrcSheetObj.max_row
-
-        # 时间
-        self.m_SheetObj["A2"].value = "{0}月".format(_GetLastMonth())
-
-        # 工作内容
-        # 天数
-        # 重要程度
-        # 代码质量
-        # 实现难度
-        # 交付效率
-        listCharacter = ["B", "C", "D", "E", "F", "G"]
-        for szChar in listCharacter:
-            for nRowIndex in range(2, nSrcMaxRow + 1):
-                szSrcCellPos = "{0}{1}".format(szChar, nRowIndex)
-                szCellPos = "{0}{1}".format(szChar, self.m_nOldMaxRow + nRowIndex - 1)
-
-                _CopyCell(self.m_SrcSheetObj[szSrcCellPos], self.m_SheetObj[szCellPos])
-
-                if self.m_SheetObj[szCellPos].value is not None:
-                    self.m_nMaxRow = self.m_nOldMaxRow + nRowIndex - 1
-
-        self.m_AppObj.Info("max row:{0}".format(self.m_nMaxRow))
-
-        # 评分：公式
-        szScoreFormat = "=C{0} * IF(D{0} =\"核心\",1.3,IF(D{0}=\"基本\",1.1,IF(D{0}=\"次要\",0.9,IF(D{0}=\"周边\",0.7,IF(D{0}=\"改bug\",0.5,IF(D{0}=\"自学\",0.2,IF(D{0}=\"无关\",0,0))))))) \
-            * IF(E{0} =\"超水准\",1.3,IF(E{0}=\"基本达标\",1,IF(E{0}=\"少量问题\",0.8,IF(E{0}=\"引发事故\",0.6,IF(E{0}=\"\",0))))) \
-            * IF(F{0} =\"噩梦\",1.5,IF(F{0}=\"困难\",1.3,IF(F{0}=\"普通\",1,IF(F{0}=\"简单\",0.8,IF(F{0}=\"小白\",0.6,0)))) \
-            * IF(G{0} =\"超前\",1.2,IF(G{0}=\"按时\",1,IF(G{0}=\"稍晚\",0.8,IF(G{0}=\"延期\",0.6,IF(G{0}=\"中止\",0.5,0))))))"
-
-        for nRowIndex in range(2, self.m_nMaxRow + 1):
-            szCellPos = "H{0}".format(nRowIndex)
-            self.m_SheetObj[szCellPos].value = szScoreFormat.format(nRowIndex)
-
-        # 微调
-
-        # 总计
-        self.m_SheetObj["J2"] = "=SUM(H2:H{0}, I2)".format(self.m_nMaxRow)
-
-    def _UpdateFormat(self):
-        self.m_AppObj.Debug("update format")
-
-        self.m_SheetObj["A2"].value = "{0}月".format(_GetLastMonth())
-
-        nMaxRow = self.m_nMaxRow
-        nOldMaxRow = self.m_nOldMaxRow
-        self.m_AppObj.Debug("max row:{0}".format(nMaxRow))
-
-        # 时间合并单元格
-        # 微调合并单元格
-        # 总计合并单元格
-        listChar = ['A', 'I', 'J']
-        for szChar in listChar:
-            szOldCellRange = "{0}2:{0}{1}".format(szChar, nOldMaxRow)
-            szCellRange = "{0}2:{0}{1}".format(szChar, nMaxRow)
-            try:
-                self.m_SheetObj.unmerge_cells(szOldCellRange)
-            except ValueError:
-                logging.getLogger("myLog").warning("unmerge_cells failed:%s", szCellRange)
-
-            self.m_SheetObj.merge_cells(szCellRange)
-            logging.getLogger("myLog").debug("cell range:%s", szCellRange)
-
-        # 更新数据验证
-        dictDataValidation = {
-            "D": '"核心,基本,次要,周边,改bug,自学,无关"',
-            "E": '"超水准,基本达标,少量问题,引发事故"',
-            "F": '"噩梦,困难,普通,简单,小白"',
-            "G": '"超前,按时,稍晚,延期,中止"'
-        }
-        for szColName, szData in dictDataValidation.items():
-            DataValidationObj = DataValidation(type="list", formula1=szData, allow_blank=True)
-            DataValidationObj.add('{0}1:{0}1048576'.format(szColName))
-            self.m_SheetObj.add_data_validation(DataValidationObj)
-
-    def _CheckDataValidate(self):
-        self.m_AppObj.Debug("update data validate")
-
-        # 天数检查
-        nSum = 0
-        nMaxRow = self.m_nMaxRow
-        for nRowIndex in range(2, nMaxRow + 1):
-            nSum += int(self.m_SheetObj["C{0}".format(nRowIndex)].value)
-
-        if nSum > self.m_nValidDay:
-            szError = "天数总和异常:{0}, {1}".format(self.m_SheetObj.title, nSum)
-            self.m_AppObj.Error(szError)
-            g_ErrorLog.append(szError)
 
 # 单元格填充自动拓展算法：
 # 1、匹配特殊序列
