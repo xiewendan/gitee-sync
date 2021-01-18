@@ -179,6 +179,122 @@ class InputData(object):
         logging.getLogger("myLog").debug("OutputTemplateFPath:" + self.m_szOutputTemplateFPath)
         logging.getLogger("myLog").debug("OutputFileFPath:" + self.m_szOutputFileFPath)
 
+    def Check(self):
+        """
+        1、所有文件目录存在
+        2、template文件里面包含汇总表和模板表
+        3、template汇总表中，所有成员名对应的成员表都存在
+        4、成员表的格式都正确
+        """
+        # 1 目录存在
+        for szSrcFDir in self.m_listSrcFDir:
+            if not os.path.exists(szSrcFDir):
+                g_ErrorLog.append("dir not exist:{0}".format(szSrcFDir))
+
+        if not os.path.exists(self.m_szMergeTemplateFPath):
+            g_ErrorLog.append("merge template not exist:{0}".format(self.m_szMergeTemplateFPath))
+
+        if not os.path.exists(self.m_szOutputTemplateFPath):
+            g_ErrorLog.append("output template not exist:{0}".format(self.m_szMergeTemplateFPath))
+
+        if len(g_ErrorLog) > 0:
+            logging.getLogger("myLog").error("报错信息:%s\n", "\n".join(g_ErrorLog))
+            return False
+
+        # 2 template
+        listTemplate = [self.m_szMergeTemplateFPath, self.m_szOutputTemplateFPath]
+        for szTemplate in listTemplate:
+            if not self._CheckTemplate(szTemplate):
+                return False
+
+        return True
+
+    def _CheckTemplate(self, szTemplate):
+        TemplateWorkbookObj = openpyxl.load_workbook(szTemplate)
+
+        listSheetName = TemplateWorkbookObj.sheetnames
+        logging.getLogger("myLog").info("{0}, {1}".format(SheetName.eSummary, SheetName.eTemplate))
+
+        assert SheetName.eSummary in listSheetName and SheetName.eTemplate in listSheetName, \
+            "tempalte excel missing sheet {0} or {1},  sheet name list: {2}".format(
+                SheetName.eSummary, SheetName.eTemplate, ",".join(listSheetName))
+
+        # 成员名
+        listMemberName = []
+        SummarySheetObj = TemplateWorkbookObj[SheetName.eSummary]
+        nMaxColumn = SummarySheetObj.max_column
+        for nColumnIndex in range(2, nMaxColumn + 1):
+            szColumnChar = chr(96 + nColumnIndex)
+            szCellPos1 = "{0}1".format(szColumnChar)
+            szMemberName = SummarySheetObj[szCellPos1].value
+            if szMemberName is not None:
+                listMemberName.append(szMemberName)
+
+        # 表是否存在，且检查表的格式
+        listMissingPath = []
+        listFormatErrorPath = []
+        for szFDir in self.m_listSrcFDir:
+            if not os.path.exists(szFDir):
+                listMissingPath.append(szFDir)
+                continue
+
+            for szMemberName in listMemberName:
+                szMemberFileFPath = os.path.join(szFDir, szMemberName + ".xlsx")
+                if not os.path.exists(szMemberFileFPath):
+                    listMissingPath.append(szMemberFileFPath)
+                    continue
+
+                if not self._CheckMember(szMemberFileFPath):
+                    listFormatErrorPath.append(szMemberFileFPath)
+
+        if len(listMissingPath) > 0:
+            logging.getLogger("myLog").error("file missing excel:{0}".format(",".join(listMissingPath)))
+            return False
+
+        if len(listFormatErrorPath) > 0:
+            logging.getLogger("myLog").error("file format error excel:{0}".format(",".join(listFormatErrorPath)))
+            return False
+
+        return True
+
+    def _CheckMember(self, szMemberFileFPath):
+        MemberWorkbookObj = openpyxl.load_workbook(szMemberFileFPath)
+
+        szFirstSheetName = MemberWorkbookObj.sheetnames[0]
+        MemberSheetObj = MemberWorkbookObj[szFirstSheetName]
+
+        if MemberSheetObj["B1"].value != "工作内容":
+            logging.getLogger("myLog").error("%s[B1] is not 工作内容", szMemberFileFPath)
+            return False
+
+        if MemberSheetObj["C1"].value != "天数":
+            logging.getLogger("myLog").error("%s[C1] is not 天数", szMemberFileFPath)
+            return False
+
+        nMaxRow = MemberSheetObj.max_row
+
+        nBRow = 0
+        nCRow = 0
+        for nIndex in range(2, nMaxRow):
+            szCellPos = "B{0}".format(nIndex)
+            if self._CellValueIsValid(MemberSheetObj[szCellPos].value):
+                nBRow = nIndex
+            szCellPos = "C{0}".format(nIndex)
+            if self._CellValueIsValid(MemberSheetObj[szCellPos].value):
+                nCRow = nIndex
+
+        if nBRow != nCRow:
+            logging.getLogger("myLog").error("行数不一致:%s, BRow:%d, CRow:%d", szMemberFileFPath, nBRow, nCRow)
+            logging.getLogger("myLog").error("B[%d] value:%s", nBRow, str(MemberSheetObj["B{0}".format(nBRow)].value))
+            logging.getLogger("myLog").error("C[%d] value:%s", nCRow, str(MemberSheetObj["C{0}".format(nCRow)].value))
+            return False
+
+        return True
+
+    @staticmethod
+    def _CellValueIsValid(ValueObj):
+        return ValueObj is not None and ValueObj != ""
+
 
 class CmdMergeMonthlyReport2(cmd_base.CmdBase):
     """
@@ -214,8 +330,11 @@ class CmdMergeMonthlyReport2(cmd_base.CmdBase):
         # 动态计算输入信息
         self.m_InputDataObj = InputData()
         self.m_InputDataObj.Init(szDate, szBaseDataPath)
+        if not self.m_InputDataObj.Check():
+            logging.getLogger("myLog").error("Input data error")
+            return
 
-        # 成员绩效转成半月绩效汇总表
+            # 成员绩效转成半月绩效汇总表
         listSrcFDir = self.m_InputDataObj.SrcFDir
         listMergeFileFPath = self.m_InputDataObj.MergeFileFPath
         for nIndex, szSrcFDir in enumerate(listSrcFDir):
@@ -392,7 +511,7 @@ class TmSheet:
             szCellPos = "C{0}".format(nRowIndex)
             _CopyCell(self.m_SrcSheetObj[szCellPos], self.m_SheetObj[szCellPos])
 
-            if self.m_SheetObj[szCellPos].value is not None:
+            if self.m_SheetObj[szCellPos].value is not None and self.m_SheetObj[szCellPos] != "":
                 self.m_nMaxRow = nRowIndex
 
         self.m_AppObj.Info("max row:{0}".format(self.m_nMaxRow))
