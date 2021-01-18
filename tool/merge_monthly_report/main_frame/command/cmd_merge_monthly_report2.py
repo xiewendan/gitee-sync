@@ -53,6 +53,16 @@ import main_frame.cmd_base as cmd_base
 g_ErrorLog = []
 
 
+class ESheetName:
+    eSummary = "汇总表"
+    eTemplate = "模板"
+
+
+class EColName:
+    eWork = "工作内容"
+    eDay = "天数"
+
+
 def _GetLastMonth():
     nMonth = datetime.datetime.now().month
     nLastMonth = nMonth - 1
@@ -61,6 +71,34 @@ def _GetLastMonth():
         nLastMonth = 12
 
     return nLastMonth
+
+
+def _IsCellValid(SheetCellObj):
+    return SheetCellObj.value is not None and SheetCellObj.value != ""
+
+
+# 以天数最大行数为准
+def _GetMaxRow(SheetObj):
+    nMaxRow = SheetObj.max_row
+    nMaxCol = SheetObj.max_column
+    szDayColChar = None
+    for nColIndex in range(1, nMaxCol+1):
+        szColumnChar = chr(96 + nColIndex)
+        szCellPos = "{0}1".format(szColumnChar)
+        if SheetObj[szCellPos].value == EColName.eDay:
+            szDayColChar = szColumnChar
+            break
+
+    if szDayColChar is None:
+        raise my_exception.MyException("SheetObj has not 天数: %s" % SheetObj.title)
+
+    nValidMaxRow = 0
+    for nRowIndex in range(1, nMaxRow+1):
+        szCellPos = "{0}{1}".format(szDayColChar, nRowIndex)
+        if _IsCellValid(SheetObj[szCellPos]):
+            nValidMaxRow = nRowIndex
+
+    return nValidMaxRow
 
 
 def _CopyCell(SrcCellObj, DestCellObj):
@@ -81,11 +119,6 @@ def _CopyCell(SrcCellObj, DestCellObj):
 
     if SrcCellObj.comment:
         DestCellObj.comment = copy(SrcCellObj.comment)
-
-
-class SheetName:
-    eSummary = "汇总表"
-    eTemplate = "模板"
 
 
 class InputData(object):
@@ -210,18 +243,19 @@ class InputData(object):
         return True
 
     def _CheckTemplate(self, szTemplate):
+        logging.getLogger("myLog").debug("template:%s", szTemplate)
         TemplateWorkbookObj = openpyxl.load_workbook(szTemplate)
 
         listSheetName = TemplateWorkbookObj.sheetnames
-        logging.getLogger("myLog").info("{0}, {1}".format(SheetName.eSummary, SheetName.eTemplate))
+        logging.getLogger("myLog").info("{0}, {1}".format(ESheetName.eSummary, ESheetName.eTemplate))
 
-        assert SheetName.eSummary in listSheetName and SheetName.eTemplate in listSheetName, \
+        assert ESheetName.eSummary in listSheetName and ESheetName.eTemplate in listSheetName, \
             "tempalte excel missing sheet {0} or {1},  sheet name list: {2}".format(
-                SheetName.eSummary, SheetName.eTemplate, ",".join(listSheetName))
+                ESheetName.eSummary, ESheetName.eTemplate, ",".join(listSheetName))
 
         # 成员名
         listMemberName = []
-        SummarySheetObj = TemplateWorkbookObj[SheetName.eSummary]
+        SummarySheetObj = TemplateWorkbookObj[ESheetName.eSummary]
         nMaxColumn = SummarySheetObj.max_column
         for nColumnIndex in range(2, nMaxColumn + 1):
             szColumnChar = chr(96 + nColumnIndex)
@@ -252,17 +286,19 @@ class InputData(object):
             return False
 
         if len(listFormatErrorPath) > 0:
-            logging.getLogger("myLog").error("file format error excel:{0}".format(",".join(listFormatErrorPath)))
             return False
 
         return True
 
-    def _CheckMember(self, szMemberFileFPath):
+    @staticmethod
+    def _CheckMember(szMemberFileFPath):
+        logging.getLogger("myLog").debug("check member:%s", szMemberFileFPath)
         MemberWorkbookObj = openpyxl.load_workbook(szMemberFileFPath)
 
         szFirstSheetName = MemberWorkbookObj.sheetnames[0]
         MemberSheetObj = MemberWorkbookObj[szFirstSheetName]
 
+        # 确认列名ok
         if MemberSheetObj["B1"].value != "工作内容":
             logging.getLogger("myLog").error("%s[B1] is not 工作内容", szMemberFileFPath)
             return False
@@ -271,16 +307,17 @@ class InputData(object):
             logging.getLogger("myLog").error("%s[C1] is not 天数", szMemberFileFPath)
             return False
 
-        nMaxRow = MemberSheetObj.max_row
+        # 确认行列个数正确
+        nMaxRow = _GetMaxRow(MemberSheetObj)
 
         nBRow = 0
         nCRow = 0
-        for nIndex in range(2, nMaxRow):
+        for nIndex in range(2, nMaxRow+1):
             szCellPos = "B{0}".format(nIndex)
-            if self._CellValueIsValid(MemberSheetObj[szCellPos].value):
+            if _IsCellValid(MemberSheetObj[szCellPos]):
                 nBRow = nIndex
             szCellPos = "C{0}".format(nIndex)
-            if self._CellValueIsValid(MemberSheetObj[szCellPos].value):
+            if _IsCellValid(MemberSheetObj[szCellPos]):
                 nCRow = nIndex
 
         if nBRow != nCRow:
@@ -289,11 +326,19 @@ class InputData(object):
             logging.getLogger("myLog").error("C[%d] value:%s", nCRow, str(MemberSheetObj["C{0}".format(nCRow)].value))
             return False
 
-        return True
+        if nBRow != nMaxRow or nCRow != nMaxRow:
+            logging.getLogger("myLog").error(
+                "最大行数有问题:%s, MaxRow:%d, BRow:%d, CRow:%d", szMemberFileFPath, nMaxRow, nBRow, nCRow)
+            return False
 
-    @staticmethod
-    def _CellValueIsValid(ValueObj):
-        return ValueObj is not None and ValueObj != ""
+        # 确认天数这一列没有合并单元格
+        for nIndex in range(1, nMaxRow+1):
+            szCellPos = "C{0}".format(nIndex)
+            if szCellPos in MemberSheetObj.merged_cells:
+                logging.getLogger("myLog").error("合并单元格问题:%s, C[%d]是合并单元格", szMemberFileFPath, nCRow)
+                return False
+
+        return True
 
 
 class CmdMergeMonthlyReport2(cmd_base.CmdBase):
@@ -334,12 +379,11 @@ class CmdMergeMonthlyReport2(cmd_base.CmdBase):
             logging.getLogger("myLog").error("Input data error")
             return
 
-            # 成员绩效转成半月绩效汇总表
+        # 成员绩效转成半月绩效汇总表
         listSrcFDir = self.m_InputDataObj.SrcFDir
         listMergeFileFPath = self.m_InputDataObj.MergeFileFPath
         for nIndex, szSrcFDir in enumerate(listSrcFDir):
             szMergeFileFPath = listMergeFileFPath[nIndex]
-            # TODO 文件格式错误，排查，删除空行
             if os.path.exists(szMergeFileFPath):
                 logging.getLogger("myLog").warning("half monthly report exist:%s", szMergeFileFPath)
                 continue
@@ -405,14 +449,14 @@ class HalfMonthlyWorkbook:
 
     def _CheckData(self):
         listSheetName = self.m_WorkbookObj.sheetnames
-        self.m_AppObj.Info("{0}, {1}".format(SheetName.eSummary, SheetName.eTemplate))
+        self.m_AppObj.Info("{0}, {1}".format(ESheetName.eSummary, ESheetName.eTemplate))
 
-        assert SheetName.eSummary in listSheetName and SheetName.eTemplate in listSheetName, \
+        assert ESheetName.eSummary in listSheetName and ESheetName.eTemplate in listSheetName, \
             "tempalte excel missing sheet {0} or {1},  sheet name list: {2}".format(
-                SheetName.eSummary, SheetName.eTemplate, ",".join(listSheetName))
+                ESheetName.eSummary, ESheetName.eTemplate, ",".join(listSheetName))
 
         self.m_listMemberName = []
-        SummarySheetObj = self.m_WorkbookObj[SheetName.eSummary]
+        SummarySheetObj = self.m_WorkbookObj[ESheetName.eSummary]
         nMaxColumn = SummarySheetObj.max_column
         for nColumnIndex in range(2, nMaxColumn + 1):
             szColumnChar = chr(96 + nColumnIndex)
@@ -440,7 +484,7 @@ class HalfMonthlyWorkbook:
         if not self._CheckData():
             raise my_exception.MyException("missing member excel")
 
-        TemplateSheetObj = self.m_WorkbookObj[SheetName.eTemplate]
+        TemplateSheetObj = self.m_WorkbookObj[ESheetName.eTemplate]
         for szMemberName in self.m_listMemberName:
             szMemberFilePath = "{0}/{1}.xlsx".format(self.m_szSrcDir, szMemberName)
             MemberWorkbookObj = openpyxl.load_workbook(szMemberFilePath)
@@ -453,7 +497,7 @@ class HalfMonthlyWorkbook:
             TmSheetObj = TmSheet(self.m_AppObj, MemberSheetObj, SrcMemberSheetObj, self.m_ValidDay)
             TmSheetObj.Handle()
 
-        SheetObjInBook = self.m_WorkbookObj[SheetName.eSummary]
+        SheetObjInBook = self.m_WorkbookObj[ESheetName.eSummary]
         SummarySheetObj = SummarySheet(self.m_AppObj, SheetObjInBook, self.m_listMemberName)
         SummarySheetObj.Handle()
 
@@ -478,7 +522,8 @@ class TmSheet:
         self.m_SrcSheetObj = SrcSheetObj
         self.m_ValidDay = nValidDay
 
-        self.m_nOldMaxRow = self.m_SheetObj.max_row
+        self.m_nOldMaxRow = _GetMaxRow(self.m_SheetObj)
+        self.m_nSrcMaxRow = _GetMaxRow(self.m_SrcSheetObj)
         self.m_nMaxRow = 0
 
     def Handle(self):
@@ -498,7 +543,7 @@ class TmSheet:
     def _UpdateData(self):
         self.m_AppObj.Debug("update data")
 
-        nMaxRow = self.m_SrcSheetObj.max_row
+        nMaxRow = self.m_nSrcMaxRow
         # 时间
         self.m_SheetObj["A2"].value = "{0}月".format(_GetLastMonth())
 
@@ -528,7 +573,8 @@ class TmSheet:
                 _CopyCell(self.m_SheetObj[szDefaultPos], self.m_SheetObj[szCellPos])
 
         # 评分：公式
-        szScoreFormat = "=C{0} * IF(D{0} =\"核心\",1.3,IF(D{0}=\"基本\",1.1,IF(D{0}=\"次要\",0.9,IF(D{0}=\"周边\",0.7,IF(D{0}=\"改bug\",0.5,IF(D{0}=\"自学\",0.2,IF(D{0}=\"无关\",0,0))))))) \
+        szScoreFormat = "=C{0} * IF(D{0} =\"核心\",1.3,IF(D{0}=\"基本\",1.1,IF(D{0}=\"次要\",0.9,IF(D{0}=\"周边\",0.7," \
+                        "IF(D{0}=\"改bug\",0.5,IF(D{0}=\"自学\",0.2,IF(D{0}=\"无关\",0,0))))))) \
             * IF(E{0} =\"超水准\",1.3,IF(E{0}=\"基本达标\",1,IF(E{0}=\"少量问题\",0.8,IF(E{0}=\"引发事故\",0.6,IF(E{0}=\"\",0))))) \
             * IF(F{0} =\"噩梦\",1.5,IF(F{0}=\"困难\",1.3,IF(F{0}=\"普通\",1,IF(F{0}=\"简单\",0.8,IF(F{0}=\"小白\",0.6,0)))) \
             * IF(G{0} =\"超前\",1.2,IF(G{0}=\"按时\",1,IF(G{0}=\"稍晚\",0.8,IF(G{0}=\"延期\",0.6,IF(G{0}=\"中止\",0.5,0))))))"
@@ -559,7 +605,7 @@ class TmSheet:
     def _MergeData(self):
         self.m_AppObj.Debug("update data")
 
-        nSrcMaxRow = self.m_SrcSheetObj.max_row
+        nSrcMaxRow = self.m_nSrcMaxRow
 
         # 时间
         self.m_SheetObj["A2"].value = "{0}月".format(_GetLastMonth())
@@ -584,7 +630,8 @@ class TmSheet:
         self.m_AppObj.Info("max row:{0}".format(self.m_nMaxRow))
 
         # 评分：公式
-        szScoreFormat = "=C{0} * IF(D{0} =\"核心\",1.3,IF(D{0}=\"基本\",1.1,IF(D{0}=\"次要\",0.9,IF(D{0}=\"周边\",0.7,IF(D{0}=\"改bug\",0.5,IF(D{0}=\"自学\",0.2,IF(D{0}=\"无关\",0,0))))))) \
+        szScoreFormat = "=C{0} * IF(D{0} =\"核心\",1.3,IF(D{0}=\"基本\",1.1,IF(D{0}=\"次要\",0.9,IF(D{0}=\"周边\",0.7," \
+                        "IF(D{0}=\"改bug\",0.5,IF(D{0}=\"自学\",0.2,IF(D{0}=\"无关\",0,0))))))) \
             * IF(E{0} =\"超水准\",1.3,IF(E{0}=\"基本达标\",1,IF(E{0}=\"少量问题\",0.8,IF(E{0}=\"引发事故\",0.6,IF(E{0}=\"\",0))))) \
             * IF(F{0} =\"噩梦\",1.5,IF(F{0}=\"困难\",1.3,IF(F{0}=\"普通\",1,IF(F{0}=\"简单\",0.8,IF(F{0}=\"小白\",0.6,0)))) \
             * IF(G{0} =\"超前\",1.2,IF(G{0}=\"按时\",1,IF(G{0}=\"稍晚\",0.8,IF(G{0}=\"延期\",0.6,IF(G{0}=\"中止\",0.5,0))))))"
@@ -594,6 +641,11 @@ class TmSheet:
             self.m_SheetObj[szCellPos].value = szScoreFormat.format(nRowIndex)
 
         # 微调
+        szWeiTiaoPos = "I2"
+        if not _IsCellValid(self.m_SheetObj[szWeiTiaoPos]) or not isinstance(self.m_SheetObj[szWeiTiaoPos].value, int):
+            _CopyCell(self.m_SrcSheetObj[szWeiTiaoPos], self.m_SheetObj[szWeiTiaoPos])
+        else:
+            self.m_SheetObj[szWeiTiaoPos].value += self.m_SrcSheetObj[szWeiTiaoPos].value
 
         # 总计
         self.m_SheetObj["J2"] = "=SUM(H2:H{0}, I2)".format(self.m_nMaxRow)
@@ -686,14 +738,14 @@ class MonthlyWorkbook:
 
     def _CheckData(self):
         listSheetName = self.m_WorkbookObj.sheetnames
-        self.m_AppObj.Info("{0}, {1}".format(SheetName.eSummary, SheetName.eTemplate))
+        self.m_AppObj.Info("{0}, {1}".format(ESheetName.eSummary, ESheetName.eTemplate))
 
-        assert SheetName.eSummary in listSheetName and SheetName.eTemplate in listSheetName, \
+        assert ESheetName.eSummary in listSheetName and ESheetName.eTemplate in listSheetName, \
             "tempalte excel missing sheet {0} or {1},  sheet name list: {2}".format(
-                SheetName.eSummary, SheetName.eTemplate, ",".join(listSheetName))
+                ESheetName.eSummary, ESheetName.eTemplate, ",".join(listSheetName))
 
         self.m_listMemberName = []
-        SummarySheetObj = self.m_WorkbookObj[SheetName.eSummary]
+        SummarySheetObj = self.m_WorkbookObj[ESheetName.eSummary]
         nMaxColumn = SummarySheetObj.max_column
         for nColumnIndex in range(2, nMaxColumn + 1):
             szColumnChar = chr(96 + nColumnIndex)
@@ -725,7 +777,7 @@ class MonthlyWorkbook:
         for szMergeFileFPath in self.m_listMergeFileFPath:
             self._MergeFileTmSheet(szMergeFileFPath)
 
-        SheetObjInBook = self.m_WorkbookObj[SheetName.eSummary]
+        SheetObjInBook = self.m_WorkbookObj[ESheetName.eSummary]
         SummarySheetObj = SummarySheet(self.m_AppObj, SheetObjInBook, self.m_listMemberName)
         SummarySheetObj.Handle()
 
@@ -735,7 +787,7 @@ class MonthlyWorkbook:
             print("报错信息:\n", "\n".join(g_ErrorLog))
 
     def _InitAllTmSheet(self):
-        TemplateSheetObj = self.m_WorkbookObj[SheetName.eTemplate]
+        TemplateSheetObj = self.m_WorkbookObj[ESheetName.eTemplate]
         for szMemberName in self.m_listMemberName:
             MemberSheetObj = self.m_WorkbookObj.copy_worksheet(TemplateSheetObj)
             MemberSheetObj.title = szMemberName
