@@ -5,20 +5,13 @@
 
 # desc:
 
-import inspect
-import logging
-import sys
-import traceback
-import os
-import sys
-import time
+import cgitb
 import inspect
 import linecache
+import logging
 import pydoc
-import tokenize
-import keyword
-import weakref
-import cgitb
+import sys
+import traceback
 
 InstanceType = None
 
@@ -40,7 +33,9 @@ def _OnTraceback(TypeClass, ValueObj, TracebackObj, bSysExcepthook=False):
     szStack = _Stack(TracebackObj, bSysExcepthook)
     szCode = _Code(TracebackObj)
     szLocalVar = _LocalVar(TracebackObj)
-    szError = "\n".join(["Traceback (most recent call last):", szStack, szCode, "\n  Local var:", szLocalVar])
+    szTracebackMsg = _TracebackMsg(TypeClass, ValueObj)
+    szError = "\n".join(
+        ["Traceback (most recent call last):", szStack, szCode, "\n  Local var:", szLocalVar, "\n  " + szTracebackMsg])
 
     logging.error("\n" + szError)
 
@@ -109,7 +104,7 @@ def _LocalVar(TracebackObj):
         if szKey in dictDone:
             continue
 
-        listRet.append('    %s = %s' %(szKey, pydoc.text.repr(ValueObj)))
+        listRet.append('    %s = %s' % (szKey, pydoc.text.repr(ValueObj)))
         dictDone[szKey] = 1
 
     dictHighlight = {}
@@ -140,3 +135,6 @@ def _LocalVar(TracebackObj):
 
     return "\n".join(listRet)
 
+
+def _TracebackMsg(TypeClass, ValueObj):
+    return "%s: %s\n" % (TypeClass.__name__, str(ValueObj))

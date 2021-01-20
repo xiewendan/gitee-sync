@@ -6,3 +6,5 @@
 /config/render.yml
 /config/config.conf
 
+*.pyc
+__pycache__

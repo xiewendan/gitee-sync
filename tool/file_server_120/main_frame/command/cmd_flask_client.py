@@ -5,26 +5,25 @@
 
 # desc: 上传文件示例
 
-import common.stat_mgr as stat_mgr
-
 if __name__ == '__main__':
     import os
     import requests
+    import common.stat_mgr as stat_mgr
 
     # szUrl = "http://10.249.80.162:5000/upload"
-    szUrl = "http://10.249.81.105:5000/upload"
-    # szUrl = "http://10.249.81.85:5000/upload"
-    # szPath = os.getcwd() + "/data/local/1.txt"
+    # szUrl = "http://10.212.32.132:5000/upload"
+    szUrl = "http://127.0.0.1:5000/upload"
     szPath = os.getcwd() + "/data/local/test1G.7z"
-    print(szPath)
 
     StatMgrObj = stat_mgr.StatMgr()
-    StatMgrObj.LogTimeTag("start")
+    StatMgrObj.LogTimeTag("begin")
 
     dictFile = {'file': open(szPath, 'rb')}
 
     RequestObj = requests.post(szUrl, files=dictFile)
 
-    print(RequestObj)
+    print(RequestObj.url)
+    print(RequestObj.text)
+
     StatMgrObj.LogTimeTag("end")
     print(StatMgrObj.GetTimeTagStat())
