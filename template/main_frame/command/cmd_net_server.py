@@ -41,10 +41,10 @@ class CmdNetServer(cmd_base.CmdBase):
             while True:
                 if nRecvLen + cmd_net_client.TCP_MAX_BYTE < nTotalLen:
                     szRecvData = ConnObj.recv(cmd_net_client.TCP_MAX_BYTE)
-                    nRecvLen += cmd_net_client.TCP_MAX_BYTE
+                    nRecvLen += len(szRecvData)
                 elif nRecvLen + cmd_net_client.TCP_MAX_BYTE >= nTotalLen:
                     szRecvData = ConnObj.recv(nTotalLen - nRecvLen)
-                    nRecvLen = nTotalLen
+                    nRecvLen += len(szRecvData)
                 else:
                     pass
 

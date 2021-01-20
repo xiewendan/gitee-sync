@@ -13,7 +13,7 @@ import common.my_log as my_log
 import common.stat_mgr as stat_mgr
 import main_frame.cmd_base as cmd_base
 
-TCP_MAX_BYTE = 1448000
+TCP_MAX_BYTE = 1448 * 100
 
 
 class CmdNetClient(cmd_base.CmdBase):
@@ -58,13 +58,17 @@ class CmdNetClient(cmd_base.CmdBase):
 
             with open(szLocalFPath, "rb") as frp:
                 while True:
-                    # if nLen + TCP_MAX_BYTE <= nTotalLen:
-                    szData = frp.read(TCP_MAX_BYTE)
-
-                    if szData == b'':
-                        break
+                    if nLen + TCP_MAX_BYTE < nTotalLen:
+                        szData = frp.read(TCP_MAX_BYTE)
+                        nLen += len(szData)
+                    elif nLen + TCP_MAX_BYTE >= nTotalLen:
+                        szData = frp.read(nTotalLen - nLen)
+                        nLen = len(szData)
 
                     SocketObj.send(szData)
+
+                    if nLen == nTotalLen:
+                        break
 
             self.m_LoggerObj.info("send size:%d", nTotalLen)
             StatMgrObj.LogTimeTag("recv")
