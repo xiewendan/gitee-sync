@@ -72,7 +72,7 @@ class CmdNetServer(cmd_base.CmdBase):
 
         with socket.socket() as SocketObj:
             # SocketObj.setblocking(False)
-            SocketObj.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 10240 * 1024)  # 250KB
+            # SocketObj.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 10240 * 1024)  # 250KB
 
             SocketObj.bind((szIP, nPort))
             SocketObj.listen(5)
