@@ -5,12 +5,15 @@
 
 # desc:
 
+import os
 import socket
+import struct
 
-import main_frame.cmd_base as cmd_base
 import common.my_log as my_log
+import common.stat_mgr as stat_mgr
+import main_frame.cmd_base as cmd_base
 
-TCP_MAX_BYTE = 1448
+TCP_MAX_BYTE = 1448000
 
 
 class CmdNetClient(cmd_base.CmdBase):
@@ -33,29 +36,58 @@ class CmdNetClient(cmd_base.CmdBase):
         # szInFullPath = "{}/{}".format(szCWD, szInPath)
         # szOutFullPath = "{}/{}".format(szCWD, szOutPath)
 
+        # szLocalFPath = os.getcwd() + "/data/local/test1G.7z"
+        # szUploadFPath = os.getcwd() + "/data/uploads/test1G.7z"
+        # self.Copy(szLocalFPath, szUploadFPath)
+
+        self.SendFile(nPort, szIP)
+
+    def SendFile(self, nPort, szIP):
+        nLen = 0
+        szLocalFPath = os.getcwd() + "/data/local/test1G.7z"
+        # szLocalFPath = os.getcwd() + "/data/local/1.txt"
+        StatMgrObj = stat_mgr.StatMgr()
+        StatMgrObj.LogTimeTag("begin")
         with socket.socket() as SocketObj:
             SocketObj.connect((szIP, nPort))
             self.m_LoggerObj.info("connect, ip %s, port %d", szIP, nPort)
-            szMsg = "你好，我是小宝"
-            SocketObj.send(szMsg.encode("utf-8"))
-            self.m_LoggerObj.debug("send msg: %s", szMsg.encode("gbk"))
+
+            nTotalLen = os.path.getsize(szLocalFPath)
+            bytesLen = struct.pack("!Q", nTotalLen)
+            SocketObj.send(bytesLen)
+
+            with open(szLocalFPath, "rb") as frp:
+                while True:
+                    # if nLen + TCP_MAX_BYTE <= nTotalLen:
+                    szData = frp.read(TCP_MAX_BYTE)
+
+                    if szData == b'':
+                        break
+
+                    SocketObj.send(szData)
+
+            self.m_LoggerObj.info("send size:%d", nTotalLen)
+            StatMgrObj.LogTimeTag("recv")
+
+            szRecvData = SocketObj.recv(8)
+            nByteLen = struct.unpack("!Q", szRecvData)[0]
+            self.m_LoggerObj.info("receive size:%d", nByteLen)
+
+        StatMgrObj.LogTimeTag("end")
+        print(StatMgrObj.GetTimeTagStat())
 
     def Copy(self, szInFullPath, szOutFullPath):
+        StatMgrObj = stat_mgr.StatMgr()
+        StatMgrObj.LogTimeTag("begin")
+
         with open(szOutFullPath, "wb") as fwp:
             with open(szInFullPath, "rb") as frp:
                 while True:
-                    szData = frp.read(1448)
+                    szData = frp.read(TCP_MAX_BYTE)
                     if szData == b'':
                         break
 
                     fwp.write(szData)
 
-        print("aaa")
-
-        # nTcpEndIndex = nStartIndex + TCP_MAX_BYTE
-        # while nTcpEndIndex < nEndIndex:
-        #     nStartIndex += TCP_MAX_BYTE
-
-        # import hashlib
-        # Md5Obj = hashlib.md5()
-        # Md5Obj
+        StatMgrObj.LogTimeTag("end")
+        print(StatMgrObj.GetTimeTagStat())

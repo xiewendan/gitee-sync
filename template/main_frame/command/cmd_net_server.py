@@ -5,12 +5,15 @@
 
 # desc:
 
-import time
-import threading
+import os
 import socket
+import threading
+import struct
 
 import common.my_log as my_log
+import common.stat_mgr as stat_mgr
 import main_frame.cmd_base as cmd_base
+import main_frame.command.cmd_net_client as cmd_net_client
 
 
 class CmdNetServer(cmd_base.CmdBase):
@@ -23,17 +26,41 @@ class CmdNetServer(cmd_base.CmdBase):
         return "net_server"
 
     def SocketThread(self, ConnObj, szAddr):
-        time.sleep(10)
+        nLen = 0
         self.m_LoggerObj.info("socket thread running, ip: %s", szAddr)
-        while True:
-            szRecvData = ConnObj.recv(1024)
-            if len(szRecvData) == 0:
-                self.m_LoggerObj.info("socket disconnect: %s", szAddr)
-                break
+        szUploadFPath = os.getcwd() + "/data/uploads/test1G.7z"
 
-            self.m_LoggerObj.info("socket data recv:%s", szRecvData.decode("utf-8"))
+        StatMgrObj = stat_mgr.StatMgr()
+        StatMgrObj.LogTimeTag("begin")
+
+        with open(szUploadFPath, "wb") as fwp:
+            nRecvLen = 0
+            bytesLen = ConnObj.recv(8)
+            nTotalLen = struct.unpack("!Q", bytesLen)[0]
+
+            while True:
+                if nRecvLen + cmd_net_client.TCP_MAX_BYTE < nTotalLen:
+                    szRecvData = ConnObj.recv(cmd_net_client.TCP_MAX_BYTE)
+                    nRecvLen += cmd_net_client.TCP_MAX_BYTE
+                elif nRecvLen + cmd_net_client.TCP_MAX_BYTE >= nTotalLen:
+                    szRecvData = ConnObj.recv(nTotalLen - nRecvLen)
+                    nRecvLen = nTotalLen
+                else:
+                    pass
+
+                fwp.write(szRecvData)
+
+                if nRecvLen == nTotalLen:
+                    break
+
+            self.m_LoggerObj.info("total szie:%d", nRecvLen)
+            bytesSendLen = struct.pack("!Q", nRecvLen)
+            ConnObj.send(bytesSendLen)
 
         ConnObj.close()
+
+        StatMgrObj.LogTimeTag("end")
+        print(StatMgrObj.GetTimeTagStat())
 
     def Do(self):
         self.m_LoggerObj.info("Start do %s", self.GetName())
@@ -45,7 +72,7 @@ class CmdNetServer(cmd_base.CmdBase):
 
         with socket.socket() as SocketObj:
             # SocketObj.setblocking(False)
-            SocketObj.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 250 * 1024)  # 250KB
+            SocketObj.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 10240 * 1024)  # 250KB
 
             SocketObj.bind((szIP, nPort))
             SocketObj.listen(5)
@@ -58,9 +85,3 @@ class CmdNetServer(cmd_base.CmdBase):
                 SocketThreadObj = threading.Thread(target=self.SocketThread, args=(ConnObj, szAddr))
                 SocketThreadObj.start()
                 self.m_LoggerObj.info("socket thread start run: %s", szAddr)
-
-
-
-
-
-

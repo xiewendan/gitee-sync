@@ -62,10 +62,10 @@ class StatMgr(object):
 
 
 def main():
-    statMgrObj = StatMgr()
-    statMgrObj.LogTimeTag("xjc")
-    statMgrObj.LogTimeTag("xjc1")
-    print(statMgrObj.GetTimeTagStat())
+    StatMgrObj = StatMgr()
+    StatMgrObj.LogTimeTag("xjc")
+    StatMgrObj.LogTimeTag("xjc1")
+    print(StatMgrObj.GetTimeTagStat())
 
 
 if __name__ == '__main__':
