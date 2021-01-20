@@ -63,14 +63,14 @@ class CmdNetClient(cmd_base.CmdBase):
                         nLen += len(szData)
                     elif nLen + TCP_MAX_BYTE >= nTotalLen:
                         szData = frp.read(nTotalLen - nLen)
-                        nLen = len(szData)
+                        nLen += len(szData)
 
                     SocketObj.send(szData)
 
                     if nLen == nTotalLen:
                         break
 
-            self.m_LoggerObj.info("send size:%d", nTotalLen)
+            self.m_LoggerObj.info("send size:%d/%d", nLen, nTotalLen)
             StatMgrObj.LogTimeTag("recv")
 
             szRecvData = SocketObj.recv(8)
