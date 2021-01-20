@@ -13,11 +13,11 @@ class TimeTag(object):
     """"""
 
     def __init__(self, lSecond, szTag):
-        self.m_lSecond = int(lSecond)
+        self.m_lSecond = lSecond
         self.m_szTag = szTag
 
     def Minus(self, timeTag):
-        return self.Second - timeTag.Second
+        return round(self.Second - timeTag.Second, 3)
 
     @property
     def Second(self):
@@ -62,10 +62,12 @@ class StatMgr(object):
 
 
 def main():
-    statMgrObj = StatMgr()
-    statMgrObj.LogTimeTag("xjc")
-    statMgrObj.LogTimeTag("xjc1")
-    print(statMgrObj.GetTimeTagStat())
+    import time
+    StatMgrObj = StatMgr()
+    StatMgrObj.LogTimeTag("xjc")
+    time.sleep(1.05)
+    StatMgrObj.LogTimeTag("xjc1")
+    print(StatMgrObj.GetTimeTagStat())
 
 
 if __name__ == '__main__':
