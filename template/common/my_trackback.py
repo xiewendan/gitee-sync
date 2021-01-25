@@ -109,9 +109,7 @@ def _LocalVar(TracebackObj):
 
     dictHighlight = {}
 
-    def ReaderFun(listNum=None):
-        if listNum is None:
-            listNum = [nNum]
+    def ReaderFun(listNum=[nNum]):
         dictHighlight[listNum[0]] = 1
         try:
             return linecache.getline(szSourceFullPath, listNum[0])
