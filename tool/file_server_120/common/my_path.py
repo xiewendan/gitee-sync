@@ -24,6 +24,7 @@ def FileName(szPath):
     return os.path.splitext(szBaseName)[0]
 
 
+# "a/b/c.txt -> c.txt"
 def FileNameWithExt(szPath):
     return os.path.basename(szPath)
 
