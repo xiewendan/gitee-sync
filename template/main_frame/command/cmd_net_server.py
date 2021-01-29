@@ -28,6 +28,7 @@ class CmdNetServer(cmd_base.CmdBase):
         return "net_server"
 
     def _SocketThread(self, ConnObj, szAddr):
+        import common.my_path as my_path
         self.m_LoggerObj.info("socket thread running, ip: %s", szAddr)
 
         StatMgrObj = stat_mgr.StatMgr()
@@ -38,6 +39,7 @@ class CmdNetServer(cmd_base.CmdBase):
 
         szFileName = ConnObj.recv(nFileNameLen).decode("utf-8")
         szUploadFPath = "%s/%s/%s" % (os.getcwd(), "data/uploads", szFileName)
+        my_path.CreateFileDir(szUploadFPath)
 
         with open(szUploadFPath, "wb") as fwp:
             nRecvLen = 0
@@ -163,6 +165,7 @@ class CmdNetServer(cmd_base.CmdBase):
 
         # 对比数据
         listCompareData = []
+        listCompareData.append("%s -> %s<br>" % (szLastFileFPath, szUploadFPath))
         for szKey, ValueObj in dictUploadData.items():
             if isinstance(ValueObj, (dict, list)):
                 assert False, "暂时不支持的值格式"
