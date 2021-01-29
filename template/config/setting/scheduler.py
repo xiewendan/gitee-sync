@@ -206,7 +206,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--小小',
+		Key7: '专注、坚持--leetcode10题',
 	},
 
 	19: {
@@ -217,7 +217,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--小小',
+		Key7: '专注、坚持--leetcode10题',
 	},
 
 	20: {
@@ -228,7 +228,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--小小',
+		Key7: '专注、坚持--leetcode10题',
 	},
 
 	21: {
@@ -239,7 +239,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--小小',
+		Key7: '专注、坚持--leetcode10题',
 	},
 
 	22: {
@@ -250,7 +250,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--小小',
+		Key7: '专注、坚持--leetcode10题',
 	},
 
 	23: {
@@ -261,7 +261,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--小小',
+		Key7: '专注、坚持--leetcode10题',
 	},
 
 	24: {
@@ -272,7 +272,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--小小',
+		Key7: '专注、坚持--leetcode10题',
 	},
 
 	25: {
@@ -283,7 +283,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--leetcode',
+		Key7: '专注、坚持--财报10页',
 	},
 
 	26: {
@@ -294,7 +294,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--leetcode',
+		Key7: '专注、坚持--财报10页',
 	},
 
 	27: {
@@ -305,7 +305,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--leetcode',
+		Key7: '专注、坚持--财报10页',
 	},
 
 	28: {
@@ -316,7 +316,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--leetcode',
+		Key7: '专注、坚持--财报10页',
 	},
 
 	29: {
@@ -327,7 +327,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--leetcode',
+		Key7: '专注、坚持--财报10页',
 	},
 
 	30: {
@@ -338,7 +338,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--leetcode',
+		Key7: '专注、坚持--财报10页',
 	},
 
 	31: {
@@ -349,7 +349,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--leetcode',
+		Key7: '专注、坚持--财报10页',
 	},
 
 	32: {
@@ -360,7 +360,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--跑步',
+		Key7: '专注、坚持--小小',
 	},
 
 	33: {
@@ -371,7 +371,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--跑步',
+		Key7: '专注、坚持--小小',
 	},
 
 	34: {
@@ -382,7 +382,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--跑步',
+		Key7: '专注、坚持--小小',
 	},
 
 	35: {
@@ -393,7 +393,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--跑步',
+		Key7: '专注、坚持--小小',
 	},
 
 	36: {
@@ -404,7 +404,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--跑步',
+		Key7: '专注、坚持--小小',
 	},
 
 	37: {
@@ -415,7 +415,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--跑步',
+		Key7: '专注、坚持--小小',
 	},
 
 	38: {
@@ -426,7 +426,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--跑步',
+		Key7: '专注、坚持--小小',
 	},
 
 	39: {
@@ -437,7 +437,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--财报',
+		Key7: '专注、坚持--跑步1公里',
 	},
 
 	40: {
@@ -448,7 +448,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--财报',
+		Key7: '专注、坚持--跑步1公里',
 	},
 
 	41: {
@@ -459,7 +459,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--财报',
+		Key7: '专注、坚持--跑步1公里',
 	},
 
 	42: {
@@ -470,7 +470,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--财报',
+		Key7: '专注、坚持--跑步1公里',
 	},
 
 	43: {
@@ -481,7 +481,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--财报',
+		Key7: '专注、坚持--跑步1公里',
 	},
 
 	44: {
@@ -492,7 +492,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--财报',
+		Key7: '专注、坚持--跑步1公里',
 	},
 
 	45: {
@@ -503,7 +503,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 0,
 		Key6: 'weekly',
-		Key7: '专注、坚持--财报',
+		Key7: '专注、坚持--跑步1公里',
 	},
 
 }
