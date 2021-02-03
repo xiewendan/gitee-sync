@@ -210,18 +210,25 @@ class BaseApp:
     # ********************************************************************************
     # service
     # ********************************************************************************
-    def _InitAllService(self):
-        self.m_LoggerObj.debug("_InitAllService")
+    def GetService(self, szName):
+        assert szName in self.m_dictService
+        return self.m_dictService[szName]
 
-        dictOption = self.CLM.GetOptionDict()
-        for szKey, szValue in dictOption.items():
-            if szKey in self.m_dictServiceOpt2Name:
-                szServiceName = self.m_dictServiceOpt2Name[szKey]
-                self.GetService(szServiceName).Init(self, [])
+    def _AutoRegisterService(self, szFullPath, szRegPattern):
+        self.m_LoggerObj.debug("full path:%s, regpattern:%s", szFullPath, szRegPattern)
 
-    def _DestroyAllService(self):
-        for szName, ServiceObj in self.m_dictService.items():
-            ServiceObj.Destroy()
+        import main_frame.service_base as service_base
+        listServiceClassObj = self._FilterClassObj(szFullPath, szRegPattern, service_base.ServiceBase)
+
+        for ServiceClassObj in listServiceClassObj:
+            ServiceObj = ServiceClassObj()
+            self._RegisterService(ServiceObj)
+
+    def _UnRegisterAllService(self):
+        self.m_LoggerObj.debug("")
+        listServiceName = self.m_dictService.keys()
+        for szServiceName in listServiceName:
+            self._UnRegisterService(szServiceName)
 
     def _RegisterService(self, ServiceObj):
         self.m_LoggerObj.debug("service name:%s, service obj:%s", ServiceObj.GetName(), str(ServiceObj))
@@ -250,25 +257,18 @@ class BaseApp:
         else:
             self.m_LoggerObj.error("service not found, service name:%s", szName)
 
-    def _UnRegisterAllService(self):
-        self.m_LoggerObj.debug("")
-        listServiceName = self.m_dictService.keys()
-        for szServiceName in listServiceName:
-            self._UnRegisterService(szServiceName)
+    def _InitAllService(self):
+        self.m_LoggerObj.debug("_InitAllService")
 
-    def _AutoRegisterService(self, szFullPath, szRegPattern):
-        self.m_LoggerObj.debug("full path:%s, regpattern:%s", szFullPath, szRegPattern)
+        dictOption = self.CLM.GetOptionDict()
+        for szKey, szValue in dictOption.items():
+            if szKey in self.m_dictServiceOpt2Name:
+                szServiceName = self.m_dictServiceOpt2Name[szKey]
+                self.GetService(szServiceName).Init(self, [])
 
-        import main_frame.service_base as service_base
-        listServiceClassObj = self._FilterClassObj(szFullPath, szRegPattern, service_base.ServiceBase)
-
-        for ServiceClassObj in listServiceClassObj:
-            ServiceObj = ServiceClassObj()
-            self._RegisterService(ServiceObj)
-
-    def GetService(self, szName):
-        assert szName in self.m_dictService
-        return self.m_dictService[szName]
+    def _DestroyAllService(self):
+        for szName, ServiceObj in self.m_dictService.items():
+            ServiceObj.Destroy()
 
     # ********************************************************************************
     # command
