@@ -217,7 +217,7 @@ class BaseApp:
         for szKey, szValue in dictOption.items():
             if szKey in self.m_dictServiceOpt2Name:
                 szServiceName = self.m_dictServiceOpt2Name[szKey]
-                self.GetService(szServiceName).Init(self, [szServiceName])
+                self.GetService(szServiceName).Init(self, [])
 
     def _DestroyAllService(self):
         for szName, ServiceObj in self.m_dictService.items():

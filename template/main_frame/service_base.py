@@ -7,6 +7,7 @@
 
 
 import common.my_log as my_log
+import common.my_exception as my_exception
 
 
 class EServiceState:
@@ -47,8 +48,7 @@ class ServiceBase:
 
         elif self.m_eState == EServiceState.eIniting:
             szError = self._FormatInitingServiceName(listInitingServiceName)
-            self.m_LoggerObj.error("service依赖关系死循环了:\n%s", szError)
-            return
+            raise my_exception.MyException("service依赖关系死循环了:\n%s" % szError)
 
         assert self.m_eState == EServiceState.eCreate, "未初始化状态"
         self.m_eState = EServiceState.eIniting
