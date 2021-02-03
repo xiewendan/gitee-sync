@@ -3,16 +3,11 @@
 # __author__ = xiaobao
 # __date__ = 3/22/2020 11:17 AM
 
-# desc:
-import os
-import re
 import importlib
 import os
-import logging
-import logging.config
-import common.notify.mail_mgr as mail_mgr
-import common.scheduler.scheduler_mgr as scheduler_mgr
-import common.notify.ding_ding_mgr as ding_ding_mgr
+# desc:
+import re
+
 import common.my_log as my_log
 
 
@@ -23,10 +18,9 @@ class BaseApp:
         self.m_bTest = False
         self.m_ConfigLoader = None
         self.m_ProfileObj = None
-        self.m_MailMgr = None
-        self.m_DingDingMgr = None
-        self.m_SchedulerMgr = None
         self.m_dictCommand = {}
+        self.m_dictService = {}
+        self.m_dictServiceOpt2Name = {}
 
     # ############################# main process
     def DoInit(self, args):
@@ -44,17 +38,11 @@ class BaseApp:
         # 加载配置表
         self._LoadConfig()
 
-        # 邮件系统初始化
-        self._InitMailMgr()
+        # 注册
+        self._RegisterAll()
 
-        # 钉钉系统初始化
-        self._InitDingDingMgr()
-
-        # 定时器
-        self._InitSchedulerMgr()
-
-        # 注册所有的命令
-        self._RegisterAllCommand()
+        # 初始化服务
+        self._InitAllService()
 
         # 初始化
         self.OnInit()
@@ -78,9 +66,9 @@ class BaseApp:
         self._EndProfile()
 
     def Destroy(self):
-        self._DestroyMailMgr()
-        self._DestroySchedulerMgr()
-        pass
+        self._DestroyAllService()
+
+        self._UnRegisterAllService()
 
     @property
     def CLM(self):
@@ -93,24 +81,6 @@ class BaseApp:
     # public function
     def IsTest(self):
         return self.m_bTest
-
-    def GetMailMgr(self):
-        assert self.m_MailMgr is not None, "未初始化"
-        return self.m_MailMgr
-
-    def GetDingDingMgr(self):
-        assert self.m_DingDingMgr is not None, "未初始化"
-        return self.m_DingDingMgr
-
-    def GetSchedulerMgr(self):
-        assert self.m_SchedulerMgr is not None, "未初始化"
-        return self.m_SchedulerMgr
-
-    def SendMail(self, szTitle, szMsg, listTo=None):
-        self.m_MailMgr.Send(szTitle, szMsg, listTo=listTo)
-    
-    def SendDingDing(self, szMsg, listTo=None):
-        self.m_DingDingMgr.Send(szMsg, listTo)
 
     # ############################# override function
     @staticmethod
@@ -197,69 +167,6 @@ class BaseApp:
 
         return True
 
-    def _InitMailMgr(self):
-        if not self.m_CLMObj.HasOpt("-m", "--mail"):
-            return
-
-        self.m_LoggerObj.info("Start mail mgr")
-        self.m_MailMgr = mail_mgr.MailMgr()
-        self.m_MailMgr.SetDefaultConfig(self.ConfigLoader.MailHost, self.ConfigLoader.MailUser,
-                                        self.ConfigLoader.MailPassword, self.ConfigLoader.MailTo)
-        self.m_MailMgr.Send("启动小小服务", "你好，我是小小助手，我已经启动了，你可以直接找我哈")
-
-        self.m_LoggerObj.info("End mail mgr\n")
-
-    def _DestroyMailMgr(self):
-        if self.m_MailMgr is not None:
-            self.m_MailMgr.Destroy()
-
-    def _InitDingDingMgr(self):
-        if not self.m_CLMObj.HasOpt("-d", "--dingding"):
-            return
-
-        self.m_LoggerObj.info("Start dingding mgr")
-        self.m_DingDingMgr = ding_ding_mgr.DingDingMgr(
-            self.ConfigLoader.DingDingWebhook,
-            self.ConfigLoader.DingDingSecret,
-            self.ConfigLoader.DingDingKeyword,
-            [self.ConfigLoader.DingDingTo]
-        )
-
-        self.m_DingDingMgr.Send(
-            "你好，我是小小助手，我已经启动了，你可以直接找我哈"
-        )
-
-        self.m_LoggerObj.info("End dingding mgr\n")
-
-    def _DestroyDingDingMgr(self):
-        if self.m_DingDingMgr is not None:
-            self.m_DingDingMgr.Destroy()
-
-    def _InitSchedulerMgr(self):
-        if not self.m_CLMObj.HasOpt("-s", "--scheduler"):
-            return
-
-        self.m_LoggerObj.info("Start scheduler mgr")
-        assert self.m_MailMgr is not None, "scheduler mgr depend on mail mgr"
-
-        self.m_SchedulerMgr = scheduler_mgr.SchedulerMgr()
-        self.m_SchedulerMgr.SetMailMgr(self.m_MailMgr)
-        if self.m_DingDingMgr is not None:
-            self.m_SchedulerMgr.SetDingDingMgr(self.m_DingDingMgr)
-        self.m_SchedulerMgr.Init()
-        self.m_SchedulerMgr.Start()
-
-        self.m_LoggerObj.info("End scheduler mgr\n")
-
-    def _DestroySchedulerMgr(self):
-        if self.m_SchedulerMgr is not None:
-            self.m_SchedulerMgr.Destroy()
-
-    def _GetCommand(self, szName):
-        assert szName in self.m_dictCommand, "command not register:{0}".format(
-            szName)
-        return self.m_dictCommand[szName]
-
     def _ParseCommandArg(self, args):
         self.m_LoggerObj.info("Start parse command line")
 
@@ -289,22 +196,121 @@ class BaseApp:
         util.RenderConfig("config/render.yml", dictTemplatePath2TargetPath)
         self.m_LoggerObj.info("End rendering config\n")
 
+    def _RegisterAll(self):
+        # 注册命令
+        self._AutoRegisterCommand(
+            os.path.join(os.getcwd(), "main_frame/command"),
+            r"^cmd[_a-zA-Z0-9]*.py$")
+
+        # 注册服务
+        self._AutoRegisterService(
+            os.path.join(self.ConfigLoader.CWD, "main_frame/service"),
+            r"^[a-zA-Z0-9_]*service.py$")
+
+    # ********************************************************************************
+    # service
+    # ********************************************************************************
+    def _InitAllService(self):
+        self.m_LoggerObj.debug("_InitAllService")
+
+        dictOption = self.CLM.GetOptionDict()
+        for szKey, szValue in dictOption.items():
+            if szKey in self.m_dictServiceOpt2Name:
+                szServiceName = self.m_dictServiceOpt2Name[szKey]
+                self.GetService(szServiceName).Init(self, [szServiceName])
+
+    def _DestroyAllService(self):
+        for szName, ServiceObj in self.m_dictService.items():
+            ServiceObj.Destroy()
+
+    def _RegisterService(self, ServiceObj):
+        self.m_LoggerObj.debug("service name:%s, service obj:%s", ServiceObj.GetName(), str(ServiceObj))
+
+        szName = ServiceObj.GetName()
+        assert szName not in self.m_dictService, "重复 service name:%s" % szName
+        self.m_dictService[szName] = ServiceObj
+
+        listOpt = ServiceObj.GetOptList()
+        for szOpt in listOpt:
+            assert szOpt not in self.m_dictServiceOpt2Name, "重复opt name:%s" % szOpt
+            self.m_dictServiceOpt2Name[szOpt] = szName
+
+    def _UnRegisterService(self, szName):
+        if szName in self.m_dictService:
+            self.m_LoggerObj.debug("service del, service name:%s", szName)
+
+            ServiceObj = self.m_dictService[szName]
+            listOpt = ServiceObj.GetOptList()
+            for szOpt in listOpt:
+                assert szOpt in self.m_dictServiceOpt2Name
+                del self.m_dictServiceOpt2Name[szOpt]
+
+            del self.m_dictService[szName]
+
+        else:
+            self.m_LoggerObj.error("service not found, service name:%s", szName)
+
+    def _UnRegisterAllService(self):
+        self.m_LoggerObj.debug("")
+        listServiceName = self.m_dictService.keys()
+        for szServiceName in listServiceName:
+            self._UnRegisterService(szServiceName)
+
+    def _AutoRegisterService(self, szFullPath, szRegPattern):
+        self.m_LoggerObj.debug("full path:%s, regpattern:%s", szFullPath, szRegPattern)
+
+        import main_frame.service_base as service_base
+        listServiceClassObj = self._FilterClassObj(szFullPath, szRegPattern, service_base.ServiceBase)
+
+        for ServiceClassObj in listServiceClassObj:
+            ServiceObj = ServiceClassObj()
+            self._RegisterService(ServiceObj)
+
+    def GetService(self, szName):
+        assert szName in self.m_dictService
+        return self.m_dictService[szName]
+
+    # ********************************************************************************
+    # command
+    # ********************************************************************************
+    def _GetCommand(self, szName):
+        assert szName in self.m_dictCommand, "command not register:{0}".format(
+            szName)
+        return self.m_dictCommand[szName]
+
     def _AutoRegisterCommand(self, szFullPath, szRegPattern):
-        listCommandClassObj = self._FilterCommandObj(szFullPath, szRegPattern)
+        self.m_LoggerObj.debug("full path:%s, reg pattern:%s", szFullPath, szRegPattern)
+
+        import main_frame.cmd_base as cmd_base
+        listCommandClassObj = self._FilterClassObj(szFullPath, szRegPattern, cmd_base.CmdBase)
 
         for CommandClassObj in listCommandClassObj:
             CommandObj = CommandClassObj()
             self._RegisterCommmand(CommandObj)
 
-    @staticmethod
-    def _FilterCommandObj(szCommandFullDir, szRegPattern):
-        assert os.path.exists(szCommandFullDir), "目录不存在:" + szCommandFullDir
-        import main_frame.cmd_base as cmd_base
+    def _RegisterCommmand(self, CommandObj):
+        self.m_LoggerObj.debug("command name:%s, command obj:%s", CommandObj.GetName(), str(CommandObj))
 
-        listCommandObj = []
+        szName = CommandObj.GetName()
+        assert szName not in self.m_dictCommand
+        self.m_dictCommand[szName] = CommandObj
+
+    def _UnRegisterCommand(self, szName):
+        if szName in self.m_dictCommand:
+            self.m_LoggerObj.debug("command del, command name:%s", szName)
+            del self.m_dictCommand[szName]
+        else:
+            self.m_LoggerObj.error("command not found, command name:%s", szName)
+
+    def _FilterClassObj(self, szClassFullDir, szRegPattern, BaseClass):
+        self.m_LoggerObj.debug("dir:%s, reg pattern:%s, base class:%s", szClassFullDir, szRegPattern, str(BaseClass))
+
+        assert os.path.exists(szClassFullDir), "目录不存在:" + szClassFullDir
+
+        listClassObj = []
 
         szCwd = os.getcwd()
-        for szParentPath, listDirName, listFileName in os.walk(szCommandFullDir):
+        for szParentPath, listDirName, listFileName in os.walk(szClassFullDir):
             for szFileName in listFileName:
                 szFullPath = os.path.join(szParentPath, szFileName)
 
@@ -318,20 +324,8 @@ class BaseApp:
                 ModuleObj = importlib.import_module(szModuleName)
 
                 for szAttr in dir(ModuleObj):
-                    CommandClassObj = getattr(ModuleObj, szAttr)
-                    if isinstance(CommandClassObj, type) and issubclass(CommandClassObj, cmd_base.CmdBase):
-                        listCommandObj.append(CommandClassObj)
+                    ClassObj = getattr(ModuleObj, szAttr)
+                    if isinstance(ClassObj, type) and issubclass(ClassObj, BaseClass):
+                        listClassObj.append(ClassObj)
 
-        return listCommandObj
-
-    def _RegisterAllCommand(self):
-        self._AutoRegisterCommand(os.path.join(os.getcwd(), "main_frame/command"), r"^cmd[_a-zA-Z0-9]*.py$")
-
-    def _RegisterCommmand(self, CommandObj):
-        szName = CommandObj.GetName()
-        assert szName not in self.m_dictCommand
-        self.m_dictCommand[szName] = CommandObj
-
-    def _UnRegisterCommand(self, szName):
-        if szName in self.m_dictCommand:
-            del self.m_dictCommand[szName]
+        return listClassObj

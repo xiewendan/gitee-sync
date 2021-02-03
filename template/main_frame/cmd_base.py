@@ -32,6 +32,11 @@ class CmdBase:
         self.m_AppObj = AppObj
         self.m_LoggerObj.info("Init AppObj")
 
+        self._OnInit()
+
+    def _OnInit(self):
+        pass
+
     def Do(self):
         """执行命令"""
         self.m_LoggerObj.info("Start DoExcel2Py")

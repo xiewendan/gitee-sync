@@ -40,7 +40,7 @@ def _OnTraceback(TypeClass, ValueObj, TracebackObj, bSysExcepthook=False):
     logging.error("\n" + szError)
 
     try:
-        g_AppObj.GetDingDingMgr().Send(szError)
+        g_AppObj.GetService("ding_ding_service").Send(szError)
     except BaseException:
         logging.getLogger("myLog").error("\n\n{0}\n".format(traceback.format_exc()))
 

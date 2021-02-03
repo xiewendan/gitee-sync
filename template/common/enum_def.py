@@ -6,7 +6,7 @@
 # desc: 所有常量
 
 
-class EPlatform(object):
-    eWin = "windows"
-    eAndroid = "android"
-    eIos = "ios"
+# class EPlatform:
+#     eWin = "windows"
+#     eAndroid = "android"
+#     eIos = "ios"

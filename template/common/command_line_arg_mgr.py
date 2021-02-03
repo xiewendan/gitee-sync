@@ -42,3 +42,6 @@ class CommandLineArgMgr:
             return None
 
         return self.m_listArgs[nIndex]
+
+    def GetOptionDict(self):
+        return self.m_dictOptions

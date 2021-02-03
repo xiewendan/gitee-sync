@@ -26,7 +26,7 @@
 ------------------------------------------------------------------------------
 # 2 思路
 * 实现一个命令基类
-* 实现app注册命令类相关方法
+* 自动化注册机制
 * app启动，自动检测命令，并执行相应命令机制
 * 新增一个命令的过程
 
@@ -53,36 +53,32 @@ class CmdBase:
         self.m_AppObj.Info("Init AppObj")
         self.m_AppObj = AppObj
 
-        # 可以通过self.m_AppObj.CLM获得参数
-        # szExcelPath = self.m_AppObj.CLM.GetArg(1)
+        self._OnInit()
 
     def Do(self):
         """执行命令"""
         self.m_AppObj.Info("Start DoExcel2Py")
 
         szCWD = self.m_AppObj.ConfigLoader.CWD
+
+        # 可以通过self.m_AppObj.CLM获得参数
+        # szExcelPath = self.m_AppObj.CLM.GetArg(1)
 ~~~
 
 
 ## app中注册类管理
 
 * 用一个dict管理命令名字到命令对象的映射关系，`self.m_dcitCommand`
-* 提供_RegisterAllCommand，_RegisterCommand，_UnRegisterCommand等函数，实现注册和注销命令
-
+* 在启动时，自动去目录`main_frame/command`下，查找满足正则表达式`^cmd[_a-zA-Z0-9]*.py$`的文件
+* 在文件中，查找继承于`cmd_base.CmdBase`的子类
+* 自动化初始化
 ~~~
-    def _RegisterAllCommand(self):
-        import main_frame.command.cmd_excel2py as cmd_excel2py
-        Excel2PyCmdObj = cmd_excel2py.CmdExcel2Py()
-        self._RegisterCommmand(Excel2PyCmdObj)
+        import main_frame.cmd_base as cmd_base
+        listCommandClassObj = self._FilterClassObj(szFullPath, szRegPattern, cmd_base.CmdBase)
 
-    def _RegisterCommmand(self, CommandObj):
-        szName = CommandObj.GetName()
-        assert szName not in self.m_dictCommand
-        self.m_dictCommand[szName] = CommandObj
-
-    def _UnRegisterCommand(self, szName):
-        if szName in self.m_dictCommand:
-            del self.m_dictCommand[szName]
+        for CommandClassObj in listCommandClassObj:
+            CommandObj = CommandClassObj()
+            self._RegisterCommmand(CommandObj)
 ~~~
 
 ## app启动检查
@@ -107,31 +103,20 @@ python main_frame/main.py excel2py config/excel config/setting
 ## 实现一个新命令
 
 * 1、希望实现新的类型时，需要继承与CmdBase，然后，实现GetName，Init，Do等函数
-* 2、在base_app.py中的_RegisterAllCommand函数，注册新类型
+* 2、文件放到main_frame/command下，并文件名命名以cmd开头，如`cmd_test_code.py`
 * 3、在启动中传入命令名和命令需要的参数
 
 ### 以配置表转表工具为例
  
 * 1、新类型的代码：main_frame.command.cmd_excel2py.py，其中CmdExcel2Py是我们实现的命令类，其继承与CmdBase，实现了GetName，Init，Do等函数
-* 2、在base_app.py中注册类型代码如下：
-~~~
- def _RegisterAllCommand(self):
-    import main_frame.command.cmd_excel2py as cmd_excel2py
-    Excel2PyCmdObj = cmd_excel2py.CmdExcel2Py()
-    self._RegisterCommmand(Excel2PyCmdObj)
-~~~
 
-* 3、启动脚本如下，其中excel2py是命令名，即GetName返回的名字，后面两个是在命令类中需要用到的参数
+* 2、启动脚本如下，其中excel2py是命令名，即GetName返回的名字，后面两个是在命令类中需要用到的参数
 ~~~
    python main_frame/main.py excel2py config/excel config/setting
 ~~~
 
 ------------------------------------------------------------------------------
 # 4 结论
-
-目前的命令系统基本能够满足我们的需求，后续需要在command发现机制这边进一步优化，实现不需要注册，自动去指定目录下搜索继承与CmdBase的所有类，自动注册到命令系统中
-
-
 
 ------------------------------------------------------------------------------
 # 5 展望
