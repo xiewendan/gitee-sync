@@ -40,8 +40,10 @@ class SelectorThread(threading.Thread):
                 CallbackObj = KeyObj.data
                 CallbackObj(self.m_SelectorObj, KeyObj.fileobj, nMask)
 
-            # 新增注册socket
+            # 注册 listen socket
             self.m_XxSocketMgrObj.Register(self.m_SelectorObj)
+
+            #
 
 
 def SerializeData(dictData):
@@ -89,6 +91,7 @@ class XxSocketMgr:
         self.m_dictSocket2Register = {}
 
         # data wait to send
+        self.m_dictIp2Port2Data = {}
 
     def Init(self):
         self.m_LoggerObj.debug("Init")
@@ -103,6 +106,9 @@ class XxSocketMgr:
         self.m_SelectThreadObj.join()
 
     def Listen(self, szIp, nPort, nBacklog=1):
+        """监听指定端口"""
+        # TODO 边界：相同ip相同端口； 不同ip相同端口； 相同ip不同端口
+
         self.m_LoggerObj.info("ip:%s, port:%d", szIp, nPort)
         assert nBacklog >= 0, "back log %s" % nBacklog
 
@@ -110,25 +116,59 @@ class XxSocketMgr:
         import selectors
         import common.net.xx_socket as xx_socket
 
+        self.m_RegisterLockObj.acquire()
+        bHasListenSocket = self._HasListenSocket(szIp, nPort)
+        self.m_RegisterLockObj.release()
+
+        if bHasListenSocket:
+            return
+
         SocketObj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         SocketObj.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        SocketObj.bind((szIp, nPort))
+        SocketObj.bind((szIp, nPort))   # TODO 监听相同端口会报错，需要处理
         SocketObj.listen(nBacklog)
         XxSocketObj = xx_socket.XxSocket(SocketObj)
 
         self.m_RegisterLockObj.acquire()
-
-        self._AddListenSocket(szIp, nPort, XxSocketObj)
-        self.m_dictSocket2Register[XxSocketObj] = (selectors.EVENT_READ, self._Accept)
-
+        if self._HasListenSocket(szIp, nPort):
+            SocketObj.close()
+        else:
+            self._AddListenSocket(szIp, nPort, XxSocketObj)
+            self.m_dictSocket2Register[XxSocketObj] = (selectors.EVENT_READ, self._Accept)
         self.m_RegisterLockObj.release()
 
     def Send(self, szIp, nPort, dictData):
+        """发送数据到指定ip和端口"""
+        # TODO 尚未有连接；以后连接；已有通过listen上来的连接
+        # TODO 相同ip相同端口，在连接的间隔内，正在尝试连接，可以能会重复发起连接，会存在多个连接
         self.m_LoggerObj.debug("ip:%s, port:%d, data:%s", szIp, nPort, dictData)
 
         byteData = SerializeData(dictData)
 
-        pass
+        import socket
+
+        self.m_RegisterLockObj.acquire()
+        bHasEstablishSocket = self._HasEstablishSocket(szIp, nPort)
+        self._AddSendData(szIp, nPort, byteData)
+        self.m_RegisterLockObj.release()
+
+        if bHasEstablishSocket:
+            pass
+        else:
+            # TODO 需要异步创建socket，并发送数据
+            SocketObj = socket.socket()
+            SocketObj.connect((szIp, nPort))
+
+            self.m_RegisterLockObj.acquire()
+
+            if self._HasEstablishSocket(szIp, nPort):
+                SocketObj.close()
+            else:
+                import common.net.xx_socket as xx_socket
+                XxSocketObj = xx_socket.XxSocket(SocketObj)
+                self._AddEstablishSocket(szIp, nPort, XxSocketObj)
+
+            self.m_RegisterLockObj.release()
 
     # ********************************************************************************
     # selector 注册和相应的回调函数
@@ -152,11 +192,8 @@ class XxSocketMgr:
         import common.net.xx_socket as xx_socket
 
         ConnObj, AddrObj = ListenSocketObj.accept()
-        self.m_LoggerObj.info("new client com:%s", str(AddrObj))
-        SelectorObj.register(ConnObj, selectors.EVENT_READ, self._Read)
 
-        XxSocketObj = xx_socket.XxSocket(ConnObj)
-        XxSocketObj.SetState(xx_socket.ESocketState.eRegister)
+        self.m_LoggerObj.info("new client com:%s", str(AddrObj))
 
         # TODO AddrObj获得IP和端口
         szIp, nPort = AddrObj.IP, AddrObj.Port
@@ -164,7 +201,14 @@ class XxSocketMgr:
         # 添加到管理器中
         self.m_RegisterLockObj.acquire()
 
-        self._AddEstablishSocket(szIp, nPort, XxSocketObj)
+        if self._HasEstablishSocket(szIp, nPort):
+            ConnObj.close()
+        else:
+            SelectorObj.register(ConnObj, selectors.EVENT_READ, self._Read)
+            XxSocketObj = xx_socket.XxSocket(ConnObj)
+            XxSocketObj.SetState(xx_socket.ESocketState.eRegister)
+
+            self._AddEstablishSocket(szIp, nPort, XxSocketObj)
 
         self.m_RegisterLockObj.release()
 
@@ -205,6 +249,15 @@ class XxSocketMgr:
     # ********************************************************************************
     # listen socket
     # ********************************************************************************
+    def _HasListenSocket(self, szIp, nPort):
+        """外部调用，需要获得锁 self.m_RegisterLockObj.acquire()"""
+        self.m_LoggerObj.debug("ip:%s, port:%d", szIp, nPort)
+
+        if szIp not in self.m_dictIp2Port2ListenXxSocket:
+            return False
+
+        return nPort in self.m_dictIp2Port2ListenXxSocket[szIp]
+
     def _AddListenSocket(self, szIp, nPort, ListenXxSocketObj):
         """外部调用，需要获得锁 self.m_RegisterLockObj.acquire()"""
 
@@ -241,6 +294,15 @@ class XxSocketMgr:
     # ********************************************************************************
     # establish socket
     # ********************************************************************************
+    def _HasEstablishSocket(self, szIp, nPort):
+        """外部调用，需要获得锁 self.m_RegisterLockObj.acquire()"""
+        self.m_LoggerObj.debug("ip:%s, port:%d", szIp, nPort)
+
+        if szIp not in self.m_dictIp2Port2EstablishXxSocket:
+            return False
+
+        return nPort in self.m_dictIp2Port2EstablishXxSocket[szIp]
+
     def _AddEstablishSocket(self, szIp, nPort, EstablishXxSocketObj):
         """外部调用，需要获得锁 self.m_RegisterLockObj.acquire()"""
 
@@ -273,3 +335,15 @@ class XxSocketMgr:
         szIp, nPort = self.m_dictEstablishSocket2IpPort[SocketObj]
         del self.m_dictEstablishSocket2IpPort[SocketObj]
         del self.m_dictIp2Port2EstablishXxSocket[szIp][nPort]
+
+    def _AddSendData(self, szIp, nPort, byteData):
+        """外部调用，需要获得锁 self.m_RegisterLockObj.acquire()"""
+        self.m_LoggerObj.debug("ip:%s, port:%d, data:%s", szIp, nPort, repr(byteData))
+
+        if szIp not in self.m_dictIp2Port2Data:
+            self.m_dictIp2Port2Data[szIp] = {}
+
+        if nPort not in self.m_dictIp2Port2Data[szIp]:
+            self.m_dictIp2Port2Data[szIp][nPort] = []
+
+        self.m_dictIp2Port2Data[szIp][nPort].append(byteData)
