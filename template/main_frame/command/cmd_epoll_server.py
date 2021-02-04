@@ -5,16 +5,15 @@
 
 # desc: epoll示例，server
 
-import socket
-import selectors
 
-import common.my_log as my_log
 import main_frame.cmd_base as cmd_base
 
 
 class CmdEPollServer(cmd_base.CmdBase):
     def __init__(self):
         super().__init__()
+
+        import common.my_log as my_log
         self.m_LoggerObj = my_log.MyLog(__file__)
 
     @staticmethod
@@ -22,6 +21,9 @@ class CmdEPollServer(cmd_base.CmdBase):
         return "epoll_server"
 
     def Do(self):
+        import socket
+        import selectors
+
         self.m_LoggerObj.info("Start do %s", self.GetName())
 
         szIP = self.m_AppObj.CLM.GetArg(1)
@@ -44,7 +46,12 @@ class CmdEPollServer(cmd_base.CmdBase):
 
         def Read(ConnObj, nMask):
             self.m_LoggerObj.info("socket can read: %s", str(ConnObj))
-            byteData = ConnObj.recv(2)
+            try:
+                byteData = ConnObj.recv(4)
+            except BaseException as e:
+                SelectorObj.unregister(ConnObj)
+                return
+
             if byteData:
                 self.m_LoggerObj.info("echoing:%s to %s", repr(byteData), str(ConnObj))
                 SelectorObj.modify(ConnObj, selectors.EVENT_WRITE, Write)
@@ -59,7 +66,7 @@ class CmdEPollServer(cmd_base.CmdBase):
         SelectorObj.register(SocketObj, selectors.EVENT_READ, Accept)
 
         while True:
-            listEvent = SelectorObj.select()
+            listEvent = SelectorObj.select(1)
             for key, mask in listEvent:
                 CallbackObj = key.data
                 CallbackObj(key.fileobj, mask)
