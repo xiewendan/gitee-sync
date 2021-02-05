@@ -42,7 +42,7 @@ class CmdEPollServer(cmd_base.CmdBase):
 
             self.m_LoggerObj.info("new client com:%s", str(AddrObj))
 
-            SelectorObj.register(ConnObj, selectors.EVENT_READ, Read)
+            SelectorObj.register(ConnObj, selectors.EVENT_READ | selectors.EVENT_WRITE, Read)
 
         def Read(ConnObj, nMask):
             self.m_LoggerObj.info("socket can read: %s", str(ConnObj))
@@ -54,14 +54,24 @@ class CmdEPollServer(cmd_base.CmdBase):
 
             if byteData:
                 self.m_LoggerObj.info("echoing:%s to %s", repr(byteData), str(ConnObj))
-                SelectorObj.modify(ConnObj, selectors.EVENT_WRITE, Write)
+                # SelectorObj.modify(ConnObj, selectors.EVENT_WRITE, Write)
             else:
                 self.m_LoggerObj.info("closing:%s", str(ConnObj))
                 SelectorObj.unregister(ConnObj)
 
         def Write(ConnObj, nMask):
             self.m_LoggerObj.info("socket can write: %s", str(ConnObj))
-            SelectorObj.modify(ConnObj, selectors.EVENT_READ, Read)
+            # SelectorObj.modify(ConnObj, selectors.EVENT_READ, Read)
+
+        def ReadWrite(ConnObj, nMask):
+            self.m_LoggerObj.debug("socket can read or can write:%s", str(ConnObj))
+
+            if nMask & selectors.EVENT_WRITE:
+                self.m_LoggerObj.debug("socket can write")
+                Write(ConnObj, nMask)
+            elif nMask & selectors.EVENT_READ:
+                self.m_LoggerObj.debug("socket can read")
+                Read(ConnObj, nMask)
 
         SelectorObj.register(SocketObj, selectors.EVENT_READ, Accept)
 

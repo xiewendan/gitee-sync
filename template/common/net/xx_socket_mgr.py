@@ -230,7 +230,7 @@ class XxSocketMgr:
 
         if byteData:
             self.m_LoggerObj.info("echoing:%s to %s", repr(byteData), str(ConnObj))
-            SelectorObj.modify(ConnObj, selectors.EVENT_WRITE, self._Write)
+            # SelectorObj.modify(ConnObj, selectors.EVENT_WRITE, self._Write)
 
         else:
             self.m_LoggerObj.info("closing:%s", str(ConnObj))
@@ -243,8 +243,17 @@ class XxSocketMgr:
     def _Write(self, SelectorObj, ConnObj, nMask):
         self.m_LoggerObj.info("socket can write: %s", str(ConnObj))
 
+        # import selectors
+        # SelectorObj.modify(ConnObj, selectors.EVENT_READ, self._Read)
+
+    def _ReadWrite(self, SelectorObj, ConnObj, nMask):
+        self.m_LoggerObj.debug("socket can read or write, ConnObj:%s, Mask:%d", str(ConnObj), nMask)
+
         import selectors
-        SelectorObj.modify(ConnObj, selectors.EVENT_READ, self._Read)
+        if nMask & selectors.EVENT_READ:
+            self._Read(SelectorObj, ConnObj, nMask)
+        elif nMask & selectors.EVENT_WRITE:
+            self._Write(SelectorObj, ConnObj, nMask)
 
     # ********************************************************************************
     # listen socket
