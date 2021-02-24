@@ -226,7 +226,7 @@ class BaseApp:
 
     def _UnRegisterAllService(self):
         self.m_LoggerObj.debug("")
-        listServiceName = self.m_dictService.keys()
+        listServiceName = list(self.m_dictService.keys())
         for szServiceName in listServiceName:
             self._UnRegisterService(szServiceName)
 
