@@ -53,10 +53,12 @@ class XxSocketMgr(threading.Thread):
         """
         @:param nTimeout 如果为None，则表示不超时，会一直等待。nTimeout为大于等于0的数，表示会超时，0表示不等待，1表示等待1秒
         """
+        super().__init__()
         self.m_LoggerObj = my_log.MyLog(__file__)
 
         self.m_bRunning = True
         self.m_SelectorObj = None
+        self.m_nRegisterCount = 0
 
         # socket
         self.m_nSocketID = 0
@@ -91,6 +93,8 @@ class XxSocketMgr(threading.Thread):
         self.m_LoggerObj.info("run")
 
         while self.m_bRunning:
+            self.m_LoggerObj.info("===================xxsocket loop begin")
+
             self._HandleSocketEvent()
 
             self._UpdateSendBuffer()
@@ -104,7 +108,7 @@ class XxSocketMgr(threading.Thread):
     def _HandleSocketEvent(self):
         self.m_LoggerObj.debug("handle socket event")
 
-        listEvent = self.m_SelectorObj.select(g_Timeout)
+        listEvent = self._Select(g_Timeout)
         for KeyObj, nMask in listEvent:
             CallbackObj = KeyObj.data
             CallbackObj(KeyObj.fileobj, nMask)
@@ -121,7 +125,7 @@ class XxSocketMgr(threading.Thread):
             self.m_LoggerObj.info("has exist socket, close it. ip:%s, port:%d", szIp, nPort)
 
         else:
-            self.m_SelectorObj.register(SocketObj, selectors.EVENT_READ, self._ReadWrite)
+            self._Register(SocketObj, selectors.EVENT_READ, self._ReadWrite)
 
             self._AddSocketObj(szIp, nPort, ESocketType.eData, SocketObj)
 
@@ -139,7 +143,7 @@ class XxSocketMgr(threading.Thread):
         try:
             byteData = SocketObj.recv(g_RecvCount)
         except BaseException as e:
-            self.m_SelectorObj.unregister(SocketObj)
+            self._UnRegister(SocketObj)
             self._RemoveSocketObj(SocketObj)
             self.m_LoggerObj.error("socket recv data failed:", e)
             return
@@ -148,7 +152,7 @@ class XxSocketMgr(threading.Thread):
             self._AddRecvBuffer(SocketObj, byteData)
         else:
             self.m_LoggerObj.info("closing:%s", str(SocketObj))
-            self.m_SelectorObj.unregister(SocketObj)
+            self._UnRegister(SocketObj)
             self._RemoveSocketObj(SocketObj)
 
     def _Write(self, SocketObj):
@@ -159,7 +163,7 @@ class XxSocketMgr(threading.Thread):
             szIp, nPort = self._GetIpPort(SocketObj)
             self.m_LoggerObj.info("send data over, ip:%s, port:%d", szIp, nPort)
 
-            self.m_SelectorObj.modify(SocketObj, selectors.EVENT_READ, self._ReadWrite)
+            self._Modify(SocketObj, selectors.EVENT_READ, self._ReadWrite)
             return
 
         # TODO 写异常，是否需要考虑移除
@@ -188,14 +192,21 @@ class XxSocketMgr(threading.Thread):
             nPort = listData[1]
 
             SocketObj = self._GetSocketObj(szIp, nPort, ESocketType.eData)
-            if SocketObj is None:
-                SocketObj = socket.socket()
-                SocketObj.connect((szIp, nPort))
-                self.m_LoggerObj.info("connect, ip:%s, port:%d", szIp, nPort)
+            if SocketObj is not None:
+                self._Modify(SocketObj, selectors.EVENT_READ | selectors.EVENT_WRITE, self._ReadWrite)
+            else:
+                self.m_LoggerObj.info("try connect, ip:%s, port:%d", szIp, nPort)
 
-                self._AddSocketObj(szIp, nPort, ESocketType.eData, SocketObj)
-
-            self.m_SelectorObj.register(SocketObj, selectors.EVENT_READ | selectors.EVENT_WRITE, self._ReadWrite)
+                try:
+                    SocketObj = socket.socket()
+                    SocketObj.connect((szIp, nPort))
+                except ConnectionRefusedError as ExceptionObj:
+                    import common.my_trackback as my_traceback
+                    my_traceback.OnException()
+                else:
+                    self.m_LoggerObj.info("connected, ip:%s, port:%d", szIp, nPort)
+                    self._AddSocketObj(szIp, nPort, ESocketType.eData, SocketObj)
+                    self._Register(SocketObj, selectors.EVENT_READ | selectors.EVENT_WRITE, self._ReadWrite)
 
     def _HandleListen(self):
         self.m_LoggerObj.debug("handle listen")
@@ -216,10 +227,11 @@ class XxSocketMgr(threading.Thread):
             SocketObj.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             SocketObj.bind((szIp, nPort))
             SocketObj.listen(g_ListenCount)
+            self.m_LoggerObj.info("listen socket, ip:%s, port:%d, count:%d", szIp, nPort, g_ListenCount)
 
             self._AddSocketObj(szIp, nPort, ESocketType.eListen, SocketObj)
 
-            self.m_SelectorObj.register(SocketObj, selectors.EVENT_READ, self._Accept)
+            self._Register(SocketObj, selectors.EVENT_READ, self._Accept)
 
     # ********************************************************************************
     # socket管理
@@ -386,7 +398,7 @@ class XxSocketMgr(threading.Thread):
                         IpPortData = ip_port_data.IpPortData(szIp, nPort, dictData)
                         listRecvData.append(IpPortData)
 
-                        byteData = byteData[:nByteLen]
+                        byteData = byteData[nByteLen:]
                         dictPort2RecvBuffer[nPort] = byteData
 
         self.m_XxNetObj.AddRecvData(listRecvData)
@@ -398,3 +410,30 @@ class XxSocketMgr(threading.Thread):
         nByteLen = struct.unpack("!Q", byteData[:8])[0]
 
         return nByteLen
+
+    # ********************************************************************************
+    # selector
+    # ********************************************************************************
+    def _Select(self, nTimeout):
+        if self.m_nRegisterCount == 0:
+            return []
+        else:
+            return self.m_SelectorObj.select(nTimeout)
+
+    def _Register(self, SocketObj, nMask, Callback):
+        self.m_SelectorObj.register(SocketObj, nMask, Callback)
+        self._AddRegisterCount(1)
+
+    def _UnRegister(self, SocketObj):
+        self.m_SelectorObj.unregister(SocketObj)
+        self._AddRegisterCount(-1)
+
+    def _AddRegisterCount(self, nCount):
+        self.m_LoggerObj.debug("reigstercount:%d, count:%d", self.m_nRegisterCount, nCount)
+        self.m_nRegisterCount += nCount
+        assert self.m_nRegisterCount >= 0
+
+    def _Modify(self, SocketObj, nMask, Callback):
+        self.m_LoggerObj.debug("socketobj:%s, mask:%d, callback:%s", SocketObj, nMask, Callback)
+
+        self.m_SelectorObj.modify(SocketObj, nMask, Callback)

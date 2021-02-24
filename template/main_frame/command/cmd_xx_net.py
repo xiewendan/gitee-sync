@@ -28,9 +28,9 @@ class CmdXxNet(cmd_base.CmdBase):
         szCWD = self.m_AppObj.ConfigLoader.CWD
 
         szIp = self.m_AppObj.CLM.GetArg(1)
-        nPort = self.m_AppObj.CLM.GetArg(2)
+        nPort = int(self.m_AppObj.CLM.GetArg(2))
         szTargetIp = self.m_AppObj.CLM.GetArg(3)
-        nTargetPort = self.m_AppObj.CLM.GetArg(4)
+        nTargetPort = int(self.m_AppObj.CLM.GetArg(4))
 
         import common.net.xx_net as xx_net
         XxNetObj = xx_net.XxNet()

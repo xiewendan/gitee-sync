@@ -83,7 +83,7 @@ class XxNet:
         return listSendData
 
     def AddRecvData(self, listRecvData):
-        self.m_LoggerObj.info("")
+        self.m_LoggerObj.info("recv data:%s", listRecvData)
 
         self.m_RecvLockObj.acquire()
         self.m_listRecvData.extend(listRecvData)
