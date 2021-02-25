@@ -12,4 +12,7 @@ dingding:
   keyword: xx
   to: xx
 
+net:
+  ip: xx
+  port: xx
 
