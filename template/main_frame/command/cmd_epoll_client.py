@@ -31,4 +31,7 @@ class CmdEPollClient(cmd_base.CmdBase):
             SocketObj.connect((szIP, nPort))
             self.m_LoggerObj.info("connect, ip %s, port %d", szIP, nPort)
 
-            SocketObj.send("xjc".encode("utf-8"))
+            # SocketObj.send("xjc".encode("utf-8"))
+            while True:
+                byteData = SocketObj.recv(1024)
+                print(byteData)

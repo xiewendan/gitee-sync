@@ -199,6 +199,7 @@ class XxSocketMgr(threading.Thread):
 
                 try:
                     SocketObj = socket.socket()
+                    # TODO 重试连接次数，间隔，超出次数，需要对外爆exception
                     SocketObj.connect((szIp, nPort))
                 except ConnectionRefusedError as ExceptionObj:
                     import common.my_trackback as my_traceback
@@ -394,6 +395,7 @@ class XxSocketMgr(threading.Thread):
                     elif len(byteData) < nByteLen:
                         break
                     else:
+                        self.m_LoggerObj.debug("receive byte data:" + str(byteData[:nByteLen]))
                         dictData = UnserializeData(byteData[:nByteLen])
                         IpPortData = ip_port_data.IpPortData(szIp, nPort, dictData)
                         listRecvData.append(IpPortData)

@@ -65,7 +65,10 @@ def _Stack(eTb, bSysExcepthook):
     szFormat = '  File "{0}", line {1}, in {2}\n    {3}\n'
     for Record in listFinalRecords:
         _, szSourceFullPath, nLine, szFunName, listLine, nIndex = Record
-        szLine = listLine[nIndex].strip()
+        if listLine is None or nIndex is None:
+            szLine = ""
+        else:
+            szLine = listLine[nIndex].strip()
 
         listMsg.append(szFormat.format(szSourceFullPath, nLine, szFunName, szLine))
 
