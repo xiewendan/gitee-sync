@@ -45,7 +45,7 @@ class CmdEPollServer(cmd_base.CmdBase):
 
             self.m_LoggerObj.info("new client com:%s", str(AddrObj))
 
-            self.Register(EpollObj, ConnObj, select.EPOLLIN | select.EPOLLOUT, ReadWrite)
+            self.Register(EpollObj, ConnObj, select.EPOLLIN | select.EPOLL_RDHUP, ReadWrite)
 
         def Read(ConnObj, nMask):
             self.m_LoggerObj.info("socket can read: %s", str(ConnObj))
