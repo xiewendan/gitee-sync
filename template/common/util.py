@@ -78,7 +78,7 @@ def RenderConfig(szConfigPath, dictTemplatePath2TargetPath):
             return dictOutputConfig
 
     def RenderSingleConfig(szTemplatePath1, szTargetPath1, dictConfig1):
-        assert (os.path.exists(szTemplatePath1) and os.path.isfile(szTemplatePath1), "template文件不存在" + szTemplatePath1)
+        assert os.path.exists(szTemplatePath1) and os.path.isfile(szTemplatePath1), "template文件不存在" + szTemplatePath1
 
         my_path.CreateFileDir(szTargetPath1)
 
