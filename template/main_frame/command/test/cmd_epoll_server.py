@@ -45,13 +45,14 @@ class CmdEPollServer(cmd_base.CmdBase):
 
             self.m_LoggerObj.info("new client com:%s", str(AddrObj))
 
-            self.Register(EpollObj, ConnObj, select.EPOLLIN | select.EPOLL_RDHUP, ReadWrite)
+            self.Register(EpollObj, ConnObj, select.EPOLLIN | select.EPOLLRDHUP, ReadWrite)
 
         def Read(ConnObj, nMask):
             self.m_LoggerObj.info("socket can read: %s", str(ConnObj))
             try:
                 byteData = ConnObj.recv(4)
             except BaseException as e:
+                self.m_LoggerObj.info("socket except, disconnect:%s", str(e))
                 self.Unregister(EpollObj, ConnObj.fileno())
                 return
 
@@ -75,8 +76,9 @@ class CmdEPollServer(cmd_base.CmdBase):
             elif nMask & select.EPOLLIN:
                 self.m_LoggerObj.debug("socket can read")
                 Read(ConnObj, nMask)
-            else:
-                pass
+            elif nMask & select.EPOLLRDHUP:
+                self.m_LoggerObj.debug("socket disonnect")
+                self.Unregister(EpollObj, ConnObj.fileno())
 
         self.Register(EpollObj, SocketObj, select.EPOLLIN, Accept)
 
