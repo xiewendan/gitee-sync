@@ -15,7 +15,7 @@ import time
 import common.my_log as my_log
 import common.stat_mgr as stat_mgr
 import main_frame.cmd_base as cmd_base
-import main_frame.command.cmd_net_client as cmd_net_client
+import main_frame.command.test.cmd_net_client as cmd_net_client
 
 
 class CmdNetServer(cmd_base.CmdBase):

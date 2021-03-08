@@ -93,7 +93,7 @@ class XxSocketMgr(threading.Thread):
         self.m_LoggerObj.info("run")
 
         while self.m_bRunning:
-            self.m_LoggerObj.info("===================xxsocket loop begin")
+            self.m_LoggerObj.debug("===================xxsocket loop begin")
 
             self._HandleSocketEvent()
 

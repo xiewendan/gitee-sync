@@ -11,14 +11,14 @@ import common.my_log as my_log
 import main_frame.cmd_base as cmd_base
 
 
-class CmdEPollClient(cmd_base.CmdBase):
+class CmdSelectsClient(cmd_base.CmdBase):
     def __init__(self):
         super().__init__()
         self.m_LoggerObj = my_log.MyLog(__file__)
 
     @staticmethod
     def GetName():
-        return "epoll_client"
+        return "selects_client"
 
     def Do(self):
         self.m_LoggerObj.info("Start do %s", self.GetName())
@@ -31,7 +31,10 @@ class CmdEPollClient(cmd_base.CmdBase):
             SocketObj.connect((szIP, nPort))
             self.m_LoggerObj.info("connect, ip %s, port %d", szIP, nPort)
 
-            # SocketObj.send("xjc".encode("utf-8"))
-            while True:
-                byteData = SocketObj.recv(1024)
-                print(byteData)
+            SocketObj.send("xjc".encode("utf-8"))
+            import time
+            time.sleep(1)
+
+            # while True:
+            #     byteData = SocketObj.recv(1024)
+            #     print(byteData)

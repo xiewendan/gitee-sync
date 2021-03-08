@@ -53,7 +53,7 @@ class XxNet:
         self.m_SendLockObj.release()
 
     def HandleRecv(self):
-        self.m_LoggerObj.info("handle recv")
+        self.m_LoggerObj.debug("handle recv")
 
         self.m_RecvLockObj.acquire()
         listRecvData = self.m_listRecvData
@@ -73,7 +73,7 @@ class XxNet:
         pass
 
     def GetSendData(self):
-        self.m_LoggerObj.info("get send data")
+        self.m_LoggerObj.debug("get send data")
 
         self.m_SendLockObj.acquire()
         listSendData = self.m_listSendData
@@ -83,14 +83,14 @@ class XxNet:
         return listSendData
 
     def AddRecvData(self, listRecvData):
-        self.m_LoggerObj.info("recv data:%s", listRecvData)
+        self.m_LoggerObj.debug("recv data:%s", listRecvData)
 
         self.m_RecvLockObj.acquire()
         self.m_listRecvData.extend(listRecvData)
         self.m_RecvLockObj.release()
 
     def GetListenData(self):
-        self.m_LoggerObj.info("get listen data")
+        self.m_LoggerObj.debug("get listen data")
 
         self.m_ListenLockObj.acquire()
         listListenData = self.m_listListenData

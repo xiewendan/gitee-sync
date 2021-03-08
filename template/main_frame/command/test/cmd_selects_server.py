@@ -9,7 +9,7 @@
 import main_frame.cmd_base as cmd_base
 
 
-class CmdEPollServer(cmd_base.CmdBase):
+class CmdSelectsServer(cmd_base.CmdBase):
     def __init__(self):
         super().__init__()
 
@@ -18,7 +18,7 @@ class CmdEPollServer(cmd_base.CmdBase):
 
     @staticmethod
     def GetName():
-        return "epoll_server"
+        return "selects_server"
 
     def Do(self):
         import socket
@@ -42,7 +42,10 @@ class CmdEPollServer(cmd_base.CmdBase):
 
             self.m_LoggerObj.info("new client com:%s", str(AddrObj))
 
-            SelectorObj.register(ConnObj, selectors.EVENT_READ | selectors.EVENT_WRITE, Read)
+            SelectorObj.register(ConnObj, selectors.EVENT_READ | selectors.EVENT_WRITE, HandleMsg)
+
+        def HandleMsg(ConnObj, nMask):
+            self.m_LoggerObj.debug("mask:%s", str(nMask))
 
         def Read(ConnObj, nMask):
             self.m_LoggerObj.info("socket can read: %s", str(ConnObj))

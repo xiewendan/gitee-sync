@@ -50,7 +50,7 @@ def RemoveFileDir(szPath):
 
 
 def RenderConfig(szConfigPath, dictTemplatePath2TargetPath):
-    assert (os.path.exists(szConfigPath) and os.path.isfile(szConfigPath), "render_template文件不存在" + szConfigPath)
+    assert os.path.exists(szConfigPath) and os.path.isfile(szConfigPath), "render_template文件不存在" + szConfigPath
 
     # 转换所有的配置文件，多层key合并为一个key，并用'_'连接
     # 比如 a["BOY"]["NAME"]="xjc" ==> a["BOY_NAME"]="xjc"
