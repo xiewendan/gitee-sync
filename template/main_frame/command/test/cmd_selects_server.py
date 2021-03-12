@@ -42,10 +42,7 @@ class CmdSelectsServer(cmd_base.CmdBase):
 
             self.m_LoggerObj.info("new client com:%s", str(AddrObj))
 
-            SelectorObj.register(ConnObj, selectors.EVENT_READ | selectors.EVENT_WRITE, HandleMsg)
-
-        def HandleMsg(ConnObj, nMask):
-            self.m_LoggerObj.debug("mask:%s", str(nMask))
+            SelectorObj.register(ConnObj, selectors.EVENT_READ, ReadWrite)
 
         def Read(ConnObj, nMask):
             self.m_LoggerObj.info("socket can read: %s", str(ConnObj))
@@ -75,6 +72,8 @@ class CmdSelectsServer(cmd_base.CmdBase):
             elif nMask & selectors.EVENT_READ:
                 self.m_LoggerObj.debug("socket can read")
                 Read(ConnObj, nMask)
+            else:
+                self.m_LoggerObj.debug("socket not read and write")
 
         SelectorObj.register(SocketObj, selectors.EVENT_READ, Accept)
 

@@ -11,6 +11,8 @@ import threading
 import common.my_log as my_log
 import common.net.ip_port_data as ip_port_data
 
+__all__ = ("XxNet",)
+
 
 class XxNet:
     """网络接口"""
@@ -72,7 +74,7 @@ class XxNet:
         # TODO 需要在主程序里面处理数据
         pass
 
-    def GetSendData(self):
+    def F_GetSendData(self):
         self.m_LoggerObj.debug("get send data")
 
         self.m_SendLockObj.acquire()
@@ -82,14 +84,14 @@ class XxNet:
 
         return listSendData
 
-    def AddRecvData(self, listRecvData):
+    def F_AddRecvData(self, listRecvData):
         self.m_LoggerObj.debug("recv data:%s", listRecvData)
 
         self.m_RecvLockObj.acquire()
         self.m_listRecvData.extend(listRecvData)
         self.m_RecvLockObj.release()
 
-    def GetListenData(self):
+    def F_GetListenData(self):
         self.m_LoggerObj.debug("get listen data")
 
         self.m_ListenLockObj.acquire()

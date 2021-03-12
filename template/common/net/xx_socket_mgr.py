@@ -85,6 +85,19 @@ class XxSocketMgr(threading.Thread):
         self._Stop()
         self.join()
 
+        # 关闭所有socket连接
+        for nID, XxSocketObj in self.m_dictID2XxSocket.items():
+            SocketObj = XxSocketObj.SocketObj
+            SocketObj.close()
+
+        self.m_dictID2XxSocket = {}
+        self.m_dictSocket2ID = {}
+        self.m_dictIp2Port2Type2ID = {}
+
+        # buffer
+        self.m_dictIp2Port2RecvBuffer = {}
+        self.m_dictIp2Port2SendBuffer = {}
+
     def _Stop(self):
         self.m_LoggerObj.info("stop")
         self.m_bRunning = False
@@ -136,6 +149,8 @@ class XxSocketMgr(threading.Thread):
             self._Read(SocketObj)
         elif nMask & selectors.EVENT_WRITE:
             self._Write(SocketObj)
+        else:
+            self.m_LoggerObj.error("can not handle event:%s", nMask)
 
     def _Read(self, SocketObj):
         self.m_LoggerObj.debug("socketobj:%s", SocketObj)
@@ -145,7 +160,7 @@ class XxSocketMgr(threading.Thread):
         except BaseException as e:
             self._UnRegister(SocketObj)
             self._RemoveSocketObj(SocketObj)
-            self.m_LoggerObj.error("socket recv data failed:", e)
+            self.m_LoggerObj.error("socket recv data failed:%s", str(e))
             return
 
         if byteData:
@@ -174,7 +189,7 @@ class XxSocketMgr(threading.Thread):
         self.m_LoggerObj.debug("update send data buffer")
 
         # [IpPortDataObj,...]
-        listSendData = self.m_XxNetObj.GetSendData()
+        listSendData = self.m_XxNetObj.F_GetSendData()
         for IpPortDataObj in listSendData:
             szIp = IpPortDataObj.Ip
             nPort = IpPortDataObj.Port
@@ -201,7 +216,7 @@ class XxSocketMgr(threading.Thread):
                     SocketObj = socket.socket()
                     # TODO 重试连接次数，间隔，超出次数，需要对外爆exception
                     SocketObj.connect((szIp, nPort))
-                except ConnectionRefusedError as ExceptionObj:
+                except ConnectionRefusedError:
                     import common.my_trackback as my_traceback
                     my_traceback.OnException()
                 else:
@@ -212,7 +227,7 @@ class XxSocketMgr(threading.Thread):
     def _HandleListen(self):
         self.m_LoggerObj.debug("handle listen")
 
-        listListenData = self.m_XxNetObj.GetListenData()
+        listListenData = self.m_XxNetObj.F_GetListenData()
         for IpPortDataObj in listListenData:
             szIp = IpPortDataObj.Ip
             nPort = IpPortDataObj.Port
@@ -403,9 +418,10 @@ class XxSocketMgr(threading.Thread):
                         byteData = byteData[nByteLen:]
                         dictPort2RecvBuffer[nPort] = byteData
 
-        self.m_XxNetObj.AddRecvData(listRecvData)
+        self.m_XxNetObj.F_AddRecvData(listRecvData)
 
-    def _ParseByteLen(self, byteData):
+    @staticmethod
+    def _ParseByteLen(byteData):
         if len(byteData) < 8:
             return None
 

@@ -43,4 +43,4 @@ class CmdXxNet(cmd_base.CmdBase):
         XxNetObj.HandleRecv()
         time.sleep(1)
 
-        # XxNetObj.Destroy()
+        XxNetObj.Destroy()

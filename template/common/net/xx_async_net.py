@@ -7,6 +7,8 @@
 
 import common.net.xx_net as xx_net
 
+__all__ = ("XxAsyncNet",)
+
 
 class EAsyncName:
     eRetAsyncID = "RetAsyncID"

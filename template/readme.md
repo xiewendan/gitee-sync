@@ -33,6 +33,8 @@
 * 新增traceback报错,如果有报错，会发dingding提醒
 
 ## 2.2. 待实现特性
+* enum ConstEnum:不可修改
+* enum NoDupEnum:不可重复
 * unity python和服务器连接，构建一个有模型有动作的助理，他会有ui的输出，和场景的指引
 * 数据库
 * UI框架：
