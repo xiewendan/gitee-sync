@@ -87,7 +87,7 @@ class XxConnectionMgr:
 
     def F_OnConnect(self, nID):
         ConnectionObj = self._GetConnection(nID)
-        ConnectionObj.F_Connect()
+        ConnectionObj.F_OnConnect()
 
     def F_OnDisconnect(self, nID):
         ConnectionObj = self._GetConnection(nID)

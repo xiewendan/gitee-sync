@@ -26,4 +26,5 @@ class XxBufferDispatcher(xx_dispatcher_base.XxDispatcherBase):
 
         # TODO 1
         byteData = data_pack.Serialize(dictData)
+
         pass

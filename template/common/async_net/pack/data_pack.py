@@ -95,4 +95,5 @@ def Serialize(dictData):
 
 def Unserialize(byteData):
     DataPackObj = DataPack()
-    return DataPackObj.Unpack(byteData)
+    dictData, byteDataLeft = DataPackObj.Unpack(byteData)
+    return dictData
