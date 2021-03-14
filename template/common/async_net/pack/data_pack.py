@@ -29,21 +29,21 @@ class DataPack:
         nLen = len(byteData)
 
         if nLen < 1:
-            return False, None, None
+            return None, None
 
         self.m_nHeaderSize = struct.unpack(">B", byteData[0])[0]
         if nLen < 1 + self.m_nHeaderSize:
-            return False, None, None
+            return None, None
 
         szFormat = ">" + self._GetFormatByByteCount(self.m_nHeaderSize)
         self.m_nDataSize = struct.unpack(szFormat, byteData[1:1 + self.m_nHeaderSize])[0]
 
         if nLen < 1 + self.m_nHeaderSize + self.m_nDataSize:
-            return False, None, None
+            return None, None
 
         byteDataOne = byteData[1 + self.m_nHeaderSize:1 + self.m_nHeaderSize + self.m_nDataSize]
 
-        return True, byteData[1 + self.m_nHeaderSize + self.m_nDataSize:], json.loads(byteDataOne.decode("utf-8"))
+        return json.loads(byteDataOne.decode("utf-8")), byteData[1 + self.m_nHeaderSize + self.m_nDataSize:]
 
     @staticmethod
     def _GetFormatByValue(nSize):
@@ -70,6 +70,8 @@ class DataPack:
             4: "I",
             8: "Q"
         }
+
+        assert nByteCount in dictFormat
 
         return dictFormat[nByteCount]
 
