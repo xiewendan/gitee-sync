@@ -97,3 +97,9 @@ def Unserialize(byteData):
     DataPackObj = DataPack()
     dictData, byteDataLeft = DataPackObj.Unpack(byteData)
     return dictData
+
+
+def UnserializeWithLeftByte(byteData):
+    DataPackObj = DataPack()
+    dictData, byteDataLeft = DataPackObj.Unpack(byteData)
+    return dictData, byteDataLeft

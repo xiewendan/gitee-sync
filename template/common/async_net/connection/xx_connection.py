@@ -11,4 +11,7 @@ class EConnectionState:
     eConnecting = 2
     eDisconnecting = 3
     eDisconnected = 4
+    eClose = 5
+    eListening = 6
+    eUnListen = 7
 

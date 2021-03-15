@@ -13,8 +13,6 @@
 
 __all__ = ["XxConnectionMgr", "CreateConnectionData"]
 
-import socket
-
 
 class XxConnectionMgr:
     """"""
@@ -34,13 +32,25 @@ class XxConnectionMgr:
         self.m_LoggerObj.info("")
         self.m_ConnectionFactoryObj.UnregisterAll()
 
-    def CreateConnection(self, nType, dictConnectionData=None):
+        listID = list(self.m_dictConnection.keys())
+        for nID in listID:
+            self.DestroyConnection(nID)
+
+        import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
+        xx_dispatcher_mgr.Destroy()
+
+    def CreateConnection(self, nType, dictConnectionData):
         """@:return nID"""
         ConnectionObj = self.m_ConnectionFactoryObj.CreateConnection(nType, dictConnectionData)
 
         self._AddConnection(ConnectionObj)
 
         return ConnectionObj.ID
+
+    def DestroyConnection(self, nID):
+        ConnectionObj = self._GetConnection(nID)
+        ConnectionObj.Destroy()
+        del self.m_dictConnection[nID]
 
     def Listen(self, nID, szIp, nPort):
         self.m_LoggerObj.info("id:%d, ip:%s, port:%d", nID, szIp, nPort)
@@ -61,7 +71,11 @@ class XxConnectionMgr:
         ConnectionObj.Send(dictData)
 
     def Update(self):
-        pass
+        # 每帧需要调用一次，处理select中的事件消息
+        self.m_LoggerObj.debug("")
+
+        import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
+        xx_dispatcher_mgr.Update()
 
     # ********************************************************************************
     # dictConnection
@@ -93,38 +107,27 @@ class XxConnectionMgr:
         ConnectionObj = self._GetConnection(nID)
         ConnectionObj.F_OnDisconnect()
 
-    def F_OnAccept(self, nID):
+    def F_Accept(self, nID, SocketObj, szIp, nPort):
         ConnectionObj = self._GetConnection(nID)
-        ConnectionObj.F_OnAccept()
-        pass
+        return ConnectionObj.F_Accept(SocketObj, szIp, nPort)
 
-    def F_OnRead(self, nID):
+    def F_OnRead(self, nID, dictData):
         ConnectionObj = self._GetConnection(nID)
-        ConnectionObj.F_OnRead()
-        pass
+        ConnectionObj.F_OnRead(dictData)
 
     def F_OnWrite(self, nID):
         ConnectionObj = self._GetConnection(nID)
         ConnectionObj.F_OnWrite()
-        pass
 
     def F_OnClose(self, nID):
         ConnectionObj = self._GetConnection(nID)
         ConnectionObj.F_OnClose()
-        pass
 
 
-def CreateConnectionData(nSocketFamily=socket.AF_INET,
-                         nSocketType=socket.SOCK_STREAM,
-                         nSocketListen=1
-                         ):
+def CreateConnectionData(nSocketListen=1):
     assert nSocketListen > 0
 
-    dictData = {
-        "socket_family": nSocketFamily,
-        "socket_type": nSocketType,
-        "socket_listen": nSocketListen
-    }
+    dictData = {"socket_listen": nSocketListen}
 
     return dictData
 
@@ -140,7 +143,7 @@ Destroy = g_XxConnectionMgrObj.Destroy
 
 F_OnConnect = g_XxConnectionMgrObj.F_OnConnect
 F_OnDisconnect = g_XxConnectionMgrObj.F_OnDisconnect
-F_OnAccept = g_XxConnectionMgrObj.F_OnAccept
+F_Accept = g_XxConnectionMgrObj.F_Accept
 F_OnRead = g_XxConnectionMgrObj.F_OnRead
 F_OnWrite = g_XxConnectionMgrObj.F_OnWrite
 F_OnClose = g_XxConnectionMgrObj.F_OnClose

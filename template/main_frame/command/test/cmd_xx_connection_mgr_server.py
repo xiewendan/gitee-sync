@@ -36,8 +36,7 @@ class CmdXxConnectionMgrServer(cmd_base.CmdBase):
 
         import common.async_net as async_net
 
-        dictConnectionData = async_net.xx_connection_mgr.CreateConnectionData(nSocketFamily=socket.AF_INET,
-                                                                              nSocketType=socket.SOCK_STREAM)
+        dictConnectionData = async_net.xx_connection_mgr.CreateConnectionData()
 
         nConnectionID = async_net.xx_connection_mgr.CreateConnection(
             async_net.connection.xx_connection.EConnectionType.eServer,
