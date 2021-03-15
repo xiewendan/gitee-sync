@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-
 # __author__ = xiaobao
 # __date__ = 2021/2/4 12:08
 
 # desc:
 
-import socket
 
 import common.my_log as my_log
 import main_frame.cmd_base as cmd_base
@@ -27,35 +25,40 @@ class CmdXxConnectionMgrClient(cmd_base.CmdBase):
         """执行命令"""
         self.m_LoggerObj.info("Start")
 
-        szCWD = self.m_AppObj.ConfigLoader.CWD
+        # szCWD = self.m_AppObj.ConfigLoader.CWD
 
-        szIp = self.m_AppObj.CLM.GetArg(1)
-        nPort = int(self.m_AppObj.CLM.GetArg(2))
+        # szIp = self.m_AppObj.CLM.GetArg(1)
+        # nPort = int(self.m_AppObj.CLM.GetArg(2))
         szTargetIp = self.m_AppObj.CLM.GetArg(3)
         nTargetPort = int(self.m_AppObj.CLM.GetArg(4))
 
         import time
-        import common.async_net as async_net
+        import common.async_net.xx_connection_mgr as xx_connection_mgr
+        import common.async_net.connection.xx_connection as xx_connection
 
-        dictConnectionData = async_net.xx_connection_mgr.CreateConnectionData()
+        dictConnectionData = xx_connection_mgr.CreateConnectionData()
 
-        nConnectionID = async_net.xx_connection_mgr.CreateConnection(
-            async_net.connection.xx_connection.EConnectionType.eClient,
+        nConnectionID = xx_connection_mgr.CreateConnection(
+            xx_connection.EConnectionType.eClient,
             dictConnectionData)
 
-        async_net.xx_connection_mgr.Connect(nConnectionID, szTargetIp, nTargetPort)
-        time.sleep(1)
+        xx_connection_mgr.Connect(nConnectionID, szTargetIp, nTargetPort)
 
-        async_net.xx_connection_mgr.Update()
-        async_net.xx_connection_mgr.Send(nConnectionID, {"name": "xjc"})
+        nCount = 10
+        while nCount > 0:
+            time.sleep(1)
+            xx_connection_mgr.Update()
+            nCount -= 1
 
-        time.sleep(1)
-        async_net.xx_connection_mgr.Update()
-
-        time.sleep(1)
-        async_net.xx_connection_mgr.Close(nConnectionID)
+        xx_connection_mgr.Send(nConnectionID, {"name": "xjc"})
 
         time.sleep(1)
-        async_net.xx_connection_mgr.Update()
+        xx_connection_mgr.Update()
 
-        async_net.xx_connection_mgr.Destroy()
+        time.sleep(1)
+        xx_connection_mgr.DestroyConnection(nConnectionID)
+
+        time.sleep(1)
+        xx_connection_mgr.Update()
+
+        xx_connection_mgr.Destroy()

@@ -22,7 +22,7 @@ class TestDataPack(unittest.TestCase):
         byteData = data_pack.Serialize(dictData)
         dictUnpackData = data_pack.Unserialize(byteData)
 
-        self.assertEqual(unit_test_helper.CompareDict(dictData, dictUnpackData))
+        self.assertTrue(unit_test_helper.CompareDict(dictData, dictUnpackData))
 
     def tearDown(self):
         logging.getLogger("myLog").debug("TestDataPack tearDown\n\n\n")

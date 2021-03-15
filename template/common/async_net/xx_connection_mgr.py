@@ -107,9 +107,9 @@ class XxConnectionMgr:
         ConnectionObj = self._GetConnection(nID)
         ConnectionObj.F_OnDisconnect()
 
-    def F_Accept(self, nID, SocketObj, szIp, nPort):
+    def F_Accept(self, nID, szIp, nPort):
         ConnectionObj = self._GetConnection(nID)
-        return ConnectionObj.F_Accept(SocketObj, szIp, nPort)
+        return ConnectionObj.F_Accept(szIp, nPort)
 
     def F_OnRead(self, nID, dictData):
         ConnectionObj = self._GetConnection(nID)
@@ -140,6 +140,7 @@ Connect = g_XxConnectionMgrObj.Connect
 Send = g_XxConnectionMgrObj.Send
 Update = g_XxConnectionMgrObj.Update
 Destroy = g_XxConnectionMgrObj.Destroy
+DestroyConnection = g_XxConnectionMgrObj.DestroyConnection
 
 F_OnConnect = g_XxConnectionMgrObj.F_OnConnect
 F_OnDisconnect = g_XxConnectionMgrObj.F_OnDisconnect

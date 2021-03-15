@@ -7,7 +7,6 @@
 
 
 import common.async_net.connection.xx_connection as xx_connection
-import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
 
 
 class XxConnectionBase:
@@ -32,11 +31,11 @@ class XxConnectionBase:
 
     @staticmethod
     def GetType():
-        NotImplemented
+        pass
 
     @staticmethod
     def GetDispathcerType():
-        NotImplemented
+        pass
 
     @property
     def ID(self):
@@ -48,9 +47,11 @@ class XxConnectionBase:
 
     def _CreateDispatch(self, dictConnectionData):
         nDispatcherType = self.GetDispathcerType()
+        import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
         return xx_dispatcher_mgr.CreateDispatcher(nDispatcherType, dictConnectionData)
 
     def _GetDispatcher(self):
+        import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
         return xx_dispatcher_mgr.GetDispatcher(self.m_nID)
 
     def Send(self, dictData):
@@ -60,6 +61,7 @@ class XxConnectionBase:
             self.m_LoggerObj.error("failed, not connected, ID:%d, ConnectState:%d", self.m_nID, self.m_eConnectState)
             return False
 
+        import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
         xx_dispatcher_mgr.Send(self.DispatcherID, dictData)
 
     def _SetConnectState(self, nState):
@@ -85,10 +87,10 @@ class XxConnectionBase:
         self.m_LoggerObj.debug("id:%d, connectstate:%d", self.m_nID, self.m_eConnectState)
         self.m_eConnectState = xx_connection.EConnectionState.eDisconnected
 
-    def F_Accept(self, SocketObj, szIp, nPort):
-        return self._Accept(SocketObj, szIp, nPort)
+    def F_Accept(self, szIp, nPort):
+        return self._Accept(szIp, nPort)
 
-    def _Accept(self, SocketObj, szIp, nPort):
+    def _Accept(self, szIp, nPort):
         pass
 
     def F_OnRead(self, dictData):

@@ -34,7 +34,7 @@ class XxDispatcherBase:
 
     @staticmethod
     def GetType():
-        NotImplemented
+        pass
 
     @property
     def ID(self):
@@ -45,7 +45,7 @@ class XxDispatcherBase:
         return self.m_SocketObj
 
     def CreateSocket(self, nFamily, nType):
-        self.m_LoggerObj.debug("family:%d, type:%d, fileno:%d", nFamily, nType)
+        self.m_LoggerObj.debug("family:%d, type:%d", nFamily, nType)
 
         SocketObj = socket.socket(nFamily, nType)
         SocketObj.setblocking(False)
@@ -85,6 +85,7 @@ class XxDispatcherBase:
 
         nError = self.m_SocketObj.connect_ex((szIp, nPort))
         if nError in (EINPROGRESS, EALREADY, EWOULDBLOCK):
+            self.m_LoggerObj.error("connected_ex:connecting...., error:%d", nError)
             return
 
         if nError in (0, EISCONN):
@@ -95,7 +96,7 @@ class XxDispatcherBase:
             raise OSError(nError, errorcode[nError])
 
     def Send(self, dictData):
-        NotImplementedError
+        pass
 
     # ********************************************************************************
     # handle event
@@ -110,26 +111,25 @@ class XxDispatcherBase:
         self._HandleConnect()
 
     def HandleDisconnectEvent(self):
+        self.m_SocketObj.close()
+        self.SetSocket(None)
+
         self._HandleDisconnect()
 
-    def HandleReadEvent(self, byteData):
-        self._HandleRead(byteData)
+    def HandleReadEvent(self):
+        self._HandleRead()
 
     def HandleWriteEvent(self):
         self._HandleWrite()
 
-    def _HandleWriteEvent(self):
-        self._HandleWrite()
-
-    def HanleAcceptEvent(self, SocketObj, szIp, nPort):
-        return self._HandleAccept(SocketObj, szIp, nPort)
+    def HanleAcceptEvent(self, szIp, nPort):
+        return self._HandleAccept(szIp, nPort)
 
     # ********************************************************************************
     # callback
     # ********************************************************************************
     def _HandleConnect(self):
         self.m_LoggerObj.info("connect ip:%s, port:%d", self.m_szIp, self.m_nPort)
-
         import common.async_net.xx_connection_mgr as xx_connection_mgr
         xx_connection_mgr.F_OnConnect(self.m_nID)
 
@@ -137,20 +137,16 @@ class XxDispatcherBase:
         import common.async_net.xx_connection_mgr as xx_connection_mgr
         xx_connection_mgr.F_OnDisconnect(self.m_nID)
 
-    def _HandleAccpet(self):
-        import common.async_net.xx_connection_mgr as xx_connection_mgr
-        xx_connection_mgr.F_Accept(self.m_nID)
-
-    def _HandleRead(self, byteData):
-        NotImplementedError
+    def _HandleRead(self):
+        pass
 
     def _HandleWrite(self):
-        NotImplementedError
+        pass
 
     def _HandleClose(self):
         import common.async_net.xx_connection_mgr as xx_connection_mgr
         xx_connection_mgr.F_OnClose(self.m_nID)
 
-    def _HandleAccept(self, SocketObj, szIp, nPort):
+    def _HandleAccept(self, szIp, nPort):
         import common.async_net.xx_connection_mgr as xx_connection_mgr
-        return xx_connection_mgr.F_Accept(self.m_nID, SocketObj, szIp, nPort)
+        return xx_connection_mgr.F_Accept(self.m_nID, szIp, nPort)

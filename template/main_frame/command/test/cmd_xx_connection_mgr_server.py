@@ -5,7 +5,6 @@
 
 # desc:
 
-import socket
 
 import common.my_log as my_log
 import main_frame.cmd_base as cmd_base
@@ -27,19 +26,21 @@ class CmdXxConnectionMgrServer(cmd_base.CmdBase):
         """执行命令"""
         self.m_LoggerObj.info("Start")
 
-        szCWD = self.m_AppObj.ConfigLoader.CWD
+        # szCWD = self.m_AppObj.ConfigLoader.CWD
 
         szIp = self.m_AppObj.CLM.GetArg(1)
         nPort = int(self.m_AppObj.CLM.GetArg(2))
-        szTargetIp = self.m_AppObj.CLM.GetArg(3)
-        nTargetPort = int(self.m_AppObj.CLM.GetArg(4))
+        # szTargetIp = self.m_AppObj.CLM.GetArg(3)
+        # nTargetPort = int(self.m_AppObj.CLM.GetArg(4))
 
         import common.async_net as async_net
+        import common.async_net.xx_connection_mgr as xx_connection_mgr
+        import common.async_net.connection.xx_connection as xx_connection
 
-        dictConnectionData = async_net.xx_connection_mgr.CreateConnectionData()
+        dictConnectionData = xx_connection_mgr.CreateConnectionData(nSocketListen=10)
 
-        nConnectionID = async_net.xx_connection_mgr.CreateConnection(
-            async_net.connection.xx_connection.EConnectionType.eServer,
+        nConnectionID = xx_connection_mgr.CreateConnection(
+            xx_connection.EConnectionType.eServer,
             dictConnectionData
         )
         try:
@@ -53,4 +54,4 @@ class CmdXxConnectionMgrServer(cmd_base.CmdBase):
             time.sleep(1)
             async_net.xx_connection_mgr.Update()
 
-        # async_net.xx_connection_mgr.Destroy()
+        # xx_connection_mgr.Destroy()

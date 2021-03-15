@@ -31,7 +31,7 @@ class DataPack:
         if nLen < 1:
             return None, None
 
-        self.m_nHeaderSize = struct.unpack(">B", byteData[0])[0]
+        self.m_nHeaderSize = struct.unpack(">B", byteData[0:1])[0]
         if nLen < 1 + self.m_nHeaderSize:
             return None, None
 

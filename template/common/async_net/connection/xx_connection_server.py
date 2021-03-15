@@ -27,7 +27,8 @@ class XxConnectionServer(xx_connection_base.XxConnectionBase):
 
     def Listen(self, szIp, nPort):
         if self.m_eConnectState == xx_connection.EConnectionState.eListening:
-            self.m_LoggerObj.error("the connection is already listening, id:%d, ip:%s, port:%d, ListenCount:%d", self.ID, szIp, nPort, self.m_nListenCount)
+            self.m_LoggerObj.error("the connection is already listening, id:%d, ip:%s, port:%d, ListenCount:%d",
+                                   self.ID, szIp, nPort, self.m_nListenCount)
             return False
 
         assert self.m_eConnectState == xx_connection.EConnectionState.eUnListen
@@ -37,14 +38,11 @@ class XxConnectionServer(xx_connection_base.XxConnectionBase):
 
         self.m_eConnectState = xx_connection.EConnectionState.eListening
 
-    def _Accept(self, SocketObj, szIp, nPort):
+    def _Accept(self, szIp, nPort):
         import common.async_net.xx_connection_mgr as xx_connection_mgr
 
         nConnectionType = self.GetConnectionType()
+        dictData = xx_connection_mgr.CreateConnectionData()
+        nID = xx_connection_mgr.CreateConnection(nConnectionType, dictData)
 
-        ClientConnectionObj = xx_connection_mgr.CreateConnection(nConnectionType)
-        ClientConnectionObj.SetSocket(SocketObj)
-
-        xx_connection_mgr.F_OnConnect(ClientConnectionObj.ID)
-
-        return ClientConnectionObj
+        return nID

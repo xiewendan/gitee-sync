@@ -11,7 +11,7 @@ def CompareDict(dictData1, dictData2):
 
 
 def _CompareAInB(dictDataA, dictDataB):
-    for KeyObj, ValueObj in dictDataA:
+    for KeyObj, ValueObj in dictDataA.items():
         if KeyObj not in dictDataB:
             return False
         if ValueObj != dictDataB[KeyObj]:
