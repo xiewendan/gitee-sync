@@ -9,6 +9,7 @@
 #   2 Data: 表示发送数据的socket
 #
 
+import errno
 import json
 import selectors
 import socket
@@ -29,6 +30,9 @@ g_SendCount = 1024
 g_RecvCount = 1024
 g_ListenCount = 100
 g_Timeout = 0.01
+
+_DISCONNECTED = frozenset({errno.ECONNRESET, errno.ENOTCONN, errno.ESHUTDOWN, errno.ECONNABORTED, errno.EPIPE,
+                           errno.EBADF})
 
 
 def SerializeData(dictData):
@@ -181,9 +185,21 @@ class XxSocketMgr(threading.Thread):
             self._Modify(SocketObj, selectors.EVENT_READ, self._ReadWrite)
             return
 
-        # TODO 写异常，是否需要考虑移除
-        nSendedCount = SocketObj.send(byteSendData)
-        self._UpdateSendedCount(SocketObj, nSendedCount)
+        try:
+            nSendedCount = SocketObj.send(byteSendData)
+        except OSError as ExceptionObj:
+            if ExceptionObj.args[0] == errno.EWOULDBLOCK:
+                return
+            elif ExceptionObj.args[0] in _DISCONNECTED:
+                self._UnRegister(SocketObj)
+                self._RemoveSocketObj(SocketObj)
+                szIp, nPort = self._GetIpPort(SocketObj)
+                self.m_LoggerObj.error("send data failed, close socket. ip:%s, port:%d", szIp, nPort)
+                return
+            else:
+                raise
+        else:
+            self._UpdateSendedCount(SocketObj, nSendedCount)
 
     def _UpdateSendBuffer(self):
         self.m_LoggerObj.debug("update send data buffer")
@@ -214,7 +230,6 @@ class XxSocketMgr(threading.Thread):
 
                 try:
                     SocketObj = socket.socket()
-                    # TODO 重试连接次数，间隔，超出次数，需要对外爆exception
                     SocketObj.connect((szIp, nPort))
                 except ConnectionRefusedError:
                     import common.my_trackback as my_traceback
@@ -238,7 +253,6 @@ class XxSocketMgr(threading.Thread):
                 self.m_LoggerObj.error("socket listen failed, port has been taken. ip:%s, port:%d", szIp, nPort)
                 continue
 
-            # TODO 可能端口还是被其它应用占用
             SocketObj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             SocketObj.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             SocketObj.bind((szIp, nPort))

@@ -34,9 +34,9 @@ class XxDispatcherMgr:
         self.m_dictSocketFileNo2DispatcherID = {}
 
     def Destroy(self):
-        listID = list(self.m_dictDispathcer.keys())
-        for nID in listID:
-            self.DestroyDispatcher(nID)
+        listDispatcherID = list(self.m_dictDispathcer.keys())
+        for nDispatcherID in listDispatcherID:
+            self.DestroyDispatcher(nDispatcherID)
 
         assert len(self.m_dictDispathcer) == 0
 
@@ -56,32 +56,30 @@ class XxDispatcherMgr:
 
         return DispatcherObj.ID
 
-    def Listen(self, nID, szIp, nPort, nListenCount):
-        self.m_LoggerObj.debug("nID:%d, szIp:%s, port:%d, listencoutn:%d", nID, szIp, nPort, nListenCount)
+    def Listen(self, nDispatcherID, szIp, nPort, nListenCount):
+        self.m_LoggerObj.debug("nID:%d, szIp:%s, port:%d, listencoutn:%d", nDispatcherID, szIp, nPort, nListenCount)
 
-        DispatcherObj = self.GetDispatcher(nID)
+        DispatcherObj = self.GetDispatcher(nDispatcherID)
         DispatcherObj.CreateSocket(socket.AF_INET, socket.SOCK_STREAM)
-        DispatcherObj.SetReuseAddress()
+        # DispatcherObj.SetReuseAddress()
         DispatcherObj.Bind(szIp, nPort)
         DispatcherObj.Listen(nListenCount)
 
-        self._AddSocketFileNo(DispatcherObj.SocketObj.fileno(), DispatcherObj.ID)
+        self._AddSocketFileNo(DispatcherObj.SocketObj.fileno(), nDispatcherID)
         self._Register(DispatcherObj.SocketObj, selectors.EVENT_READ, self._AcceptCB)
 
-    def GetDispatcher(self, nID):
-        assert nID in self.m_dictDispathcer
+    def GetDispatcher(self, nDispatcherID):
+        assert nDispatcherID in self.m_dictDispathcer
 
-        return self.m_dictDispathcer[nID]
+        return self.m_dictDispathcer[nDispatcherID]
 
-    def Connect(self, nID, szIp, nPort):
-        DispatcherObj = self.GetDispatcher(nID)
+    def Connect(self, nDispatcherID, szIp, nPort):
+        DispatcherObj = self.GetDispatcher(nDispatcherID)
         DispatcherObj.CreateSocket(socket.AF_INET, socket.SOCK_STREAM)
         DispatcherObj.Connect(szIp, nPort)
 
-        nFileNo = DispatcherObj.SocketObj.fileno()
-        if nFileNo not in self.m_dictSocketFileNo2DispatcherID:
-            self._AddSocketFileNo(DispatcherObj.SocketObj.fileno(), DispatcherObj.ID)
-            self._Register(DispatcherObj.SocketObj, selectors.EVENT_READ | selectors.EVENT_WRITE, self._ReadWriteCB)
+        self._AddSocketFileNo(DispatcherObj.SocketObj.fileno(), DispatcherObj.ID)
+        self._Register(DispatcherObj.SocketObj, selectors.EVENT_READ | selectors.EVENT_WRITE, self._ReadWriteCB)
 
     def HandleConnectEvent(self, nDispatcherID):
         self._HandleConnectEvent(nDispatcherID)
@@ -89,8 +87,8 @@ class XxDispatcherMgr:
     def HandleDisconnectEvent(self, nDispatcherID):
         self._HandleDisconnectEvent(nDispatcherID)
 
-    def Send(self, nID, dictData):
-        DispatcherObj = self.GetDispatcher(nID)
+    def Send(self, nDispatcherID, dictData):
+        DispatcherObj = self.GetDispatcher(nDispatcherID)
         DispatcherObj.Send(dictData)
 
         self._Modify(DispatcherObj.SocketObj, selectors.EVENT_READ | selectors.EVENT_WRITE, self._ReadWriteCB)
@@ -101,10 +99,15 @@ class XxDispatcherMgr:
         listEvent = self._Select(g_Timeout)
         for KeyObj, nMask in listEvent:
             CallbackObj = KeyObj.data
-            CallbackObj(KeyObj.fileobj, nMask)
 
-    def SetSocket(self, nID, SocketObj):
-        DispatcherObj = self.GetDispatcher(nID)
+            SocketObj = KeyObj.fileobj
+            nFileNo = SocketObj.fileno()
+            nDispatcherID = self._GetDispatcherID(nFileNo)
+
+            CallbackObj(nDispatcherID, nMask)
+
+    def SetSocket(self, nDispatcherID, SocketObj):
+        DispatcherObj = self.GetDispatcher(nDispatcherID)
         DispatcherObj.SetSocket(SocketObj)
 
     def DestroyDispatcher(self, nDispatcherID):
@@ -124,16 +127,16 @@ class XxDispatcherMgr:
     def _AddDispatcher(self, DispatcherObj):
         self.m_LoggerObj.debug("dispatcher id:%d", DispatcherObj.ID)
 
-        nID = DispatcherObj.ID
-        assert nID not in self.m_dictDispathcer
+        nDispatcherID = DispatcherObj.ID
+        assert nDispatcherID not in self.m_dictDispathcer
 
-        self.m_dictDispathcer[nID] = DispatcherObj
+        self.m_dictDispathcer[nDispatcherID] = DispatcherObj
 
-    def _RemoveDispatcher(self, nID):
-        self.m_LoggerObj.debug("dispatcher id:%d", nID)
+    def _RemoveDispatcher(self, nDispatcherID):
+        self.m_LoggerObj.debug("dispatcher id:%d", nDispatcherID)
 
-        assert nID in self.m_dictDispathcer
-        del self.m_dictDispathcer[nID]
+        assert nDispatcherID in self.m_dictDispathcer
+        del self.m_dictDispathcer[nDispatcherID]
 
     # ********************************************************************************
     # selector
@@ -184,45 +187,31 @@ class XxDispatcherMgr:
     # ********************************************************************************
     # selector event
     # ********************************************************************************
-    def _AcceptCB(self, ListenSocketObj, nMask):
-        self.m_LoggerObj.debug("listensocket:%s, mask:%d", str(ListenSocketObj), nMask)
+    def _AcceptCB(self, nDispatcherID, nMask):
+        self.m_LoggerObj.debug("dispatcherid:%d, mask:%d", nDispatcherID, nMask)
+        self._HandleAcceptEvent(nDispatcherID)
 
-        SocketObj, AddrObj = ListenSocketObj.accept()
-        szIp, nPort = AddrObj
-        self.m_LoggerObj.info("new client come, ip:%s, port:%d", szIp, nPort)
-
-        self._HandleAcceptEvent(ListenSocketObj, SocketObj, szIp, nPort)
-
-    def _ReadWriteCB(self, SocketObj, nMask):
-        self.m_LoggerObj.debug("socketobj:%s, mask:%d", str(SocketObj), nMask)
+    def _ReadWriteCB(self, nDispatcherID, nMask):
+        self.m_LoggerObj.debug("disptacherID:%d, mask:%d", nDispatcherID, nMask)
 
         if nMask & selectors.EVENT_READ:
-            self._ReadCB(SocketObj)
+            self._ReadCB(nDispatcherID)
         elif nMask & selectors.EVENT_WRITE:
-            self._WriteCB(SocketObj)
+            self._WriteCB(nDispatcherID)
         else:
-            self.m_LoggerObj.error("can not handle event:%s", nMask)
+            self.m_LoggerObj.error("can not handle event, dispatcherID:%d, mask:%d", nDispatcherID, nMask)
 
-    def _ReadCB(self, SocketObj):
-        self.m_LoggerObj.debug("socketobj:%s", SocketObj)
-
-        nDispatcherID = self._GetDispatcherID(SocketObj.fileno())
+    def _ReadCB(self, nDispatcherID):
+        self.m_LoggerObj.debug("dispatcherID:%d", nDispatcherID)
         self._HandleReadEvent(nDispatcherID)
 
-    def _WriteCB(self, SocketObj):
-        self.m_LoggerObj.debug("socketobj:%s", SocketObj)
-
-        nDispatcherID = self._GetDispatcherID(SocketObj.fileno())
+    def _WriteCB(self, nDispatcherID):
+        self.m_LoggerObj.debug("dispatcherID:%d", nDispatcherID)
         self._HandleWriteEvent(nDispatcherID)
 
-    def _HandleAcceptEvent(self, ListenSocketObj, SocketObj, szIp, nPort):
-        nServerFileNo = ListenSocketObj.fileno()
-        nServerDispatcherID = self._GetDispatcherID(nServerFileNo)
-        ServerDispatcherObj = self.GetDispatcher(nServerDispatcherID)
-
-        nClientID = ServerDispatcherObj.HanleAcceptEvent(szIp, nPort)
-        self.SetSocket(nClientID, SocketObj)
-        self.HandleConnectEvent(nClientID)
+    def _HandleAcceptEvent(self, nDispatcherID):
+        DispatcherObj = self.GetDispatcher(nDispatcherID)
+        DispatcherObj.HanleAcceptEvent()
 
     def _HandleConnectEvent(self, nDispatcherID):
         DispatcherObj = self.GetDispatcher(nDispatcherID)

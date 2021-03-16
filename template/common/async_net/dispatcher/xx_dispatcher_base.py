@@ -66,8 +66,7 @@ class XxDispatcherBase:
 
     def Bind(self, szIp, nPort):
         self.m_LoggerObj.debug("ip:%s, port:%d", szIp, nPort)
-
-        # TODO 重复绑定相关端口，如何处理
+        # 未设置SO_REUSEADDR，所以绑定相同地址直接报错。避免绑定到相同地址，不好查问题
         self.m_SocketObj.bind((szIp, nPort))
 
     def SetReuseAddress(self):
@@ -89,8 +88,7 @@ class XxDispatcherBase:
             return
 
         if nError in (0, EISCONN):
-            import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
-            xx_dispatcher_mgr.HandleConnectEvent(self.m_nID)
+            pass
 
         else:
             raise OSError(nError, errorcode[nError])
@@ -104,7 +102,7 @@ class XxDispatcherBase:
     def HandleConnectEvent(self):
         nError = self.m_SocketObj.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
         if nError != 0:
-            szError = nError in errorcode and errorcode["nError"] or "unknown error %s" % nError
+            szError = nError in errorcode and errorcode[nError] or "unknown error %s" % nError
             raise OSError(nError, szError)
 
         self.m_eDispatcherState = xx_dispatcher.EDispatcherState.eConnected
@@ -122,8 +120,8 @@ class XxDispatcherBase:
     def HandleWriteEvent(self):
         self._HandleWrite()
 
-    def HanleAcceptEvent(self, szIp, nPort):
-        return self._HandleAccept(szIp, nPort)
+    def HanleAcceptEvent(self):
+        return self._HandleAccept()
 
     # ********************************************************************************
     # callback
@@ -147,6 +145,19 @@ class XxDispatcherBase:
         import common.async_net.xx_connection_mgr as xx_connection_mgr
         xx_connection_mgr.F_OnClose(self.m_nID)
 
-    def _HandleAccept(self, szIp, nPort):
+    def _HandleAccept(self):
+        try:
+            SocketObj, AddrObj = self.m_SocketObj.accept()
+        except OSError:
+            raise
+
+        szIp, nPort = AddrObj
+        self.m_LoggerObj.info("new client come, ip:%s, port:%d", szIp, nPort)
+
         import common.async_net.xx_connection_mgr as xx_connection_mgr
-        return xx_connection_mgr.F_Accept(self.m_nID, szIp, nPort)
+        nClientID = xx_connection_mgr.F_Accept(self.m_nID, szIp, nPort)
+        nDispatcherID = nClientID
+
+        import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
+        xx_dispatcher_mgr.SetSocket(nDispatcherID, SocketObj)
+        xx_dispatcher_mgr.HandleConnectEvent(nDispatcherID)

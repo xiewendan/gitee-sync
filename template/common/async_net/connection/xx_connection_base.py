@@ -97,8 +97,7 @@ class XxConnectionBase:
         self._OnRead(dictData)
 
     def _OnRead(self, dictData):
-        self.m_LoggerObj.debug("dictData:%s", str(dictData))
-        # TODO 需要处理read回调
+        self.m_LoggerObj.info("dictData:%s", str(dictData))
 
     def F_OnWrite(self):
         self._OnWrite()

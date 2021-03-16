@@ -8,7 +8,6 @@ class XxDispatcherFactory:
 
         self.m_dictDispatcherCls = {}
 
-    # TODO 自动化注册封装成通用函数类
     def RegisterAll(self):
         self.m_LoggerObj.info("register all dispatcher class")
 

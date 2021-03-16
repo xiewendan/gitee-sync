@@ -44,6 +44,7 @@ class XxBufferDispatcher(xx_dispatcher_base.XxDispatcherBase):
             import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
             xx_dispatcher_mgr.HandleConnectEvent(self.m_nID)
 
+        # 接收数据
         try:
             byteData = self.m_SocketObj.recv(g_RecvCount)
         except BaseException as e:
@@ -52,16 +53,16 @@ class XxBufferDispatcher(xx_dispatcher_base.XxDispatcherBase):
             self.m_LoggerObj.error("socket recv data failed:%s", str(e))
             return
 
-        if byteData:
-            pass
-        else:
+        if not byteData:
             self.m_LoggerObj.info("closing, ip:%s, port:%d", self.m_szIp, self.m_nPort)
             import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
             xx_dispatcher_mgr.HandleDisconnectEvent(self.m_nID)
             return
 
+        # 放到buff中
         self.m_ReadBufferObj.write(byteData)
 
+        # 反序列化解析
         byteDataLeft = self.m_ReadBufferObj.getvalue()
         while True:
             dictData, byteDataLeft = data_pack.UnserializeWithLeftByte(byteDataLeft)
@@ -75,8 +76,8 @@ class XxBufferDispatcher(xx_dispatcher_base.XxDispatcherBase):
         self.m_ReadBufferObj = io.BytesIO(byteDataLeft)
 
     def _HandleWrite(self):
+        import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
         if self.m_eDispatcherState == xx_dispatcher.EDispatcherState.eConnecting:
-            import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
             xx_dispatcher_mgr.HandleConnectEvent(self.m_nID)
 
         byteData = self.m_WriteBufferObj.getvalue()
@@ -85,8 +86,13 @@ class XxBufferDispatcher(xx_dispatcher_base.XxDispatcherBase):
             self.m_LoggerObj.debug("send data over, ip:%s, port:%d", self.m_szIp, self.m_nPort)
             return
 
-        # TODO 发送异常，先不考虑
-        nSendedCount = self.m_SocketObj.send(byteData)
+        try:
+            nSendedCount = self.m_SocketObj.send(byteData)
+        except OSError:
+            self.m_LoggerObj.error("send data failed, ip:%s, port:%d", self.m_szIp, self.m_nPort)
+            xx_dispatcher_mgr.HandleDisconnectEvent(self.m_nID)
+            return
+
         self.m_WriteBufferObj = io.BytesIO(byteData[nSendedCount:])
 
         import common.async_net.xx_connection_mgr as xx_connection_mgr

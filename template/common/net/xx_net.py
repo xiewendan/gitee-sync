@@ -71,7 +71,6 @@ class XxNet:
 
     def _Handle(self, szIp, nPort, dictData):
         self.m_LoggerObj.info("ip:%s, port:%d, data:%s", szIp, nPort, str(dictData))
-        # TODO 需要在主程序里面处理数据
         pass
 
     def F_GetSendData(self):

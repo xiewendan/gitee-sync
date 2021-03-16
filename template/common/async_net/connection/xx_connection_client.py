@@ -45,7 +45,3 @@ class XxConnectionClient(xx_connection_base.XxConnectionBase):
 
         import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
         xx_dispatcher_mgr.Connect(self.m_nID, szIp, nPort)
-
-    def SetSocket(self, SocketObj):
-        import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
-        xx_dispatcher_mgr.SetSocket(self.m_nID, SocketObj)
