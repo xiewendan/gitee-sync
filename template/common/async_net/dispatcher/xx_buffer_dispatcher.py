@@ -26,6 +26,7 @@ class XxBufferDispatcher(xx_dispatcher_base.XxDispatcherBase):
 
     def Destroy(self):
         super().Destroy()
+
         self.m_WriteBufferObj = io.BytesIO()
         self.m_ReadBufferObj = io.BytesIO()
 
@@ -39,7 +40,13 @@ class XxBufferDispatcher(xx_dispatcher_base.XxDispatcherBase):
         byteData = data_pack.Serialize(dictData)
         self.m_WriteBufferObj.write(byteData)
 
+    # ********************************************************************************
+    # private
+    # ********************************************************************************
     def _HandleRead(self):
+        self.m_LoggerObj.debug("id:%d", self.m_nID)
+
+        # 连接上事件
         if self.m_eDispatcherState == xx_dispatcher.EDispatcherState.eConnecting:
             import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
             xx_dispatcher_mgr.HandleConnectEvent(self.m_nID)
@@ -76,12 +83,17 @@ class XxBufferDispatcher(xx_dispatcher_base.XxDispatcherBase):
         self.m_ReadBufferObj = io.BytesIO(byteDataLeft)
 
     def _HandleWrite(self):
+        self.m_LoggerObj.debug("id:%d", self.m_nID)
+
+        # 连接上事件
         import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
         if self.m_eDispatcherState == xx_dispatcher.EDispatcherState.eConnecting:
             xx_dispatcher_mgr.HandleConnectEvent(self.m_nID)
 
+        # 缓存中取出
         byteData = self.m_WriteBufferObj.getvalue()
 
+        # 发送数据
         if len(byteData) <= 0:
             self.m_LoggerObj.debug("send data over, ip:%s, port:%d", self.m_szIp, self.m_nPort)
             return
@@ -95,14 +107,5 @@ class XxBufferDispatcher(xx_dispatcher_base.XxDispatcherBase):
 
         self.m_WriteBufferObj = io.BytesIO(byteData[nSendedCount:])
 
-        import common.async_net.xx_connection_mgr as xx_connection_mgr
-        xx_connection_mgr.F_OnWrite(self.m_nID)
-
     def Writeable(self):
         return len(self.m_WriteBufferObj.getvalue()) > 0
-
-    # ********************************************************************************
-    # selector
-    # ********************************************************************************
-    def _Modify(self, SocketObj, nMask, Callback):
-        pass

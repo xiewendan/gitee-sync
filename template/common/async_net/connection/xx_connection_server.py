@@ -10,7 +10,7 @@ class XxConnectionServer(xx_connection_base.XxConnectionBase):
 
         self.m_nListenCount = dictConnectionData["socket_listen"]
 
-        self.m_eConnectState = xx_connection.EConnectionState.eUnListen
+        self._SetConnectState(xx_connection.EConnectionState.eUnListen)
 
     @staticmethod
     def GetType():
@@ -29,14 +29,13 @@ class XxConnectionServer(xx_connection_base.XxConnectionBase):
         if self.m_eConnectState == xx_connection.EConnectionState.eListening:
             self.m_LoggerObj.error("the connection is already listening, id:%d, ip:%s, port:%d, ListenCount:%d",
                                    self.ID, szIp, nPort, self.m_nListenCount)
+
             return False
 
-        assert self.m_eConnectState == xx_connection.EConnectionState.eUnListen
+        self._SetConnectState(xx_connection.EConnectionState.eListening)
 
         import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
         xx_dispatcher_mgr.Listen(self.ID, szIp, nPort, self.m_nListenCount)
-
-        self.m_eConnectState = xx_connection.EConnectionState.eListening
 
     def _Accept(self, szIp, nPort):
         import common.async_net.xx_connection_mgr as xx_connection_mgr

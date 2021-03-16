@@ -10,10 +10,6 @@ class XxConnectionFactory:
 
         self.m_nConnectionID = 0
 
-    def GenConnectionID(self):
-        self.m_nConnectionID += 1
-        return self.m_nConnectionID
-
     def RegisterAll(self):
         self.m_LoggerObj.info("register all connection class")
 
@@ -34,9 +30,13 @@ class XxConnectionFactory:
         ConnectionCls = self.m_dictConnectionCls[nType]
 
         assert "id" not in dictConnectionData
-        dictConnectionData["id"] = self.GenConnectionID()
+        dictConnectionData["id"] = self._GenConnectionID()
 
         return ConnectionCls(dictConnectionData)
+
+    def _GenConnectionID(self):
+        self.m_nConnectionID += 1
+        return self.m_nConnectionID
 
     def _RegisterClass(self, ConnectionClsObj):
         nType = ConnectionClsObj.GetType()

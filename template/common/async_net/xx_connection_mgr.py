@@ -13,12 +13,12 @@
 
 __all__ = ["XxConnectionMgr", "CreateConnectionData"]
 
+import common.my_log as my_log
 
 class XxConnectionMgr:
     """"""
 
     def __init__(self):
-        import common.my_log as my_log
         import common.async_net.xx_connection_factory as xx_connection_factory
 
         self.m_LoggerObj = my_log.MyLog(__file__)
@@ -28,8 +28,10 @@ class XxConnectionMgr:
         self.m_ConnectionFactoryObj = xx_connection_factory.XxConnectionFactory()
         self.m_ConnectionFactoryObj.RegisterAll()
 
+    @my_log.SeperateWrap()
     def Destroy(self):
         self.m_LoggerObj.info("")
+
         self.m_ConnectionFactoryObj.UnregisterAll()
 
         listID = list(self.m_dictConnection.keys())
@@ -39,41 +41,49 @@ class XxConnectionMgr:
         import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
         xx_dispatcher_mgr.Destroy()
 
-    def CreateConnection(self, nType, dictConnectionData):
+    @my_log.SeperateWrap()
+    def CreateConnection(self, nType, dictConnectionData) -> int:
         """@:return nID"""
+        self.m_LoggerObj.info("type:%d, dictData:%s", nType, dictConnectionData)
+
         ConnectionObj = self.m_ConnectionFactoryObj.CreateConnection(nType, dictConnectionData)
 
         self._AddConnection(ConnectionObj)
 
         return ConnectionObj.ID
 
+    @my_log.SeperateWrap()
     def DestroyConnection(self, nID):
+        self.m_LoggerObj.info("id:%s", nID)
+
         ConnectionObj = self._GetConnection(nID)
         ConnectionObj.Destroy()
         del self.m_dictConnection[nID]
 
+    @my_log.SeperateWrap()
     def Listen(self, nID, szIp, nPort):
         self.m_LoggerObj.info("id:%d, ip:%s, port:%d", nID, szIp, nPort)
 
         ConnectionObj = self._GetConnection(nID)
         ConnectionObj.Listen(szIp, nPort)
 
+    @my_log.SeperateWrap()
     def Connect(self, nID, szIp, nPort):
         self.m_LoggerObj.info("id:%d, ip:%s, port:%d", nID, szIp, nPort)
 
         ConnectionObj = self._GetConnection(nID)
         ConnectionObj.Connect(szIp, nPort)
 
+    @my_log.SeperateWrap()
     def Send(self, nID, dictData):
         self.m_LoggerObj.info("id:%d, data:%s", nID, str(dictData))
 
         ConnectionObj = self._GetConnection(nID)
         ConnectionObj.Send(dictData)
 
+    # noinspection PyMethodMayBeStatic
     def Update(self):
         # 每帧需要调用一次，处理select中的事件消息
-        self.m_LoggerObj.debug("")
-
         import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
         xx_dispatcher_mgr.Update()
 
@@ -99,6 +109,9 @@ class XxConnectionMgr:
 
         return self.m_dictConnection[nID]
 
+    # ********************************************************************************
+    # callback
+    # ********************************************************************************
     def F_OnConnect(self, nID):
         ConnectionObj = self._GetConnection(nID)
         ConnectionObj.F_OnConnect()
@@ -114,10 +127,6 @@ class XxConnectionMgr:
     def F_OnRead(self, nID, dictData):
         ConnectionObj = self._GetConnection(nID)
         ConnectionObj.F_OnRead(dictData)
-
-    def F_OnWrite(self, nID):
-        ConnectionObj = self._GetConnection(nID)
-        ConnectionObj.F_OnWrite()
 
     def F_OnClose(self, nID):
         ConnectionObj = self._GetConnection(nID)
@@ -146,5 +155,4 @@ F_OnConnect = g_XxConnectionMgrObj.F_OnConnect
 F_OnDisconnect = g_XxConnectionMgrObj.F_OnDisconnect
 F_Accept = g_XxConnectionMgrObj.F_Accept
 F_OnRead = g_XxConnectionMgrObj.F_OnRead
-F_OnWrite = g_XxConnectionMgrObj.F_OnWrite
 F_OnClose = g_XxConnectionMgrObj.F_OnClose

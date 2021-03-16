@@ -19,6 +19,8 @@ class XxDispatcherFactory:
         self.m_dictDispatcherCls = {}
 
     def CreateDispatcher(self, nType, dictDispatcherData):
+        self.m_LoggerObj.debug("type:%d, dictData:%s", nType, str(dictDispatcherData))
+
         assert nType in self.m_dictDispatcherCls
         DispatcherCls = self.m_dictDispatcherCls[nType]
 

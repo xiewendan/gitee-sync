@@ -32,11 +32,11 @@ class XxConnectionClient(xx_connection_base.XxConnectionBase):
         self.m_LoggerObj.debug("id:%d, connectstate:%d, ip:%s, port:%d", self.m_nID, self.m_eConnectState, szIp, nPort)
 
         if self.m_eConnectState in (xx_connection.EConnectionState.eConnecting,):
-            self.m_LoggerObj.error("connecting, id:%d", self.m_nID)
+            self.m_LoggerObj.error("connect failed, already connecting, id:%d", self.m_nID)
             return False
 
         if self.m_eConnectState in (xx_connection.EConnectionState.eConnected,):
-            self.m_LoggerObj.error("connected, id:%d", self.m_nID)
+            self.m_LoggerObj.error("connect failed, alreay connected, id:%d", self.m_nID)
             return False
 
         assert self.m_eConnectState in (xx_connection.EConnectionState.eDisconnected,)

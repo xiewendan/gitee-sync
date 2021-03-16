@@ -18,12 +18,12 @@ class XxDispatcherBase:
         import common.my_log as my_log
         self.m_LoggerObj = my_log.MyLog(__file__)
 
-        self.m_nID = dictData["id"]
-
         self.m_szIp = ""
         self.m_nPort = 0
 
         self.m_SocketObj = None
+
+        self.m_nID = dictData["id"]
 
         self.m_eDispatcherState = xx_dispatcher.EDispatcherState.eCreated
 
@@ -34,7 +34,8 @@ class XxDispatcherBase:
 
     @staticmethod
     def GetType():
-        pass
+        # noinspection PyStatementEffect
+        NotImplementedError
 
     @property
     def ID(self):
@@ -78,13 +79,15 @@ class XxDispatcherBase:
 
         self.m_szIp = szIp
         self.m_nPort = nPort
+
         self.m_eDispatcherState = xx_dispatcher.EDispatcherState.eConnecting
 
         self.m_LoggerObj.info("try connect ip:%s, port:%d", szIp, nPort)
 
         nError = self.m_SocketObj.connect_ex((szIp, nPort))
+
         if nError in (EINPROGRESS, EALREADY, EWOULDBLOCK):
-            self.m_LoggerObj.error("connected_ex:connecting...., error:%d", nError)
+            self.m_LoggerObj.debug("try:connecting....:%d", nError)
             return
 
         if nError in (0, EISCONN):
@@ -94,7 +97,8 @@ class XxDispatcherBase:
             raise OSError(nError, errorcode[nError])
 
     def Send(self, dictData):
-        pass
+        # noinspection PyStatementEffect
+        NotImplementedError
 
     # ********************************************************************************
     # handle event
@@ -127,19 +131,24 @@ class XxDispatcherBase:
     # callback
     # ********************************************************************************
     def _HandleConnect(self):
-        self.m_LoggerObj.info("connect ip:%s, port:%d", self.m_szIp, self.m_nPort)
+        self.m_LoggerObj.info("connect, ip:%s, port:%d", self.m_szIp, self.m_nPort)
+
         import common.async_net.xx_connection_mgr as xx_connection_mgr
         xx_connection_mgr.F_OnConnect(self.m_nID)
 
     def _HandleDisconnect(self):
+        self.m_LoggerObj.info("disconnected, ip:%s, port:%d", self.m_szIp, self.m_nPort)
+
         import common.async_net.xx_connection_mgr as xx_connection_mgr
         xx_connection_mgr.F_OnDisconnect(self.m_nID)
 
     def _HandleRead(self):
-        pass
+        # noinspection PyStatementEffect
+        NotImplementedError
 
     def _HandleWrite(self):
-        pass
+        # noinspection PyStatementEffect
+        NotImplementedError
 
     def _HandleClose(self):
         import common.async_net.xx_connection_mgr as xx_connection_mgr

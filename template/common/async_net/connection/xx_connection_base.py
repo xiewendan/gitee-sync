@@ -27,15 +27,17 @@ class XxConnectionBase:
         import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
         xx_dispatcher_mgr.DestroyDispatcher(self.m_nID)
 
-        self.m_eConnectState = xx_connection.EConnectionState.eDisconnected
+        self._SetConnectState(xx_connection.EConnectionState.eDisconnected)
 
     @staticmethod
     def GetType():
-        pass
+        # noinspection PyStatementEffect
+        NotImplementedError
 
     @staticmethod
     def GetDispathcerType():
-        pass
+        # noinspection PyStatementEffect
+        NotImplementedError
 
     @property
     def ID(self):
@@ -44,15 +46,6 @@ class XxConnectionBase:
     @property
     def DispatcherID(self):
         return self.m_nID
-
-    def _CreateDispatch(self, dictConnectionData):
-        nDispatcherType = self.GetDispathcerType()
-        import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
-        return xx_dispatcher_mgr.CreateDispatcher(nDispatcherType, dictConnectionData)
-
-    def _GetDispatcher(self):
-        import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
-        return xx_dispatcher_mgr.GetDispatcher(self.m_nID)
 
     def Send(self, dictData):
         self.m_LoggerObj.debug("data:%s", str(dictData))
@@ -64,11 +57,47 @@ class XxConnectionBase:
         import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
         xx_dispatcher_mgr.Send(self.DispatcherID, dictData)
 
+    # ********************************************************************************
+    # private
+    # ********************************************************************************
+
+    def _CreateDispatch(self, dictConnectionData):
+        import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
+
+        nDispatcherType = self.GetDispathcerType()
+        return xx_dispatcher_mgr.CreateDispatcher(nDispatcherType, dictConnectionData)
+
     def _SetConnectState(self, nState):
-        if nState == xx_connection.EConnectionState.eConnected:
-            assert self.m_eConnectState in (
-                xx_connection.EConnectionState.eConnecting, xx_connection.EConnectionState.eDisconnected)
-            self.m_eConnectState = nState
+        self.m_LoggerObj.debug("change state from %s to %s",
+                               xx_connection.EConnectionState.ToStr(self.m_eConnectState),
+                               xx_connection.EConnectionState.ToStr(nState))
+
+        dictState = {
+            xx_connection.EConnectionState.eConnected:
+                (xx_connection.EConnectionState.eConnecting,
+                 xx_connection.EConnectionState.eDisconnected),
+
+            xx_connection.EConnectionState.eConnecting:
+                (xx_connection.EConnectionState.eConnected,
+                 xx_connection.EConnectionState.eConnecting,
+                 xx_connection.EConnectionState.eDisconnected,
+                 None),
+
+            xx_connection.EConnectionState.eDisconnected:
+                (xx_connection.EConnectionState.eConnecting,
+                 xx_connection.EConnectionState.eConnected,
+                 ),
+
+            xx_connection.EConnectionState.eUnListen:
+                (xx_connection.EConnectionState.eDisconnected,),
+
+            xx_connection.EConnectionState.eListening:
+                (xx_connection.EConnectionState.eUnListen,),
+        }
+
+        assert self.m_eConnectState in dictState[nState]
+
+        self.m_eConnectState = nState
 
     # ********************************************************************************
     # callback
@@ -78,20 +107,21 @@ class XxConnectionBase:
 
     def _OnConnect(self):
         self.m_LoggerObj.debug("id:%d, connectstate:%d", self.m_nID, self.m_eConnectState)
-        self.m_eConnectState = xx_connection.EConnectionState.eConnected
+        self._SetConnectState(xx_connection.EConnectionState.eConnected)
 
     def F_OnDisconnect(self):
         self._OnDisconnect()
 
     def _OnDisconnect(self):
         self.m_LoggerObj.debug("id:%d, connectstate:%d", self.m_nID, self.m_eConnectState)
-        self.m_eConnectState = xx_connection.EConnectionState.eDisconnected
+        self._SetConnectState(xx_connection.EConnectionState.eDisconnected)
 
     def F_Accept(self, szIp, nPort):
         return self._Accept(szIp, nPort)
 
     def _Accept(self, szIp, nPort):
-        pass
+        # noinspection PyStatementEffect
+        NotImplementedError
 
     def F_OnRead(self, dictData):
         self._OnRead(dictData)
@@ -99,15 +129,9 @@ class XxConnectionBase:
     def _OnRead(self, dictData):
         self.m_LoggerObj.info("dictData:%s", str(dictData))
 
-    def F_OnWrite(self):
-        self._OnWrite()
-
-    def _OnWrite(self):
-        pass
-
     def F_OnClose(self):
         self._OnClose()
 
     def _OnClose(self):
         self.m_LoggerObj.debug("id:%d, connectstate:%d", self.m_nID, self.m_eConnectState)
-        self.m_eConnectState = xx_connection.EConnectionState.eClose
+        self._SetConnectState(xx_connection.EConnectionState.eClose)

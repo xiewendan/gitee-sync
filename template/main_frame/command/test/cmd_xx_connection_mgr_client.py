@@ -43,8 +43,9 @@ class CmdXxConnectionMgrClient(cmd_base.CmdBase):
             dictConnectionData)
 
         xx_connection_mgr.Connect(nConnectionID, szTargetIp, nTargetPort)
+        xx_connection_mgr.Connect(nConnectionID, szTargetIp, nTargetPort)
 
-        nCount = 10
+        nCount = 2
         while nCount > 0:
             time.sleep(1)
             xx_connection_mgr.Update()

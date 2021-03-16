@@ -14,3 +14,18 @@ class EConnectionState:
     eClose = 5
     eListening = 6
     eUnListen = 7
+
+    dictMsg = {
+        eConnected: "Connected",
+        eConnecting: "Connecting",
+        eDisconnecting: "Disconnecting",
+        eDisconnected: "Disconnected",
+        eClose: "Close",
+        eListening: "Listening",
+        eUnListen: "UnListen"
+    }
+
+    @staticmethod
+    def ToStr(eState):
+        assert eState in EConnectionState.dictMsg
+        return EConnectionState.dictMsg[eState]
