@@ -29,3 +29,8 @@ class EConnectionState:
     def ToStr(eState):
         assert eState in EConnectionState.dictMsg
         return EConnectionState.dictMsg[eState]
+
+
+class EAsyncName:
+    eRetAsyncID = "RetAsyncID"
+    eAsyncID = "AsyncID"

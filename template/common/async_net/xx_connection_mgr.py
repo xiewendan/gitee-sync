@@ -15,6 +15,7 @@ __all__ = ["XxConnectionMgr", "CreateConnectionData"]
 
 import common.my_log as my_log
 
+
 class XxConnectionMgr:
     """"""
 
@@ -27,6 +28,10 @@ class XxConnectionMgr:
 
         self.m_ConnectionFactoryObj = xx_connection_factory.XxConnectionFactory()
         self.m_ConnectionFactoryObj.RegisterAll()
+
+        # async callback
+        self.m_nAsyncID = 0
+        self.m_dictAsyncID2Callback = {}
 
     @my_log.SeperateWrap()
     def Destroy(self):
@@ -81,6 +86,19 @@ class XxConnectionMgr:
         ConnectionObj = self._GetConnection(nID)
         ConnectionObj.Send(dictData)
 
+    @my_log.SeperateWrap()
+    def SendAsync(self, nID, dictData, funCallback, tupleArg):
+        self.m_LoggerObj.debug("id:%d, dictData:%s", nID, str(dictData))
+
+        nAsyncID = self._GenAsyncID()
+        self._AddAsyncCallback(nAsyncID, funCallback, tupleArg)
+
+        import common.async_net.connection.xx_connection as xx_connection
+        assert xx_connection.EAsyncName.eRetAsyncID not in dictData
+        dictData[xx_connection.EAsyncName.eRetAsyncID] = nAsyncID
+
+        self.Send(nID, dictData)
+
     # noinspection PyMethodMayBeStatic
     def Update(self):
         # 每帧需要调用一次，处理select中的事件消息
@@ -125,12 +143,67 @@ class XxConnectionMgr:
         return ConnectionObj.F_Accept(szIp, nPort)
 
     def F_OnRead(self, nID, dictData):
-        ConnectionObj = self._GetConnection(nID)
-        ConnectionObj.F_OnRead(dictData)
+        self._HandleAsync(nID, dictData)
 
     def F_OnClose(self, nID):
         ConnectionObj = self._GetConnection(nID)
         ConnectionObj.F_OnClose()
+
+    # ********************************************************************************
+    # async callback
+    # ********************************************************************************
+    def _GenAsyncID(self):
+        self.m_nAsyncID += 1
+        return self.m_nAsyncID
+
+    def _AddAsyncCallback(self, nAsyncID, funCallback, tupleArg):
+        self.m_LoggerObj.debug("asyncid:%d, arg:%s", nAsyncID, str(tupleArg))
+
+        assert nAsyncID not in self.m_dictAsyncID2Callback
+        self.m_dictAsyncID2Callback[nAsyncID] = (funCallback, tupleArg)
+
+    def _RemoveAsyncCallback(self, nAsyncID):
+        self.m_LoggerObj.debug("asyncid:%d", nAsyncID)
+        assert nAsyncID in self.m_dictAsyncID2Callback
+        del self.m_dictAsyncID2Callback[nAsyncID]
+
+    def _GetAsyncCallback(self, nAsyncID):
+        self.m_LoggerObj.debug("asyncid:%d", nAsyncID)
+
+        assert nAsyncID in self.m_dictAsyncID2Callback
+        return self.m_dictAsyncID2Callback[nAsyncID]
+
+    def _HandleAsync(self, nID, dictData):
+        self.m_LoggerObj.debug("id:%d, dictData:%s", nID, str(dictData))
+
+        import common.async_net.connection.xx_connection as xx_connection
+        if xx_connection.EAsyncName.eAsyncID in dictData:
+            nAsyncID = dictData[xx_connection.EAsyncName.eAsyncID]
+            self.m_LoggerObj.debug("call asyncid:%d", nAsyncID)
+
+            funCallback, tupleArg = self._GetAsyncCallback(nAsyncID)
+            dictRetData = funCallback(dictData, *tupleArg)
+
+        else:
+            ConnectionObj = self._GetConnection(nID)
+            dictRetData = ConnectionObj.F_OnRead(dictData)
+
+        if xx_connection.EAsyncName.eRetAsyncID in dictData:
+            if dictRetData is None or not isinstance(dictRetData, dict):
+                self.m_LoggerObj.error("ret data error, id:%d, dictData:%s, dictRetData:%s",
+                                       nID,
+                                       str(dictData),
+                                       str(dictRetData))
+                dictRetData = {}
+
+            nRetAsyncID = dictData[xx_connection.EAsyncName.eRetAsyncID]
+
+            assert xx_connection.EAsyncName.eAsyncID not in dictRetData
+            dictRetData[xx_connection.EAsyncName.eAsyncID] = nRetAsyncID
+
+            self.Send(nID, dictRetData)
+
+            self.m_LoggerObj.debug("send ret async id:%d, dictRetData:%s", nRetAsyncID, str(dictRetData))
 
 
 def CreateConnectionData(nSocketListen=1):
@@ -147,6 +220,7 @@ CreateConnection = g_XxConnectionMgrObj.CreateConnection
 Listen = g_XxConnectionMgrObj.Listen
 Connect = g_XxConnectionMgrObj.Connect
 Send = g_XxConnectionMgrObj.Send
+SendAsync = g_XxConnectionMgrObj.SendAsync
 Update = g_XxConnectionMgrObj.Update
 Destroy = g_XxConnectionMgrObj.Destroy
 DestroyConnection = g_XxConnectionMgrObj.DestroyConnection

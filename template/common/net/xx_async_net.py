@@ -35,25 +35,6 @@ class XxAsyncNet(xx_net.XxNet):
 
         self.Send(szIp, nPort, dictData)
 
-    def _Handle(self, szIp, nPort, dictData):
-        self.m_LoggerObj.debug("ip:%s, port:%d, dictData:%s", szIp, nPort, str(dictData))
-
-        if EAsyncName.eAsyncID in dictData:
-            nAsyncID = dictData[EAsyncName.eAsyncID]
-            self.m_LoggerObj.debug("call asyncid:%d", nAsyncID)
-            funCallback, tupleArg = self._GetAsyncCallback(nAsyncID)
-            funCallback(*tupleArg)
-        else:
-            # 处理逻辑
-            pass
-
-        if EAsyncName.eRetAsyncID in dictData:
-            nRetAsyncID = dictData[EAsyncName.eRetAsyncID]
-            self.m_LoggerObj.debug("send ret asyncid:%d", nRetAsyncID)
-            self.Send(szIp, nPort, {EAsyncName.eAsyncID: nRetAsyncID})
-
-        pass
-
     # ********************************************************************************
     # async callback
     # ********************************************************************************
@@ -77,3 +58,22 @@ class XxAsyncNet(xx_net.XxNet):
 
         assert nAsyncID in self.m_dictAsyncID2Callback
         return self.m_dictAsyncID2Callback[nAsyncID]
+
+    def _Handle(self, szIp, nPort, dictData):
+        self.m_LoggerObj.debug("ip:%s, port:%d, dictData:%s", szIp, nPort, str(dictData))
+
+        if EAsyncName.eAsyncID in dictData:
+            nAsyncID = dictData[EAsyncName.eAsyncID]
+            self.m_LoggerObj.debug("call asyncid:%d", nAsyncID)
+            funCallback, tupleArg = self._GetAsyncCallback(nAsyncID)
+            funCallback(*tupleArg)
+        else:
+            # 处理逻辑
+            pass
+
+        if EAsyncName.eRetAsyncID in dictData:
+            nRetAsyncID = dictData[EAsyncName.eRetAsyncID]
+            self.m_LoggerObj.debug("send ret asyncid:%d", nRetAsyncID)
+            self.Send(szIp, nPort, {EAsyncName.eAsyncID: nRetAsyncID})
+
+        pass

@@ -124,10 +124,13 @@ class XxConnectionBase:
         NotImplementedError
 
     def F_OnRead(self, dictData):
-        self._OnRead(dictData)
+        return self._OnRead(dictData)
 
     def _OnRead(self, dictData):
         self.m_LoggerObj.info("dictData:%s", str(dictData))
+        import logic.message_dispatcher as message_dispatcher
+
+        return message_dispatcher.OnRecv(self.m_nID, dictData)
 
     def F_OnClose(self):
         self._OnClose()
