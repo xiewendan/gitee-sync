@@ -60,17 +60,14 @@ class CmdXxConnectionMgrClient(cmd_base.CmdBase):
                 "gm_command.TestDo()",
             ])
 
-        dictGMCommand = {
-            message_dispatcher.EDataName.eModule: "logic.gm.gm_command",
-            message_dispatcher.EDataName.eFunction: "Do",
-            message_dispatcher.EDataName.eArg: [szCommand]
-        }
+        dictGMCommand = message_dispatcher.CreateRpcData()
 
         def GMCallback(dictData, szName, nAge, bMale):
             self.m_LoggerObj.info("********************dictData:%s, name:%s, age:%d, male:%s", str(dictData), szName,
                                   nAge, str(bMale))
 
-        xx_connection_mgr.SendAsync(nConnectionID, dictGMCommand, GMCallback, ("xjc", 1, True))
+
+        message_dispatcher.CallRpc(nConnectionID, "logic.gm.gm_command", "Do", [szCommand], GMCallback, ("xjc", 1, True))
 
         # wait callback
         nCount = 4
