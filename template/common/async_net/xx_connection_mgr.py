@@ -87,15 +87,16 @@ class XxConnectionMgr:
         ConnectionObj.Send(dictData)
 
     @my_log.SeperateWrap()
-    def SendAsync(self, nID, dictData, funCallback, tupleArg):
+    def SendAsync(self, nID, dictData, funCallback=None, tupleArg=None):
         self.m_LoggerObj.debug("id:%d, dictData:%s", nID, str(dictData))
 
-        nAsyncID = self._GenAsyncID()
-        self._AddAsyncCallback(nAsyncID, funCallback, tupleArg)
+        if funCallback is not None:
+            nAsyncID = self._GenAsyncID()
+            self._AddAsyncCallback(nAsyncID, funCallback, tupleArg)
 
-        import common.async_net.connection.xx_connection as xx_connection
-        assert xx_connection.EAsyncName.eRetAsyncID not in dictData
-        dictData[xx_connection.EAsyncName.eRetAsyncID] = nAsyncID
+            import common.async_net.connection.xx_connection as xx_connection
+            assert xx_connection.EAsyncName.eRetAsyncID not in dictData
+            dictData[xx_connection.EAsyncName.eRetAsyncID] = nAsyncID
 
         self.Send(nID, dictData)
 
@@ -182,6 +183,8 @@ class XxConnectionMgr:
             self.m_LoggerObj.debug("call asyncid:%d", nAsyncID)
 
             funCallback, tupleArg = self._GetAsyncCallback(nAsyncID)
+            self._RemoveAsyncCallback(nAsyncID)
+
             dictRetData = funCallback(dictData, *tupleArg)
 
         else:

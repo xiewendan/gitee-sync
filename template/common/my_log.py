@@ -35,11 +35,13 @@ def SeperateWrap():
     def Seperate(FunObj):
         @wraps(FunObj)
         def A(*args, **kwargs):
+            LoggerObj.debug("")
             LoggerObj.debug("%s begin %s - %s:%d", _GetBeginSeperate(), szFileName, FunObj.__name__, nLineNo)
 
             ResultObj = FunObj(*args, **kwargs)
 
             LoggerObj.debug("%s end %s - %s:%d", _GetEndSeperate(), szFileName, FunObj.__name__, nLineNo)
+            LoggerObj.debug("")
 
             return ResultObj
 

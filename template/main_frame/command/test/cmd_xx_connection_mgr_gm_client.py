@@ -52,6 +52,7 @@ class CmdXxConnectionMgrClient(cmd_base.CmdBase):
             xx_connection_mgr.Update()
             nCount -= 1
 
+        # call rpc
         import logic.message_dispatcher as message_dispatcher
 
         szCommand = "\n".join(
@@ -60,14 +61,13 @@ class CmdXxConnectionMgrClient(cmd_base.CmdBase):
                 "gm_command.TestDo()",
             ])
 
-        dictGMCommand = message_dispatcher.CreateRpcData()
-
         def GMCallback(dictData, szName, nAge, bMale):
             self.m_LoggerObj.info("********************dictData:%s, name:%s, age:%d, male:%s", str(dictData), szName,
                                   nAge, str(bMale))
 
-
-        message_dispatcher.CallRpc(nConnectionID, "logic.gm.gm_command", "Do", [szCommand], GMCallback, ("xjc", 1, True))
+        message_dispatcher.CallRpc(nConnectionID, "logic.gm.gm_command", "Do", [szCommand],
+                                   Callback=GMCallback,
+                                   tupleArg=("xjc", 1, True))
 
         # wait callback
         nCount = 4

@@ -43,6 +43,7 @@ class CmdXxConnectionMgrGmServer(cmd_base.CmdBase):
             xx_connection.EConnectionType.eServer,
             dictConnectionData
         )
+
         try:
             async_net.xx_connection_mgr.Listen(nConnectionID, szIp, nPort)
         except Exception as e:
