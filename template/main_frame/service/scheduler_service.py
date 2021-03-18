@@ -24,6 +24,9 @@ class SchedulerService(service_base.ServiceBase):
     def GetName():
         return "scheduler"
 
+    def GetSchedulerMgr(self):
+        return self.m_SchedulerMgr
+
     def _GetDepServiceList(self):
         return ["ding_ding", "mail"]
 

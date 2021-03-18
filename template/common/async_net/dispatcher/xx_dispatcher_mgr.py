@@ -9,6 +9,7 @@ __all__ = ["CreateDispatcher"]
 
 import selectors
 import socket
+
 import common.my_log as my_log
 
 g_Timeout = 0.01
@@ -49,6 +50,12 @@ class XxDispatcherMgr:
 
         assert len(self.m_dictSocketFileNo2DispatcherID) == 0
 
+    def CloseDispatcher(self, nDispatcherID):
+        self.m_LoggerObj.debug("dispatcherID:%d", nDispatcherID)
+
+        DispatcherObj = self._GetDispatcher(nDispatcherID)
+        DispatcherObj.Close()
+
     def CreateDispatcher(self, nType, dictData):
         self.m_LoggerObj.debug("type:%d, dictData:%s", nType, str(dictData))
 
@@ -63,13 +70,8 @@ class XxDispatcherMgr:
         self.m_LoggerObj.debug("dispatcherID:%d", nDispatcherID)
 
         DispatcherObj = self._GetDispatcher(nDispatcherID)
-        SocketObj = DispatcherObj.SocketObj
-        nFileNo = SocketObj.fileno()
-
-        self._RemoveFileNo(nFileNo)
-        self._UnRegister(SocketObj)
-
         DispatcherObj.Destroy()
+
         del self.m_dictDispathcer[nDispatcherID]
 
     def Listen(self, nDispatcherID, szIp, nPort, nListenCount):
@@ -131,6 +133,14 @@ class XxDispatcherMgr:
         self.m_LoggerObj.debug("dispatcherID:%d", nDispatcherID)
 
         self._HandleDisconnectEvent(nDispatcherID)
+
+    def GetIp(self, nDispatcherID):
+        DispatcherObj = self._GetDispatcher(nDispatcherID)
+        return DispatcherObj.Ip
+
+    def GetPort(self, nDispatcherID):
+        DispatcherObj = self._GetDispatcher(nDispatcherID)
+        return DispatcherObj.Port
 
     # ********************************************************************************
     # dictDispatcher
@@ -281,3 +291,6 @@ Destroy = g_DispatcherMgr.Destroy
 DestroyDispatcher = g_DispatcherMgr.DestroyDispatcher
 HandleConnectEvent = g_DispatcherMgr.HandleConnectEvent
 HandleDisconnectEvent = g_DispatcherMgr.HandleDisconnectEvent
+GetIp = g_DispatcherMgr.GetIp
+GetPort = g_DispatcherMgr.GetPort
+CloseDispatcher = g_DispatcherMgr.CloseDispatcher

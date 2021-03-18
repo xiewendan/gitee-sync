@@ -62,6 +62,7 @@ class XxConnectionMgr:
         self.m_LoggerObj.info("id:%s", nID)
 
         ConnectionObj = self._GetConnection(nID)
+        ConnectionObj.Close()
         ConnectionObj.Destroy()
         del self.m_dictConnection[nID]
 
@@ -140,6 +141,9 @@ class XxConnectionMgr:
         ConnectionObj.F_OnDisconnect()
 
     def F_Accept(self, nID, szIp, nPort):
+        assert szIp is not None
+        assert nPort is not None
+
         ConnectionObj = self._GetConnection(nID)
         return ConnectionObj.F_Accept(szIp, nPort)
 
@@ -209,10 +213,32 @@ class XxConnectionMgr:
             self.m_LoggerObj.debug("send ret async id:%d, dictRetData:%s", nRetAsyncID, str(dictRetData))
 
 
-def CreateConnectionData(nSocketListen=1):
+def CreateConnectionData(nSocketListen=1,
+                         ExecutorObj=None,
+                         szIp=None, nPort=None,
+                         nAutoReconnectMaxCount=None,
+                         nAutoReconnectInterval=None):
     assert nSocketListen > 0
 
     dictData = {"socket_listen": nSocketListen}
+
+    if ExecutorObj is not None:
+        dictData["executor"] = ExecutorObj
+
+    if szIp is not None:
+        assert isinstance(szIp, str)
+        dictData["ip"] = szIp
+
+    if nPort is not None:
+        assert isinstance(nPort, int)
+        dictData["port"] = nPort
+
+    if nAutoReconnectMaxCount is not None:
+        assert isinstance(nAutoReconnectMaxCount, int)
+        dictData["auto_reconnect_max_count"] = nAutoReconnectMaxCount
+
+    if nAutoReconnectInterval is not None:
+        dictData["auto_reconnect_interval"] = nAutoReconnectInterval
 
     return dictData
 

@@ -41,7 +41,7 @@ class XxConnectionServer(xx_connection_base.XxConnectionBase):
         import common.async_net.xx_connection_mgr as xx_connection_mgr
 
         nConnectionType = self.GetConnectionType()
-        dictData = xx_connection_mgr.CreateConnectionData()
+        dictData = xx_connection_mgr.CreateConnectionData(szIp=szIp, nPort=nPort)
         nID = xx_connection_mgr.CreateConnection(nConnectionType, dictData)
 
         return nID

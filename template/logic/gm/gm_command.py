@@ -32,6 +32,13 @@ def TestDo():
     AddOutput(str(nIndex))
 
 
+def GetAllExecutorData():
+    import logic.server.executor_mgr as executor_mgr
+    szExecutorData = executor_mgr.ExecutorDataToStr()
+
+    AddOutput(szExecutorData)
+
+
 g_GmCommandMgr = GmCommandMgr()
 Do = g_GmCommandMgr.Do
 AddOutput = g_GmCommandMgr.AddOutput

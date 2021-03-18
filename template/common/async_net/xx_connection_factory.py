@@ -19,6 +19,15 @@ class XxConnectionFactory:
         import common.async_net.connection.xx_connection_server as xx_connection_server
         self._RegisterClass(xx_connection_server.XxConnectionServer)
 
+        import logic.client.executor_connection as executor_connection
+        self._RegisterClass(executor_connection.ExecutorConnection)
+
+        import logic.server.register_server_connection as register_server_connection
+        self._RegisterClass(register_server_connection.RegisterServerConnection)
+
+        import logic.server.executor_connection_in_register as executor_connection_in_register
+        self._RegisterClass(executor_connection_in_register.ExecutorConnectionInRegister)
+
     def UnregisterAll(self):
         self.m_LoggerObj.info("unregister all connection class")
         self.m_dictConnectionCls = {}

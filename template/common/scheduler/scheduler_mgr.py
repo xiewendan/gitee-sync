@@ -4,9 +4,7 @@
 # __date__ = 2020/4/3 4:07 下午
 # desc:
 
-import os
 import datetime
-import json
 import logging
 
 import apscheduler.schedulers.background as background
@@ -15,10 +13,10 @@ import common.scheduler.datetime_data as datetime_data
 import common.scheduler.notify_config as notify_config
 from common.my_exception import MyException
 
+g_DayStartDelta = 0  # 每日开始时间为00:00:10秒，避免误差导致每日通知扫描注册失败，启动服务器前的十秒通知，会延后十秒通知
 
-g_DayStartDelta = 0    # 每日开始时间为00:00:10秒，避免误差导致每日通知扫描注册失败，启动服务器前的十秒通知，会延后十秒通知
 
-
+# TODO scheduler的接口和日历通知系统分开，日历通知系统根据需要可以配置使用，scheduler作为定时器，应该是系统的基础组件，必须可以方便调用
 class SchedulerMgr:
     def __init__(self):
         # xjctodo 需要每次从数据库初始化，取上次存的值，之后递增，作为notify的唯一ID
@@ -66,7 +64,7 @@ class SchedulerMgr:
 
     def SetMailMgr(self, MailMgrObj):
         self.m_MailMgr = MailMgrObj
-    
+
     def SetDingDingMgr(self, DingDingMgrObj):
         self.m_DingDingMgr = DingDingMgrObj
 
@@ -114,22 +112,50 @@ class SchedulerMgr:
         self.AddTimeJob(self._NotifyMsg, NotifyDatetimeObj, nNotifyID, tupleArgs=(NotifyObj.Msg,))
 
         return True
-    
-    def _DiffWithCurTime(self, DatetimeObj):
+
+    @staticmethod
+    def _DiffWithCurTime(DatetimeObj):
         CurDatetimeObj = datetime.datetime.now()
         TimeDeltaObj = DatetimeObj - CurDatetimeObj
         return TimeDeltaObj.total_seconds()
-    
+
     def _CheckJobTimeValid(self, DatetimeObj):
         return self._DiffWithCurTime(DatetimeObj) > 0
+
+    def RegisterTick(self, szDesc, nInterval, CallbackObj, tupleArgs=None):
+        self.m_LoggerObj.info("desc:%s, nIntervale:%d", szDesc, nInterval)
+
+        assert nInterval > 0
+
+        szJobID = self._GenJobID(szDesc)
+        self._AddTimeJobCB(szJobID, CallbackObj, tupleArgs)
+
+        self.m_JobMgr.add_job(self._OnIntervalTimeJobCB,
+                              args=[szJobID],
+                              trigger="interval",
+                              seconds=nInterval,
+                              id=szJobID,
+                              misfire_grace_time=3600, )
+
+        return szJobID
+
+    def UnregisterTick(self, szJobID):
+        self.m_LoggerObj.info("szJobID:%s", szJobID)
+
+        self.m_JobMgr.remove_job(szJobID)
+
+        self._RemoveTimeJobCB(szJobID)
 
     def AddTimeJob(self, CallbackObj, DatetimeObj, nNotifyID, tupleArgs=None):
         szJobID = self._GenJobID(nNotifyID)
 
         self.m_LoggerObj.info("Add job! time:%s, jobid:%s, args:%s", DatetimeObj.isoformat(), szJobID, str(tupleArgs))
         if not self._CheckJobTimeValid(DatetimeObj):
-            self.m_LoggerObj.error("Add job failed, time error! time:%s, jobid:%s, args:%s", DatetimeObj.isoformat(), szJobID, str(tupleArgs))
-            raise MyException("Add job failed, time error! time:%s, jobid:%s, args:%s".format(DatetimeObj.isoformat(), szJobID, str(tupleArgs)))
+            self.m_LoggerObj.error("Add job failed, time error! time:%s, jobid:%s, args:%s", DatetimeObj.isoformat(),
+                                   szJobID, str(tupleArgs))
+            raise MyException(
+                "Add job failed, time error! time:%s, jobid:%s, args:%s".format(DatetimeObj.isoformat(), szJobID,
+                                                                                str(tupleArgs)))
 
         self._AddTimeJobCB(szJobID, CallbackObj, tupleArgs)
 
@@ -140,6 +166,16 @@ class SchedulerMgr:
                               id=szJobID,
                               misfire_grace_time=3600,
                               )
+
+    def _OnIntervalTimeJobCB(self, szJobID):
+        assert szJobID in self.m_dictJobCallback
+
+        CallbackObj, tupleArgs = self.m_dictJobCallback[szJobID]
+
+        if tupleArgs is None:
+            CallbackObj()
+        else:
+            CallbackObj(*tupleArgs)
 
     def _GenJobID(self, nNotifyID):
         return "%s_%s" % (nNotifyID, self._GenNotifyInstID())
@@ -156,7 +192,7 @@ class SchedulerMgr:
     def _GetNextDayStart():
         DatetimeObj = datetime.datetime.now()
         TimedeltaObj = datetime.timedelta(days=1)
-        StartOfToday = datetime.datetime(DatetimeObj.year, DatetimeObj.month, DatetimeObj.day, 0, 0, g_DayStartDelta) 
+        StartOfToday = datetime.datetime(DatetimeObj.year, DatetimeObj.month, DatetimeObj.day, 0, 0, g_DayStartDelta)
 
         return StartOfToday + TimedeltaObj
 
@@ -205,12 +241,12 @@ class SchedulerMgr:
             NotifyDatetimeObj = NotifyObj.GetNotifyDatetime(DatetimeObj)
             if NotifyDatetimeObj is None:
                 continue
-            
+
             if not self._CheckJobTimeValid(NotifyDatetimeObj):
                 if self._DiffWithCurTime(NotifyDatetimeObj) > -g_DayStartDelta:
                     NotifyDatetimeObj = CurDatetimeObj + datetime.timedelta(seconds=g_DayStartDelta)
                 else:
                     self.m_LoggerObj.debug("today notify，but need not notify: %d", nNotifyID)
                     continue
-                    
+
             self.AddTimeJob(self._NotifyMsg, NotifyDatetimeObj, nNotifyID, tupleArgs=(NotifyObj.Msg,))

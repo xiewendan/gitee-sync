@@ -27,7 +27,9 @@ class XxConnectionBase:
         import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
         xx_dispatcher_mgr.DestroyDispatcher(self.m_nID)
 
-        self._SetConnectState(xx_connection.EConnectionState.eDisconnected)
+    def Close(self):
+        import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
+        xx_dispatcher_mgr.CloseDispatcher(self.ID)
 
     @staticmethod
     def GetType():
@@ -46,6 +48,16 @@ class XxConnectionBase:
     @property
     def DispatcherID(self):
         return self.m_nID
+
+    @property
+    def Ip(self):
+        import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
+        return xx_dispatcher_mgr.GetIp(self.DispatcherID)
+
+    @property
+    def Port(self):
+        import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
+        return xx_dispatcher_mgr.GetPort(self.DispatcherID)
 
     def Send(self, dictData):
         self.m_LoggerObj.debug("data:%s", str(dictData))
@@ -128,7 +140,7 @@ class XxConnectionBase:
 
     def _OnRead(self, dictData):
         self.m_LoggerObj.info("dictData:%s", str(dictData))
-        import logic.message_dispatcher as message_dispatcher
+        import logic.connection.message_dispatcher as message_dispatcher
 
         return message_dispatcher.OnRecv(self.m_nID, dictData)
 

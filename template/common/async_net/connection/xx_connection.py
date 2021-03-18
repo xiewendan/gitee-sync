@@ -4,6 +4,9 @@ __all__ = ["EConnectionType"]
 class EConnectionType:
     eServer = 1
     eClient = 2
+    eExecutor = 3
+    eRegisterServer = 4
+    eExecutorInRegister = 5
 
 
 class EConnectionState:
