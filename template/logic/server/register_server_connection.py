@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+
+# __author__ = xiaobao
+# __date__ = 2021/3/18 21:06
+
+# desc:
+
 import common.async_net.connection.xx_connection_server as xx_connection_server
 
 
@@ -19,4 +26,3 @@ class RegisterServerConnection(xx_connection_server.XxConnectionServer):
     def GetConnectionType():
         import common.async_net.connection.xx_connection as xx_connection
         return xx_connection.EConnectionType.eExecutorInRegister
-
