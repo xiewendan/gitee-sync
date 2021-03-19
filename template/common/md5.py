@@ -5,8 +5,8 @@
 
 # desc: 
 
-import os
 import hashlib
+import os
 
 FILE_READ_LEN = 1024
 
@@ -30,3 +30,9 @@ def GetStrMD5(szData):
     Md5Obj.update(szData.encode("utf-8"))
 
     return Md5Obj.hexdigest()
+
+
+if __name__ == '__main__':
+    szMD5 = GetFileMD5("E:/project/xiewendan/tools/template/doc/profiler.md")
+    print(szMD5)
+    print(len(szMD5))
