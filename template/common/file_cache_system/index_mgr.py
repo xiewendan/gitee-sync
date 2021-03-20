@@ -33,7 +33,7 @@ class FileIndex:
 
 
 class Md5Node:
-    def __init__(self, szMd5, PreObj, NextObj):
+    def __init__(self, szMd5, PreObj=None, NextObj=None):
         assert isinstance(szMd5, str)
         self.m_szMd5 = szMd5
         self.m_PreObj = PreObj
@@ -43,25 +43,78 @@ class Md5Node:
 class LinkMd5Queue:
     # 队头是pop，队尾是push
     def __init__(self):
+        import common.my_log as my_log
+        self.m_LoggerObj = my_log.MyLog(__file__)
+
         self.m_HeadObj = None
         self.m_TailObj = None
 
         self.m_dictMd5ToObj = {}
 
     def Push(self, szMd5):
-        pass
+        self.m_LoggerObj.debug("Md5:%s", szMd5)
+
+        assert szMd5 is not None
+        assert szMd5 not in self.m_dictMd5ToObj
+
+        NewTailObj = Md5Node(szMd5, self.m_TailObj, None)
+        self.m_dictMd5ToObj[szMd5] = NewTailObj
+
+        if self.m_TailObj is not None:
+            self.m_TailObj.m_NextObj = NewTailObj
+
+        self.m_TailObj = NewTailObj
+
+        if self.m_HeadObj is None:
+            self.m_HeadObj = NewTailObj
+
+    def Top(self):
+        if self.m_HeadObj is None:
+            return None
+        else:
+            return self.m_HeadObj.m_szMd5
+
+    def _Tail(self):
+        if self.m_TailObj is None:
+            return None
+        else:
+            return self.m_TailObj.m_szMd5
 
     def Pop(self, szMd5=None):
-        pass
+        if szMd5 is None:
+            if self.m_HeadObj is None:
+                return None
+            else:
+                szMd5 = self.m_HeadObj.m_szMd5
 
-    def MoveToTail(self, sMd5):
-        pass
+        self.m_LoggerObj.debug("Md5:%s", szMd5)
 
-    def _AddMd5Obj(self, szMd5):
-        pass
+        assert szMd5 in self.m_dictMd5ToObj
+        CurNodeObj = self.m_dictMd5ToObj[szMd5]
+        del self.m_dictMd5ToObj[szMd5]
 
-    def _RemoveMd5Obj(self, szMd5):
-        pass
+        if CurNodeObj.m_PreObj is not None:
+            CurNodeObj.m_PreObj.m_NextObj = CurNodeObj.m_NextObj
+
+        if CurNodeObj.m_NextObj is not None:
+            CurNodeObj.m_NextObj.m_PreObj = CurNodeObj.m_PreObj
+
+        if self.m_TailObj == CurNodeObj:
+            self.m_TailObj = CurNodeObj.m_PreObj
+
+        if self.m_HeadObj == CurNodeObj:
+            self.m_HeadObj = CurNodeObj.m_NextObj
+
+        return szMd5
+
+    def GetMd5QueueList(self):
+        listRet = []
+        CurObj = self.m_HeadObj
+        while CurObj is not None:
+            listRet.append(CurObj.m_szMd5)
+            CurObj = CurObj.m_NextObj
+
+        return listRet
 
 
 class IndexMgr:
@@ -81,6 +134,10 @@ class IndexMgr:
 
         self.m_nTotalSize = 0
         self.m_nMaxTotalSize = nMaxTotalSize
+        self.m_LinkMd5QueueObj = LinkMd5Queue()
+
+    def __contains__(self, szMd5):
+        return szMd5 in self.m_dictFileIndex
 
     def AddFileIndex(self, szMd5, szFileName, nSize, nLastUseTime=None):
         import math
@@ -94,6 +151,14 @@ class IndexMgr:
         self.m_dictFileIndex[szMd5] = FileIndexObj
 
         self._AddSize(nSize)
+        self.m_LinkMd5QueueObj.Push(szMd5)
+
+    def CheckExist(self, szMd5, szFileName, nSize):
+        if szMd5 not in self.m_dictFileIndex:
+            return False
+
+        FileIndexObj = self.m_dictFileIndex[szMd5]
+        return FileIndexObj.Md5 == szMd5 and FileIndexObj.FileName == szFileName and FileIndexObj.Size == nSize
 
     def GetAllFileIndex(self):
         return self.m_dictFileIndex
@@ -103,6 +168,7 @@ class IndexMgr:
 
         FileIndexObj = self.m_dictFileIndex[szMd5]
         self._AddSize(-FileIndexObj.Size)
+        self.m_LinkMd5QueueObj.Pop(szMd5)
 
         del self.m_dictFileIndex[szMd5]
 
@@ -129,7 +195,10 @@ class IndexMgr:
         import json
 
         listFileIndex = []
-        for _, FileIndexObj in self.m_dictFileIndex.items():
+
+        listMd5Queue = self.m_LinkMd5QueueObj.GetMd5QueueList()
+        for szMd5 in listMd5Queue:
+            FileIndexObj = self.m_dictFileIndex[szMd5]
             listFileIndex.append(FileIndexObj.ToList())
 
         with open(self.m_szIndexFullPath, "w") as FileObj:
@@ -139,7 +208,18 @@ class IndexMgr:
         return self.m_nTotalSize + nSize < self.m_nMaxTotalSize
 
     def ClearSpace(self, nSize):
-        pass
+        listRemoveMd5 = []
+        while self.m_LinkMd5QueueObj.Top() is not None:
+            if self.CheckSpace(nSize):
+                break
+            else:
+                szMd5 = self.m_LinkMd5QueueObj.Top()
+                assert szMd5 is not None
+
+                self.RemoveFileIndex(szMd5)
+                listRemoveMd5.append(szMd5)
+
+        return listRemoveMd5
 
     def _AddSize(self, nSize):
         nTotalSize = self.m_nTotalSize + nSize

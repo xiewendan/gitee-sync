@@ -1,9 +1,20 @@
+# -*- coding: utf-8 -*-
+
+# __author__ = xiaobao
+# __date__ = 2021/3/20 13:02
+
+# desc:
+
+
+__all__ = ["FileCacheSystem"]
+
+import os
+import shutil
+
 from .index_mgr import IndexMgr
 
 
 class FileCacheSystem:
-    """"""
-
     def __init__(self, szCacheFDir, nMaxTotalSize, bFullCheck=False, bDebug=False):
         import common.my_log as my_log
         self.m_LoggerObj = my_log.MyLog(__file__)
@@ -29,37 +40,52 @@ class FileCacheSystem:
         self.m_nTotalSize = 0
         self.m_nMaxTotalSize = nMaxTotalSize
 
+    def CheckExistSameFile(self, szMd5, szFileName, nSize):
+        """是否存在相同文件"""
+        return self.m_IndexMgrObj.CheckExist(szMd5, szFileName, nSize)
+
     def SaveFile(self, szMd5, szFileName, nSize, szSrcFPath):
         self.m_LoggerObj.info("md5:%s, filename:%s, size:%d, src_fpath:%s", szMd5, szFileName, nSize, szSrcFPath)
 
-        import shutil
         import common.my_path as my_path
 
         # 调试状态检查索引和文件是否匹配
         if self.m_bDebug:
             assert self._CheckIndexMatchFile(szMd5, nSize, szSrcFPath, True)
 
+        # 删除相同Md5的旧文件
+        szDestFPath = self._GenFPath(szMd5)
+        assert szSrcFPath != szDestFPath
+        if szMd5 in self.m_IndexMgrObj:
+            self.m_IndexMgrObj.RemoveFileIndex(szMd5)
+            try:
+                os.remove(szDestFPath)
+            except Exception as ExceptionObj:
+                self.m_LoggerObj.error("remove file fail, szDestFPath:%s", szDestFPath)
+
         # 判断空间是否足够
         if not self.m_IndexMgrObj.CheckSpace(nSize):
             self._ClearSpace(nSize)
 
         # 创建文件
-        szDestFPath = self._GenFPath(szMd5)
         my_path.CreateFileDir(szDestFPath)
-
         shutil.copy(szSrcFPath, szDestFPath)
 
         # 创建索引
         self.m_IndexMgrObj.AddFileIndex(szMd5, szFileName, nSize)
 
-    def DelFile(self, szMd5):
-        pass
-
-    def LoadFile(self, szMd5, szFileName, nSize):
-        pass
-
     def UseFile(self, szMd5, szFileName, nSize):
-        pass
+        szDestFPath = self._GenFPath(szMd5)
+        if not self.CheckExistSameFile(szMd5, szFileName, nSize):
+            return ""
+
+        if not os.path.exists(szDestFPath):
+            return ""
+
+        self.m_IndexMgrObj.RemoveFileIndex(szMd5)
+        self.m_IndexMgrObj.AddFileIndex(szMd5, szFileName, nSize)
+
+        return szDestFPath
 
     def Destroy(self):
         self.m_LoggerObj.debug("")
@@ -72,15 +98,18 @@ class FileCacheSystem:
     def _ClearSpace(self, nNeedSize):
         self.m_LoggerObj.info("NeedSize:%d", nNeedSize)
 
-        import os
-
         listDelFile = self.m_IndexMgrObj.ClearSpace(nNeedSize)
 
         self.m_LoggerObj.info("to del file:%s", str(listDelFile))
 
-        for szFPath in listDelFile:
-            os.remove(szFPath)
-            self.m_LoggerObj.info("del file:%s", szFPath)
+        for szMd5 in listDelFile:
+            szFPath = self._GenFPath(szMd5)
+            try:
+                os.remove(szFPath)
+            except Exception as ExceptionObj:
+                self.m_LoggerObj.fatal("clear space to remove file failed, file path:%s", szFPath)
+            else:
+                self.m_LoggerObj.info("del file:%s", szFPath)
 
     def _CheckCacheFile(self, bFullCheck):
         """

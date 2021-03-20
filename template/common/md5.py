@@ -33,6 +33,9 @@ def GetStrMD5(szData):
 
 
 if __name__ == '__main__':
-    szMD5 = GetFileMD5("E:/project/xiewendan/tools/template/doc/profiler.md")
+    szPath = "E:/project/xiewendan/tools/template/unit_test/data/file_cache_system/3.exe"
+    szMD5 = GetFileMD5(szPath)
     print(szMD5)
     print(len(szMD5))
+
+    print(os.path.getsize(szPath))
