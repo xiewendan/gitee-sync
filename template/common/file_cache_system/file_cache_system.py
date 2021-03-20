@@ -58,10 +58,11 @@ class FileCacheSystem:
         assert szSrcFPath != szDestFPath
         if szMd5 in self.m_IndexMgrObj:
             self.m_IndexMgrObj.RemoveFileIndex(szMd5)
+            # noinspection PyBroadException
             try:
                 os.remove(szDestFPath)
             except Exception as ExceptionObj:
-                self.m_LoggerObj.error("remove file fail, szDestFPath:%s", szDestFPath)
+                self.m_LoggerObj.error("remove file fail, szDestFPath:%s, exception:%s", szDestFPath, str(ExceptionObj))
 
         # 判断空间是否足够
         if not self.m_IndexMgrObj.CheckSpace(nSize):
@@ -104,10 +105,11 @@ class FileCacheSystem:
 
         for szMd5 in listDelFile:
             szFPath = self._GenFPath(szMd5)
+            # noinspection PyBroadException
             try:
                 os.remove(szFPath)
             except Exception as ExceptionObj:
-                self.m_LoggerObj.fatal("clear space to remove file failed, file path:%s", szFPath)
+                self.m_LoggerObj.fatal("clear space to remove file failed, file path:%s, ExceptionObj:%s", szFPath, str(ExceptionObj))
             else:
                 self.m_LoggerObj.info("del file:%s", szFPath)
 

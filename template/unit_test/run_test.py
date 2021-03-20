@@ -43,6 +43,7 @@ def InitSysPath():
 def StartUnitTest():
     logging.getLogger("myLog").info("start unit test:\n\n\n")
     szTestDir = "./unit_test"
+    # szTestDir = "./unit_test/test_common/test_file_cache_system"
     discover = unittest.defaultTestLoader.discover(szTestDir, pattern="test*.py", top_level_dir="")
     runner = unittest.TextTestRunner()
     TestResultObj = runner.run(discover)
