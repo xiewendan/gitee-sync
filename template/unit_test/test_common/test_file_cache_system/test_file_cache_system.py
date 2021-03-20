@@ -16,19 +16,19 @@ class TestMailMgr(unittest.TestCase):
                 "9767f3103c55c66cc2c9eb39d56db594",
                 "1.exe",
                 28160,
-                g_TestAppObj.ConfigLoader.CWD + "/unit_test/data/file_cache_system/1.exe",
+                g_TestAppObj.ConfigLoader.CWD + "/unit_test/test_data/file_cache_system/1.data",
             ],
             [
                 "a9c8c9a4f201a780d91eb9a426e3d930",
                 "2.exe",
                 28162,
-                g_TestAppObj.ConfigLoader.CWD + "/unit_test/data/file_cache_system/2.exe",
+                g_TestAppObj.ConfigLoader.CWD + "/unit_test/test_data/file_cache_system/2.data",
             ],
             [
                 "97b9d60f3e36d64809844d4d034ba6be",
                 "3.exe",
                 28169,
-                g_TestAppObj.ConfigLoader.CWD + "/unit_test/data/file_cache_system/3.exe",
+                g_TestAppObj.ConfigLoader.CWD + "/unit_test/test_data/file_cache_system/3.data",
             ],
         ]
 
