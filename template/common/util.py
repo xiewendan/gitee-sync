@@ -5,16 +5,17 @@
 
 # desc: 常用函数
 
-import os
-import sys
-import subprocess
 import logging
+import os
 import shutil
-from jinja2 import Template
-import yaml
+import subprocess
+import sys
 
-from common.my_exception import MyException
+import yaml
+from jinja2 import Template
+
 import common.my_path as my_path
+from common.my_exception import MyException
 
 
 def RunCmd(szCmd, szOutputFile=None, bStdout=False):
@@ -92,3 +93,33 @@ def RenderConfig(szConfigPath, dictTemplatePath2TargetPath):
     dictConfig = LoadConfig(szConfigPath)
     for szTemplatePath, szTargetPath in dictTemplatePath2TargetPath.items():
         RenderSingleConfig(szTemplatePath, szTargetPath, dictConfig)
+
+
+def FilterClassObj(szClassFullDir, szRegPattern, BaseClass):
+    assert os.path.exists(szClassFullDir), "目录不存在:" + szClassFullDir
+
+    import re
+    import importlib
+
+    listClassObj = []
+
+    szCwd = os.getcwd()
+    for szParentPath, listDirName, listFileName in os.walk(szClassFullDir):
+        for szFileName in listFileName:
+            szFullPath = os.path.join(szParentPath, szFileName)
+
+            if not re.match(szRegPattern, szFileName):
+                continue
+
+            szRelPath = os.path.relpath(szFullPath, szCwd)
+            szRelPathNoExt = os.path.splitext(szRelPath)[0]
+            szModuleName = szRelPathNoExt.replace("\\", "/").replace("/", ".")
+
+            ModuleObj = importlib.import_module(szModuleName)
+
+            for szAttr in dir(ModuleObj):
+                ClassObj = getattr(ModuleObj, szAttr)
+                if isinstance(ClassObj, type) and issubclass(ClassObj, BaseClass):
+                    listClassObj.append(ClassObj)
+
+    return listClassObj

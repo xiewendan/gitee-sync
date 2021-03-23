@@ -142,6 +142,16 @@ class XxDispatcherMgr:
         DispatcherObj = self._GetDispatcher(nDispatcherID)
         return DispatcherObj.Port
 
+    def GetAllDataStr(self):
+        listData = []
+
+        for nID, DispatcherObj in self.m_dictDispathcer.items():
+            listData.append(DispatcherObj.GetDataColName())
+            listData.append(DispatcherObj.GetDataStr())
+            listData.append("")
+
+        return "\n".join(listData)
+
     # ********************************************************************************
     # dictDispatcher
     # ********************************************************************************
@@ -294,3 +304,4 @@ HandleDisconnectEvent = g_DispatcherMgr.HandleDisconnectEvent
 GetIp = g_DispatcherMgr.GetIp
 GetPort = g_DispatcherMgr.GetPort
 CloseDispatcher = g_DispatcherMgr.CloseDispatcher
+GetAllDataStr = g_DispatcherMgr.GetAllDataStr

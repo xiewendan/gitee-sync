@@ -27,18 +27,21 @@ class CmdExecutor(cmd_base.CmdBase):
 
         # szCWD = self.m_AppObj.ConfigLoader.CWD
 
-        szIp = self.m_AppObj.CLM.GetArg(1)
-        nPort = int(self.m_AppObj.CLM.GetArg(2))
-        szTargetIp = self.m_AppObj.CLM.GetArg(3)
-        nTargetPort = int(self.m_AppObj.CLM.GetArg(4))
+        szRegisterIp = self.m_AppObj.CLM.GetArg(1)
+        nRegisterPort = int(self.m_AppObj.CLM.GetArg(2))
+        szListenIp = self.m_AppObj.CLM.GetArg(3)
+        nListenPort = int(self.m_AppObj.CLM.GetArg(4))
+        nFilePort = int(self.m_AppObj.CLM.GetArg(5))
 
         dictData = {
-            "listen_ip": szIp,
-            "listen_port": nPort,
-            "register_ip": szTargetIp,
-            "register_port": nTargetPort
+            "register_ip": szRegisterIp,
+            "register_port": nRegisterPort,
+            "listen_ip": szListenIp,
+            "listen_port": nListenPort,
+            "file_listen_ip": szListenIp,
+            "file_listen_port": nFilePort,
         }
 
-        import logic.client.executor as executor
+        import logic.executor.executor as executor
         ExecutorObj = executor.Executor(dictData)
         ExecutorObj.Run()

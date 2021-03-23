@@ -13,20 +13,33 @@ class XxConnectionFactory:
     def RegisterAll(self):
         self.m_LoggerObj.info("register all connection class")
 
-        import common.async_net.connection.xx_connection_client as xx_connection_client
-        self._RegisterClass(xx_connection_client.XxConnectionClient)
+        import os
+        import common.util as util
+        import common.async_net.connection.xx_connection_base as xx_connection_base
 
-        import common.async_net.connection.xx_connection_server as xx_connection_server
-        self._RegisterClass(xx_connection_server.XxConnectionServer)
+        szCwd = os.getcwd()
+        listConnectionClassObj = []
 
-        import logic.client.executor_connection as executor_connection
-        self._RegisterClass(executor_connection.ExecutorConnection)
+        listConnectionClassObj.extend(
+            util.FilterClassObj(
+                os.path.join(szCwd, "common/async_net/connection"),
+                r"^xx_[_a-zA-Z0-9]*.py$",
+                xx_connection_base.XxConnectionBase))
 
-        import logic.server.register_server_connection as register_server_connection
-        self._RegisterClass(register_server_connection.RegisterServerConnection)
+        listConnectionClassObj.extend(
+            util.FilterClassObj(
+                os.path.join(szCwd, "logic/executor"),
+                r"^xx_[_a-zA-Z0-9]*.py$",
+                xx_connection_base.XxConnectionBase))
 
-        import logic.server.executor_connection_in_register as executor_connection_in_register
-        self._RegisterClass(executor_connection_in_register.ExecutorConnectionInRegister)
+        listConnectionClassObj.extend(
+            util.FilterClassObj(
+                os.path.join(szCwd, "logic/register"),
+                r"^xx_[_a-zA-Z0-9]*.py$",
+                xx_connection_base.XxConnectionBase))
+
+        for ConnectionClassObj in listConnectionClassObj:
+            self._RegisterClass(ConnectionClassObj)
 
     def UnregisterAll(self):
         self.m_LoggerObj.info("unregister all connection class")

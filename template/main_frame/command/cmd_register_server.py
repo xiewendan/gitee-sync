@@ -35,6 +35,6 @@ class CmdExecutor(cmd_base.CmdBase):
             "listen_port": nPort
         }
 
-        import logic.server.register_server as register_server
+        import logic.register.register_server as register_server
         RegisterServerObj = register_server.RegisterServer(dictData)
         RegisterServerObj.Run()

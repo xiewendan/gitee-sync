@@ -40,10 +40,17 @@ def TestDo():
 
 
 def GetAllExecutorData():
-    import logic.server.executor_mgr as executor_mgr
+    import logic.register.executor_mgr as executor_mgr
     szExecutorData = executor_mgr.ExecutorDataToStr()
 
     AddOutput(szExecutorData)
+
+
+def GetAllConnectionData():
+    import common.async_net.xx_connection_mgr as xx_connection_mgr
+    szData = xx_connection_mgr.GetAllDataStr()
+
+    AddOutput(szData)
 
 
 g_GmCommandMgr = GmCommandMgr()

@@ -8,7 +8,7 @@
 import common.async_net.connection.xx_connection_server as xx_connection_server
 
 
-class RegisterServerConnection(xx_connection_server.XxConnectionServer):
+class XxReg(xx_connection_server.XxConnectionServer):
     """"""
 
     def __init__(self, dictData):
@@ -20,9 +20,9 @@ class RegisterServerConnection(xx_connection_server.XxConnectionServer):
     @staticmethod
     def GetType():
         import common.async_net.connection.xx_connection as xx_connection
-        return xx_connection.EConnectionType.eRegisterServer
+        return xx_connection.EConnectionType.eReg
 
     @staticmethod
     def GetConnectionType():
         import common.async_net.connection.xx_connection as xx_connection
-        return xx_connection.EConnectionType.eExecutorInRegister
+        return xx_connection.EConnectionType.eExeInReg

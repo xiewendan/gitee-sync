@@ -8,7 +8,7 @@
 import common.async_net.connection.xx_connection_client as xx_connection_client
 
 
-class ExecutorConnection(xx_connection_client.XxConnectionClient):
+class XxExe2Reg(xx_connection_client.XxConnectionClient):
     """"""
 
     def __init__(self, dictData):
@@ -26,7 +26,7 @@ class ExecutorConnection(xx_connection_client.XxConnectionClient):
     @staticmethod
     def GetType():
         import common.async_net.connection.xx_connection as xx_connection
-        return xx_connection.EConnectionType.eExecutor
+        return xx_connection.EConnectionType.eExe2Reg
 
     def _OnConnect(self):
         super()._OnConnect()
@@ -38,7 +38,7 @@ class ExecutorConnection(xx_connection_client.XxConnectionClient):
             "listen_port": self.m_ExecutorObj.ListenPort
         }
 
-        message_dispatcher.CallRpc(self.ID, "logic.server.executor_mgr", "UpdateExecutorData", [dictData])
+        message_dispatcher.CallRpc(self.ID, "logic.register.executor_mgr", "UpdateExecutorData", [dictData])
 
         self.m_nAutoReconnectCount = 0
         self._UnRegisterAutoReconnect()
@@ -74,3 +74,14 @@ class ExecutorConnection(xx_connection_client.XxConnectionClient):
         else:
             self._UnRegisterAutoReconnect()
             self.m_LoggerObj.error("reconnect failed!")
+
+    def F_GetDataStr(self):
+        szDataStr = super().F_GetDataStr()
+
+        return szDataStr + " %22s %22s %22s" % (
+            self.m_nAutoReconnectCount, self.m_nAutoReconnectMaxCount, self.m_nAutoReconnectInterval)
+
+    def F_GetDataColName(self):
+        szDataColName = super().F_GetDataColName()
+        return szDataColName + " %22s %22s %22s" % (
+            "AutoReconnectCount", "AutoReconnectMaxCount", "AutoReconnectInterval")

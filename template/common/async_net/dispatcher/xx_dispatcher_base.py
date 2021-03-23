@@ -112,8 +112,22 @@ class XxDispatcherBase:
         NotImplementedError
 
     def Close(self):
-        import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
-        xx_dispatcher_mgr.HandleDisconnectEvent(self.m_nID)
+        if self.m_eDispatcherState in (
+                xx_dispatcher.EDispatcherState.eConnecting, xx_dispatcher.EDispatcherState.eConnected):
+            import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
+            xx_dispatcher_mgr.HandleDisconnectEvent(self.m_nID)
+        elif self.m_eDispatcherState == xx_dispatcher.EDispatcherState.eDisconnected:
+            pass
+        else:
+            assert False
+
+    def GetDataColName(self):
+        return "%8s %16s %16s %12s" % ("ID", "DispatcherState", "Ip", "Port")
+
+    def GetDataStr(self):
+        szDispatcherState = xx_dispatcher.EDispatcherState.ToStr(self.m_eDispatcherState)
+
+        return "%8s %16s %16s %12s" % (self.m_nID, szDispatcherState, self.Ip, self.Port)
 
     # ********************************************************************************
     # handle event
@@ -124,15 +138,12 @@ class XxDispatcherBase:
             szError = nError in errorcode and errorcode[nError] or "unknown error %s" % nError
             raise OSError(nError, szError)
 
-        self.m_eDispatcherState = xx_dispatcher.EDispatcherState.eConnected
+        self._OnConnect()
 
         self._HandleConnect()
 
     def HandleDisconnectEvent(self):
-        self.m_SocketObj.close()
-        self.SetSocket(None)
-
-        self.m_eDispatcherState = xx_dispatcher.EDispatcherState.eDisconnected
+        self._OnDisconnect()
 
         self._HandleDisconnect()
 
@@ -148,11 +159,20 @@ class XxDispatcherBase:
     # ********************************************************************************
     # callback
     # ********************************************************************************
+    def _OnConnect(self):
+        self.m_eDispatcherState = xx_dispatcher.EDispatcherState.eConnected
+
     def _HandleConnect(self):
         self.m_LoggerObj.info("connect, ip:%s, port:%d", self.m_szIp, self.m_nPort)
 
         import common.async_net.xx_connection_mgr as xx_connection_mgr
         xx_connection_mgr.F_OnConnect(self.m_nID)
+
+    def _OnDisconnect(self):
+        self.m_SocketObj.close()
+        self.SetSocket(None)
+
+        self.m_eDispatcherState = xx_dispatcher.EDispatcherState.eDisconnected
 
     def _HandleDisconnect(self):
         self.m_LoggerObj.info("disconnected, ip:%s, port:%d", self.m_szIp, self.m_nPort)

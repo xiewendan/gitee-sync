@@ -33,6 +33,9 @@ class XxConnectionMgr:
         self.m_nAsyncID = 0
         self.m_dictAsyncID2Callback = {}
 
+        # 销毁
+        self.m_dictToDestroyConnection = {}
+
     @my_log.SeperateWrap()
     def Destroy(self):
         self.m_LoggerObj.info("")
@@ -45,6 +48,8 @@ class XxConnectionMgr:
 
         import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
         xx_dispatcher_mgr.Destroy()
+
+        assert len(self.m_dictToDestroyConnection) == 0
 
     @my_log.SeperateWrap()
     def CreateConnection(self, nType, dictConnectionData) -> int:
@@ -65,6 +70,9 @@ class XxConnectionMgr:
         ConnectionObj.Close()
         ConnectionObj.Destroy()
         del self.m_dictConnection[nID]
+
+        if nID in self.m_dictToDestroyConnection:
+            del self.m_dictToDestroyConnection[nID]
 
     @my_log.SeperateWrap()
     def Listen(self, nID, szIp, nPort):
@@ -106,6 +114,35 @@ class XxConnectionMgr:
         # 每帧需要调用一次，处理select中的事件消息
         import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
         xx_dispatcher_mgr.Update()
+
+        self._ClearToDestroyConnection()
+
+    def GetAllDataStr(self):
+        listConnectionData = []
+        for nID, ConnectionObj in self.m_dictConnection.items():
+            szColName = ConnectionObj.F_GetDataColName()
+            szData = ConnectionObj.F_GetDataStr()
+            listConnectionData.append(szColName)
+            listConnectionData.append(szData)
+            listConnectionData.append("")
+
+        import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
+        xx_dispatcher_mgr.GetAllDataStr()
+
+        return "\n".join(listConnectionData) + "\n" + xx_dispatcher_mgr.GetAllDataStr()
+
+    # ********************************************************************************
+    # to destroy
+    # ********************************************************************************
+    def F_SetConnectionToDestroy(self, nID):
+        self.m_LoggerObj.debug("nID:%d", nID)
+        if nID not in self.m_dictToDestroyConnection:
+            self.m_dictToDestroyConnection[nID] = True
+
+    def _ClearToDestroyConnection(self):
+        listToDestroy = list(self.m_dictToDestroyConnection.keys())
+        for nID in listToDestroy:
+            self.DestroyConnection(nID)
 
     # ********************************************************************************
     # dictConnection
@@ -217,7 +254,9 @@ def CreateConnectionData(nSocketListen=1,
                          ExecutorObj=None,
                          szIp=None, nPort=None,
                          nAutoReconnectMaxCount=None,
-                         nAutoReconnectInterval=None):
+                         nAutoReconnectInterval=None,
+                         bConnectionAccepted=False,
+                         ):
     assert nSocketListen > 0
 
     dictData = {"socket_listen": nSocketListen}
@@ -240,6 +279,8 @@ def CreateConnectionData(nSocketListen=1,
     if nAutoReconnectInterval is not None:
         dictData["auto_reconnect_interval"] = nAutoReconnectInterval
 
+    dictData["connection_accepted"] = bConnectionAccepted
+
     return dictData
 
 
@@ -253,9 +294,12 @@ SendAsync = g_XxConnectionMgrObj.SendAsync
 Update = g_XxConnectionMgrObj.Update
 Destroy = g_XxConnectionMgrObj.Destroy
 DestroyConnection = g_XxConnectionMgrObj.DestroyConnection
+GetAllDataStr = g_XxConnectionMgrObj.GetAllDataStr
 
 F_OnConnect = g_XxConnectionMgrObj.F_OnConnect
 F_OnDisconnect = g_XxConnectionMgrObj.F_OnDisconnect
 F_Accept = g_XxConnectionMgrObj.F_Accept
 F_OnRead = g_XxConnectionMgrObj.F_OnRead
 F_OnClose = g_XxConnectionMgrObj.F_OnClose
+
+F_SetConnectionToDestroy = g_XxConnectionMgrObj.F_SetConnectionToDestroy

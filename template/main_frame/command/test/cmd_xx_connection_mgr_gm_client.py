@@ -27,10 +27,8 @@ class CmdXxConnectionMgrClient(cmd_base.CmdBase):
 
         # szCWD = self.m_AppObj.ConfigLoader.CWD
 
-        # szIp = self.m_AppObj.CLM.GetArg(1)
-        # nPort = int(self.m_AppObj.CLM.GetArg(2))
-        szTargetIp = self.m_AppObj.CLM.GetArg(3)
-        nTargetPort = int(self.m_AppObj.CLM.GetArg(4))
+        szTargetIp = self.m_AppObj.CLM.GetArg(1)
+        nTargetPort = int(self.m_AppObj.CLM.GetArg(2))
 
         import time
         import common.async_net.xx_connection_mgr as xx_connection_mgr
@@ -57,15 +55,30 @@ class CmdXxConnectionMgrClient(cmd_base.CmdBase):
 
         szCommand = "\n".join(
             [
+                # 打印所有的数据
                 "import logic.gm.gm_command as gm_command",
-                "gm_command.GetAllExecutorData()",
-                #         "import common.async_net.xx_connection_mgr as xx_connection_mgr",
-                #         "xx_connection_mgr.DestroyConnection(7)",
+                # "gm_command.GetAllExecutorData()",
+                "gm_command.GetAllConnectionData()",
+
+                # 销毁连接
+                # "import common.async_net.xx_connection_mgr as xx_connection_mgr",
+                # "xx_connection_mgr.DestroyConnection(4)",
+
+                # 发起连接Exe
+                # "import common.async_net.xx_connection_mgr as xx_connection_mgr",
+                # "import common.async_net.connection.xx_connection as xx_connection",
+                # "dictConnectionData = xx_connection_mgr.CreateConnectionData()",
+                # "nConnectionID = xx_connection_mgr.CreateConnection(xx_connection.EConnectionType.eExe2Exe, dictConnectionData)",
+                # "xx_connection_mgr.Connect(nConnectionID, '10.249.80.162', 60020)",
+                # "dictConnectionData1 = xx_connection_mgr.CreateConnectionData()",
+                # "nConnectionID1 = xx_connection_mgr.CreateConnection(xx_connection.EConnectionType.eFileExe2Exe, dictConnectionData1)",
+                # "xx_connection_mgr.Connect(nConnectionID1, '10.249.80.162', 60021)",
             ])
 
         def GMCallback(dictData):
             self.m_LoggerObj.info("********************dictData:%s", str(dictData))
-            self.m_LoggerObj.info("********************ret:\n%s", dictData["ret"])
+            if "ret" in dictData:
+                self.m_LoggerObj.info("********************ret:\n%s", dictData["ret"])
 
         message_dispatcher.CallRpc(nConnectionID, "logic.gm.gm_command", "Do", [szCommand],
                                    Callback=GMCallback,

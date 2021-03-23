@@ -57,6 +57,7 @@ class DataPack:
         elif nSize <= 0xffffffff:
             return "I"
         else:
+            assert nSize <= 0xffffffffffffffff
             return "Q"
 
     @staticmethod

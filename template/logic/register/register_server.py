@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 # __author__ = xiaobao
-# __date__ = 2021/3/18 21:05
+# __date__ = 2021/3/18 21:06
 
 # desc:
 
 import time
 
 
-class Executor:
+class RegisterServer:
     """"""
 
     def __init__(self, dictData):
@@ -17,16 +17,6 @@ class Executor:
 
         self.m_szListenIp = dictData["listen_ip"]
         self.m_nListenPort = dictData["listen_port"]
-        self.m_szRegisterIp = dictData["register_ip"]
-        self.m_nRegisterPort = dictData["register_port"]
-
-    @property
-    def ListenIp(self):
-        return self.m_szRegisterIp
-
-    @property
-    def ListenPort(self):
-        return self.m_nListenPort
 
     def Run(self):
         self.m_LoggerObj.info("")
@@ -45,7 +35,6 @@ class Executor:
         self.m_LoggerObj.debug("")
 
         self._StartListen()
-        self._StartRegister()
 
     def _StartListen(self):
         self.m_LoggerObj.debug("")
@@ -57,7 +46,7 @@ class Executor:
         dictConnectionData = xx_connection_mgr.CreateConnectionData(nSocketListen=10)
 
         nConnectionID = xx_connection_mgr.CreateConnection(
-            xx_connection.EConnectionType.eServer,
+            xx_connection.EConnectionType.eReg,
             dictConnectionData
         )
 
@@ -65,19 +54,3 @@ class Executor:
             async_net.xx_connection_mgr.Listen(nConnectionID, self.m_szListenIp, self.m_nListenPort)
         except Exception as e:
             raise e
-
-    def _StartRegister(self):
-        self.m_LoggerObj.debug("")
-
-        import common.async_net.xx_connection_mgr as xx_connection_mgr
-        import common.async_net.connection.xx_connection as xx_connection
-
-        dictConnectionData = xx_connection_mgr.CreateConnectionData(ExecutorObj=self,
-                                                                    nAutoReconnectMaxCount=10,
-                                                                    nAutoReconnectInterval=10)
-
-        nConnectionID = xx_connection_mgr.CreateConnection(
-            xx_connection.EConnectionType.eExecutor,
-            dictConnectionData)
-
-        xx_connection_mgr.Connect(nConnectionID, self.m_szRegisterIp, self.m_nRegisterPort)

@@ -23,6 +23,8 @@ class XxConnectionBase:
 
         self.m_eConnectState = xx_connection.EConnectionState.eDisconnected
 
+        self.m_bConnectionAccpeted = dictConnectionData["connection_accepted"]
+
     def Destroy(self):
         import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
         xx_dispatcher_mgr.DestroyDispatcher(self.m_nID)
@@ -111,6 +113,22 @@ class XxConnectionBase:
 
         self.m_eConnectState = nState
 
+    def F_IsConnectionAccpeted(self):
+        return self.m_bConnectionAccpeted
+
+    def F_GetDataStr(self):
+        import common.async_net.dispatcher.xx_dispatcher as xx_dispatcher
+
+        szConnectState = xx_connection.EConnectionState.ToStr(self.m_eConnectState)
+        szConnectType = xx_connection.EConnectionType.ToStr(self.GetType())
+        szDispatcherType = xx_dispatcher.EDispatcherType.ToStr(self.GetDispathcerType())
+
+        return "%8s %16s %10s %16s %12s %12s %15s" % (
+            self.m_nID, szConnectState, self.m_bConnectionAccpeted, self.Ip, self.Port, szConnectType, szDispatcherType)
+
+    def F_GetDataColName(self):
+        return "%8s %16s %10s %16s %12s %12s %15s" % ("ConnID", "ConnectState", "Accepted", "ip", "port", "ConnectType", "DispatcherType")
+
     # ********************************************************************************
     # callback
     # ********************************************************************************
@@ -127,6 +145,10 @@ class XxConnectionBase:
     def _OnDisconnect(self):
         self.m_LoggerObj.debug("id:%d, connectstate:%d", self.m_nID, self.m_eConnectState)
         self._SetConnectState(xx_connection.EConnectionState.eDisconnected)
+
+        if self.m_bConnectionAccpeted:
+            import common.async_net.xx_connection_mgr as xx_connection_mgr
+            xx_connection_mgr.F_SetConnectionToDestroy(self.m_nID)
 
     def F_Accept(self, szIp, nPort):
         return self._Accept(szIp, nPort)

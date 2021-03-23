@@ -8,7 +8,7 @@
 import common.async_net.connection.xx_connection_base as xx_connection_base
 
 
-class ExecutorConnectionInRegister(xx_connection_base.XxConnectionBase):
+class XxExeInReg(xx_connection_base.XxConnectionBase):
     def __init__(self, dictData):
         super().__init__(dictData)
 
@@ -18,7 +18,7 @@ class ExecutorConnectionInRegister(xx_connection_base.XxConnectionBase):
     @staticmethod
     def GetType():
         import common.async_net.connection.xx_connection as xx_connection
-        return xx_connection.EConnectionType.eExecutorInRegister
+        return xx_connection.EConnectionType.eExeInReg
 
     @staticmethod
     def GetDispathcerType():
@@ -35,7 +35,7 @@ class ExecutorConnectionInRegister(xx_connection_base.XxConnectionBase):
             "port": self.Port
         }
 
-        import logic.server.executor_mgr as executor_mgr
+        import logic.register.executor_mgr as executor_mgr
         executor_mgr.AddExecutorData(self.ID, dictData)
 
     def _OnDisconnect(self):
@@ -43,5 +43,5 @@ class ExecutorConnectionInRegister(xx_connection_base.XxConnectionBase):
 
         super()._OnDisconnect()
 
-        import logic.server.executor_mgr as executor_mgr
+        import logic.register.executor_mgr as executor_mgr
         executor_mgr.RemoveExecutorData(self.ID)

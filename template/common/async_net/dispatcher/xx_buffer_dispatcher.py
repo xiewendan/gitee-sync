@@ -40,6 +40,9 @@ class XxBufferDispatcher(xx_dispatcher_base.XxDispatcherBase):
         byteData = data_pack.Serialize(dictData)
         self.m_WriteBufferObj.write(byteData)
 
+    def Writeable(self):
+        return len(self.m_WriteBufferObj.getvalue()) > 0
+
     # ********************************************************************************
     # private
     # ********************************************************************************
@@ -69,18 +72,22 @@ class XxBufferDispatcher(xx_dispatcher_base.XxDispatcherBase):
         # 放到buff中
         self.m_ReadBufferObj.write(byteData)
 
+
         # 反序列化解析
-        byteDataLeft = self.m_ReadBufferObj.getvalue()
+        byteDataAll = self.m_ReadBufferObj.getvalue()
         while True:
-            dictData, byteDataLeft = data_pack.UnserializeWithLeftByte(byteDataLeft)
+            dictData, byteDataLeft = data_pack.UnserializeWithLeftByte(byteDataAll)
 
             if dictData is None:
                 break
 
+            byteDataAll = byteDataLeft
+
             import common.async_net.xx_connection_mgr as xx_connection_mgr
             xx_connection_mgr.F_OnRead(self.m_nID, dictData)
 
-        self.m_ReadBufferObj = io.BytesIO(byteDataLeft)
+        self.m_ReadBufferObj = io.BytesIO(byteDataAll)
+        self.m_ReadBufferObj.seek(0, 2)
 
     def _HandleWrite(self):
         self.m_LoggerObj.debug("id:%d", self.m_nID)
@@ -106,6 +113,10 @@ class XxBufferDispatcher(xx_dispatcher_base.XxDispatcherBase):
             return
 
         self.m_WriteBufferObj = io.BytesIO(byteData[nSendedCount:])
+        self.m_WriteBufferObj.seek(0, 2)
 
-    def Writeable(self):
-        return len(self.m_WriteBufferObj.getvalue()) > 0
+    def _OnDisconnect(self):
+        super()._OnDisconnect()
+
+        self.m_WriteBufferObj = io.BytesIO()
+        self.m_ReadBufferObj = io.BytesIO()

@@ -189,3 +189,166 @@ XxConnectionMgr
                接收数据
                返回数据
                等待对方关闭
+
+
+# 3. 集群
+
+## 3.1. 图
+
+### 3.1.1. Reg
+* 架构图
+```mermaid
+flowchart TD;
+
+subgraph Reg 
+    Reg
+end
+
+subgraph Exe3 
+    Exe3
+end
+
+subgraph Exe2 
+    Exe2
+end
+
+subgraph Exe1 
+    Exe1
+end
+
+Reg<-->Exe1
+Reg<-->Exe2
+Reg<-->Exe3
+
+```
+* 注册流程
+```mermaid
+flowchart TD;
+
+subgraph Reg 
+    Reg
+    ExeInReg
+end
+subgraph Exe
+    Exe2Reg
+end
+
+Exe2Reg--1-->Reg
+Reg--2-->ExeInReg
+ExeInReg--3-->Exe2Reg
+```
+
+* 1 向Reg发起注册
+* 2 Reg创建ExeInReg连接
+* 3 ExeInReg和Exe2Reg可以正常通信
+* Exe2Reg会发送自身的信息给ExeInReg，放到ExecutorMgr中
+
+### 3.1.2. Exe任务图
+
+* 任务架构图
+```mermaid
+flowchart TD;
+
+subgraph Reg 
+    Reg
+end
+
+subgraph Exe2 
+    Exe2
+    FileExe2
+    Exe2Exe2
+    FileExe2Exe2
+end
+
+subgraph Exe1 
+    Exe1
+    FileExe1
+    ExeInExe1
+    FileExeInExe1
+end
+
+Reg<-->Exe1
+Reg<-->Exe2
+Exe2Exe2<-->ExeInExe1
+FileExe2Exe2<-->FileExeInExe1
+```
+
+* 任务流程图
+```mermaid
+flowchart TD;
+
+subgraph Reg 
+    ExeInReg1
+end
+
+subgraph Exe1 
+    Exe2Reg1
+    Exe1
+    ExeInExe1
+    FileExeInExe1
+    FileExe1
+end
+
+subgraph Exe2 
+	Exe2Reg2
+	Exe2Exe2
+	FileExe2Exe2
+end
+
+Exe2Reg1--1-->ExeInReg1
+ExeInReg1--2-->Exe2Reg2
+Exe2Reg2--3-->Exe2Exe2
+Exe2Exe2--4-->Exe1
+Exe1--5-->ExeInExe1
+ExeInExe1--6-->Exe2Exe2
+Exe2Exe2--7-->FileExe2Exe2
+FileExe2Exe2--8-->FileExe1
+FileExe1--9-->FileExeInExe1
+FileExeInExe1--10-->FileExe2Exe2
+
+
+```
+
+* 1、 Exe2Reg1发布任务
+
+* 2、 ExeInReg1分配任务给Exe2Reg2
+
+* 3、Exe2Reg2创建连接Exe2Exe2
+
+* 4、Exe2Exe2连接Exe1
+
+* 5、Exe1创建ExeInExe1
+
+* 6、ExeInExe1和Exe2Exe2形成连接
+
+* 7、Exe2Exe2检查任务需求，需要文件的话，创建FileExe2Exe2
+
+* 8、FileExe2Exe2连接FileExe1
+
+* 9、FileExe1创建FileExeInExe1
+
+* 10、FileExeInExe1和FileExe2Exe2形成连接，FileExe2Exe2获得在FileExeInExe1的ID
+
+* 请求文件流程图
+```mermaid
+flowchart TD;
+
+subgraph Exe1 
+    ExeInExe1
+    FileExeInExe1
+end
+
+subgraph Exe2 
+	Exe2Exe2
+	FileExe2Exe2
+	完成回调
+end
+
+Exe2Exe2--1-->ExeInExe1--2-->FileExeInExe1--3-->FileExe2Exe2--4-->完成回调
+
+```
+
+* 1、Exe2Exe2请求文件，包含FileExeInExe1的ID，同时把完成回调ID发送过去。注意，需要考虑超时机制：暂定5分钟。
+* 2、ExeInExe1通知FileExeInExe1发送文件，包含回调ID
+* 3、FileExeInExe1发送文件
+* 4、FileExe2Exe2中接收到数据，并调用传入过来的回调ID
