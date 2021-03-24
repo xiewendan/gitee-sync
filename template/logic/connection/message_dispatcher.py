@@ -6,6 +6,7 @@
 # desc:
 
 import importlib
+
 import common.my_log as my_log
 
 
@@ -40,7 +41,7 @@ class MessageDispatcher:
             my_traceback.OnException()
 
     @staticmethod
-    def _CreateRpcData(szModule, szFunction, listArg):
+    def F_CreateRpcData(szModule, szFunction, listArg):
         dictMsgData = {
             EDataName.eModule: szModule,
             EDataName.eFunction: szFunction,
@@ -55,10 +56,11 @@ class MessageDispatcher:
                                str(listArg))
 
         import common.async_net.xx_connection_mgr as xx_connection_mgr
-        dictRpcData = self._CreateRpcData(szModule, szFunction, listArg)
+        dictRpcData = self.F_CreateRpcData(szModule, szFunction, listArg)
         xx_connection_mgr.SendAsync(nConnectionID, dictRpcData, funCallback=Callback, tupleArg=tupleArg)
 
 
 g_MessageDispatcher = MessageDispatcher()
 OnRecv = g_MessageDispatcher.OnRecv
 CallRpc = g_MessageDispatcher.CallRpc
+F_CreateRpcData = g_MessageDispatcher.F_CreateRpcData

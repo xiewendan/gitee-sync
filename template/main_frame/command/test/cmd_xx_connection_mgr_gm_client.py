@@ -59,6 +59,7 @@ class CmdXxConnectionMgrClient(cmd_base.CmdBase):
                 "import logic.gm.gm_command as gm_command",
                 # "gm_command.GetAllExecutorData()",
                 "gm_command.GetAllConnectionData()",
+                "gm_command.GetDownloadData()",
 
                 # 销毁连接
                 # "import common.async_net.xx_connection_mgr as xx_connection_mgr",
@@ -73,7 +74,10 @@ class CmdXxConnectionMgrClient(cmd_base.CmdBase):
                 # "dictConnectionData1 = xx_connection_mgr.CreateConnectionData()",
                 # "nConnectionID1 = xx_connection_mgr.CreateConnection(xx_connection.EConnectionType.eFileExe2Exe, dictConnectionData1)",
                 # "xx_connection_mgr.Connect(nConnectionID1, '10.249.80.162', 60021)",
+
+                # 下载文件
             ])
+
 
         def GMCallback(dictData):
             self.m_LoggerObj.info("********************dictData:%s", str(dictData))

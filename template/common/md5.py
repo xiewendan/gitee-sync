@@ -33,7 +33,7 @@ def GetStrMD5(szData):
 
 
 if __name__ == '__main__':
-    szPath = "E:/project/xiewendan/tools/template/unit_test/data/file_cache_system/3.exe"
+    szPath = "E:/project/xiewendan/tools/template/unit_test/test_data/file_cache_system/1.data"
     szMD5 = GetFileMD5(szPath)
     print(szMD5)
     print(len(szMD5))

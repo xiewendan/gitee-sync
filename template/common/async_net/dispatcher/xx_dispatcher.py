@@ -1,8 +1,10 @@
 class EDispatcherType:
     eBuffer = 1
+    eFile = 2
 
     dictMsg = {
         eBuffer: "Buffer",
+        eFile: "File",
     }
 
     @staticmethod

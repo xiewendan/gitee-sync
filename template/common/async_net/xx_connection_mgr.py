@@ -109,6 +109,28 @@ class XxConnectionMgr:
 
         self.Send(nID, dictData)
 
+    @my_log.SeperateWrap()
+    def SendFile(self, nID, dictData):
+        """
+        :param nID:
+        :param dictData={
+                "md5":
+                "file_name":
+                "block_index":
+                "offset":
+                "block_size":
+            }
+        :return:
+        """
+        assert "md5" in dictData
+        assert "file_name" in dictData
+        assert "block_index" in dictData
+        assert "offset" in dictData
+        assert "block_size" in dictData
+
+        ConnectionObj = self._GetConnection(nID)
+        ConnectionObj.SendFile(dictData)
+
     # noinspection PyMethodMayBeStatic
     def Update(self):
         # 每帧需要调用一次，处理select中的事件消息
@@ -290,6 +312,7 @@ CreateConnection = g_XxConnectionMgrObj.CreateConnection
 Listen = g_XxConnectionMgrObj.Listen
 Connect = g_XxConnectionMgrObj.Connect
 Send = g_XxConnectionMgrObj.Send
+SendFile = g_XxConnectionMgrObj.SendFile
 SendAsync = g_XxConnectionMgrObj.SendAsync
 Update = g_XxConnectionMgrObj.Update
 Destroy = g_XxConnectionMgrObj.Destroy

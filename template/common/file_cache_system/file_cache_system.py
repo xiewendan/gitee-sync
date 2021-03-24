@@ -31,21 +31,19 @@ class FileCacheSystem:
         self.m_szFilesFDir = szCacheFDir + "/files"
 
         self.m_IndexMgrObj = IndexMgr(szCacheFDir + "/index.json", nMaxTotalSize)
-        self.m_IndexMgrObj.LoadIndex()
-
         self._CheckCacheFile(bFullCheck)
 
         self.m_bDebug = bDebug
-
-        self.m_nTotalSize = 0
-        self.m_nMaxTotalSize = nMaxTotalSize
 
     def CheckExistSameFile(self, szMd5, szFileName, nSize):
         """是否存在相同文件"""
         return self.m_IndexMgrObj.CheckExist(szMd5, szFileName, nSize)
 
     def SaveFile(self, szMd5, szFileName, nSize, szSrcFPath):
+        """调用之前，请先检查CheckExistSameFile"""
         self.m_LoggerObj.info("md5:%s, filename:%s, size:%d, src_fpath:%s", szMd5, szFileName, nSize, szSrcFPath)
+
+        assert not self.CheckExistSameFile(szMd5, szFileName, nSize), "调用之前，需要先确保没有相同的文件"
 
         import common.my_path as my_path
 

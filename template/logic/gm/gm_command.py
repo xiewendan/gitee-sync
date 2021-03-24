@@ -53,6 +53,52 @@ def GetAllConnectionData():
     AddOutput(szData)
 
 
+def GetDownloadData():
+    import common.download_system.download_system as download_system
+    szData = download_system.T_GetDownloadData()
+
+    AddOutput(szData)
+
+
+def DownloadFile():
+    import common.download_system.download_system as download_system
+    import logic.connection.message_dispatcher as message_dispatcher
+    nConnID = 100
+    nSize = 28160
+    szMd5 = "9767f3103c55c66cc2c9eb39d56db594"
+    szFileName = "E:/project/xiewendan/tools/template/unit_test/test_data/file_cache_system/1.data"
+    listFileBlock = download_system.Download(szMd5, szFileName, nSize)
+
+    for FileBlockObj in listFileBlock:
+        dictData = {
+            # TODO
+            "md5": FileBlockObj[0],
+            "file_name": FileBlockObj[1],
+            "size": FileBlockObj[2],
+            "block_index": FileBlockObj[3],
+            "offset": FileBlockObj[4],
+            "block_size": FileBlockObj[5],
+        }
+
+        message_dispatcher.CallRpc(nConnID, "logic.gm.gm_command", "OnDownloadFileRequest", [dictData])
+
+
+def OnDownloadFileRequest(nConnID, dictData):
+    import common.async_net.xx_connection_mgr as xx_connection_mgr
+    xx_connection_mgr.SendFile(nConnID, dictData)
+
+
+def OnDownloadFileReceive(nConnID, dictData):
+    import common.download_system.download_system as download_system
+    szMd5 = dictData["md5"]
+    szFileName = dictData["file_name"]
+    nSize = dictData["size"]
+    nBlockIndex = dictData["block_index"]
+    byteDataBlock = dictData["data_block"]
+
+    download_system.Write(szMd5, szFileName, nSize, nBlockIndex, byteDataBlock)
+
+
 g_GmCommandMgr = GmCommandMgr()
 Do = g_GmCommandMgr.Do
 AddOutput = g_GmCommandMgr.AddOutput

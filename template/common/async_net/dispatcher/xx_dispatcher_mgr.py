@@ -104,6 +104,14 @@ class XxDispatcherMgr:
 
         self._Modify(DispatcherObj.SocketObj, selectors.EVENT_READ | selectors.EVENT_WRITE, self._ReadWriteCB)
 
+    def SendFile(self, nDispatcherID, dictData):
+        self.m_LoggerObj.debug("dispatcherID:%d, dictdata:%s", nDispatcherID, str(dictData))
+
+        DispatcherObj = self._GetDispatcher(nDispatcherID)
+        DispatcherObj.SendFile(dictData)
+
+        self._Modify(DispatcherObj.SocketObj, selectors.EVENT_READ | selectors.EVENT_WRITE, self._ReadWriteCB)
+
     def Update(self):
         # self.m_LoggerObj.debug("select update event")
 
@@ -295,6 +303,7 @@ CreateDispatcher = g_DispatcherMgr.CreateDispatcher
 Listen = g_DispatcherMgr.Listen
 Connect = g_DispatcherMgr.Connect
 Send = g_DispatcherMgr.Send
+SendFile = g_DispatcherMgr.SendFile
 Update = g_DispatcherMgr.Update
 SetSocket = g_DispatcherMgr.SetSocket
 Destroy = g_DispatcherMgr.Destroy

@@ -71,6 +71,16 @@ class XxConnectionBase:
         import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
         xx_dispatcher_mgr.Send(self.DispatcherID, dictData)
 
+    def SendFile(self, dictData):
+        self.m_LoggerObj.debug("data:%s", str(dictData))
+
+        if self.m_eConnectState not in (xx_connection.EConnectionState.eConnected,):
+            self.m_LoggerObj.error("failed, not connected, ID:%d, ConnectState:%d", self.m_nID, self.m_eConnectState)
+            return False
+
+        import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
+        xx_dispatcher_mgr.SendFile(self.DispatcherID, dictData)
+
     # ********************************************************************************
     # private
     # ********************************************************************************

@@ -111,6 +111,10 @@ class XxDispatcherBase:
         # noinspection PyStatementEffect
         NotImplementedError
 
+    def SendFile(self, dictData):
+        # noinspection PyStatementEffect
+        NotImplementedError
+
     def Close(self):
         if self.m_eDispatcherState in (
                 xx_dispatcher.EDispatcherState.eConnecting, xx_dispatcher.EDispatcherState.eConnected):

@@ -1,7 +1,17 @@
 class FileIndex:
     """"""
 
-    def __init__(self, szMd5, szFileName, nSize, nLastUseTime):
+    def __init__(self, szMd5, szFileName, nSize, nDownloadedSize, nBlockSize, listToDownloadBlockIndex, nLastUseTime):
+        """
+
+        :param szMd5:
+        :param szFileName:
+        :param nSize:
+        :param nLastUseTime:
+        :param nDownloadedSize:
+        :param nBlockSize: 文件块
+        :param listToDownloadBlockIndex: 已经下载的块
+        """
         assert nSize >= 0
         assert nLastUseTime > 0
         assert isinstance(szMd5, str) and len(szMd5) > 0
@@ -10,7 +20,14 @@ class FileIndex:
         self.m_szMd5 = szMd5
         self.m_szFileName = szFileName
         self.m_nSize = nSize
-        self.m_nLastUseTime = nLastUseTime  # 单位毫秒
+
+        self.m_nDownloadedSize = nDownloadedSize
+        self.m_nBlockSize = nBlockSize
+        self.m_listToDownloadedBlockIndex = listToDownloadBlockIndex
+
+        self.m_nLastUseTime = nLastUseTime
+
+        self.m_listCb = []
 
     @property
     def Md5(self):
@@ -25,11 +42,56 @@ class FileIndex:
         return self.m_nSize
 
     @property
+    def DownloadedSize(self):
+        return self.m_nDownloadedSize
+
+    @property
+    def BlockSize(self):
+        return self.m_nBlockSize
+
+    @property
+    def ToDownloadedBlockIndex(self):
+        return self.m_listToDownloadedBlockIndex
+
+    @property
     def LastUseTime(self):
         return self.m_nLastUseTime
 
+    def AddCb(self, nCbID):
+        assert nCbID not in self.m_listCb
+
+        import common.callback_mgr as callback_mgr
+        assert callback_mgr.HasKey(nCbID)
+
+        self.m_listCb.append(nCbID)
+
+        import time
+        import math
+        self.m_nLastUseTime = math.floor(time.time() * 1000)
+
+    def GetCbList(self):
+        return self.m_listCb
+
+    def RemoveCblist(self):
+        self.m_listCb = []
+
     def ToList(self):
-        return [self.m_szMd5, self.m_szFileName, self.m_nSize, self.m_nLastUseTime]
+        return [self.Md5, self.FileName, self.Size, self.DownloadedSize, self.BlockSize, self.ToDownloadedBlockIndex, self.LastUseTime]
+
+    def Update(self, nBlockIndex, nDataSize):
+        assert nBlockIndex in self.ToDownloadedBlockIndex
+        assert nDataSize + self.DownloadedSize <= self.Size
+
+        self.m_nDownloadedSize += nDataSize
+        self.ToDownloadedBlockIndex.remove(nBlockIndex)
+
+        import time
+        import math
+        self.m_nLastUseTime = math.floor(time.time() * 1000)
+
+    def T_ToList(self):
+        return [self.Md5, self.FileName, self.Size, self.DownloadedSize, self.BlockSize, self.ToDownloadedBlockIndex, self.LastUseTime,
+                self.GetCbList()]
 
 
 class Md5Node:
@@ -141,13 +203,13 @@ class IndexMgr:
     def __contains__(self, szMd5):
         return szMd5 in self.m_dictFileIndex
 
-    def AddFileIndex(self, szMd5, szFileName, nSize, nLastUseTime=None):
+    def AddFileIndex(self, szMd5, szFileName, nSize, nDownloadedSize, nBlockSize, listToDownloadBlockIndex, nLastUseTime=None):
         import math
         import time
         if nLastUseTime is None:
             nLastUseTime = math.floor(time.time() * 1000)
 
-        FileIndexObj = FileIndex(szMd5, szFileName, nSize, nLastUseTime)
+        FileIndexObj = FileIndex(szMd5, szFileName, nSize, nDownloadedSize, nBlockSize, listToDownloadBlockIndex, nLastUseTime)
 
         assert szMd5 not in self.m_dictFileIndex
         self.m_dictFileIndex[szMd5] = FileIndexObj
@@ -155,15 +217,47 @@ class IndexMgr:
         self._AddSize(nSize)
         self.m_LinkMd5QueueObj.Push(szMd5)
 
-    def CheckExist(self, szMd5, szFileName, nSize):
-        if szMd5 not in self.m_dictFileIndex:
-            return False
+    def UpdateFileIndex(self, szMd5, nBlockIndex, nDataSize):
+        assert szMd5 in self.m_dictFileIndex
 
         FileIndexObj = self.m_dictFileIndex[szMd5]
-        return FileIndexObj.Md5 == szMd5 and FileIndexObj.FileName == szFileName and FileIndexObj.Size == nSize
+        FileIndexObj.Update(nBlockIndex, nDataSize)
+
+        self._UpdateUseTime(szMd5)
+
+    def GetBlockSize(self, szMd5):
+        assert szMd5 in self.m_dictFileIndex
+
+        return self.m_dictFileIndex[szMd5].BlockSize
+
+    def AddCb(self, szMd5, nCbID):
+        assert szMd5 in self.m_dictFileIndex
+
+        FileIndexObj = self.m_dictFileIndex[szMd5]
+        FileIndexObj.AddCb(nCbID)
+
+        self._UpdateUseTime(szMd5)
+
+    def CheckExistDownloading(self, szMd5, szFileName, nSize):
+        return self._CheckExist(szMd5, szFileName, nSize) and not self._IsDownloaded(szMd5)
+
+    def CheckExistDownloaded(self, szMd5, szFileName, nSize):
+        return self._CheckExist(szMd5, szFileName, nSize) and self._IsDownloaded(szMd5)
 
     def GetAllFileIndex(self):
         return self.m_dictFileIndex
+
+    def GetCbList(self, szMd5):
+        assert szMd5 in self.m_dictFileIndex
+
+        FileIndexObj = self.m_dictFileIndex[szMd5]
+        return FileIndexObj.GetCbList()
+
+    def RemoveCbList(self, szMd5):
+        assert szMd5 in self.m_dictFileIndex
+
+        FileIndexObj = self.m_dictFileIndex[szMd5]
+        FileIndexObj.RemoveCblist(szMd5)
 
     def RemoveFileIndex(self, szMd5):
         assert szMd5 in self.m_dictFileIndex
@@ -173,23 +267,6 @@ class IndexMgr:
         self.m_LinkMd5QueueObj.Pop(szMd5)
 
         del self.m_dictFileIndex[szMd5]
-
-    def _LoadIndex(self):
-        self.m_LoggerObj.debug("")
-
-        import os
-        import json
-
-        if os.path.exists(self.m_szIndexFullPath):
-            with open(self.m_szIndexFullPath, "r") as FileObj:
-                listFileIndex = json.load(FileObj)
-                for listData in listFileIndex:
-                    szMd5 = listData[0]
-                    szFileName = listData[1]
-                    nSize = listData[2]
-                    nLastUseTime = listData[3]
-
-                    self.AddFileIndex(szMd5, szFileName, nSize, nLastUseTime)
 
     def SaveIndex(self):
         self.m_LoggerObj.debug("")
@@ -227,3 +304,42 @@ class IndexMgr:
         nTotalSize = self.m_nTotalSize + nSize
         assert nTotalSize >= 0
         self.m_nTotalSize = nTotalSize
+
+    def _UpdateUseTime(self, szMd5):
+
+        self.m_LinkMd5QueueObj.Pop(szMd5)
+        self.m_LinkMd5QueueObj.Push(szMd5)
+
+    def _LoadIndex(self):
+        self.m_LoggerObj.debug("")
+
+        import os
+        import json
+
+        if os.path.exists(self.m_szIndexFullPath):
+            with open(self.m_szIndexFullPath, "r") as FileObj:
+                listFileIndex = json.load(FileObj)
+                for listData in listFileIndex:
+                    szMd5 = listData[0]
+                    szFileName = listData[1]
+                    nSize = listData[2]
+                    nLastUseTime = listData[3]
+
+                    nDownloadedSize = listData[4]
+                    nBlockSize = listData[5]
+                    listToDownloadBlockIndex = listData[6]
+
+                    self.AddFileIndex(szMd5, szFileName, nSize, nDownloadedSize, nBlockSize, listToDownloadBlockIndex, nLastUseTime)
+
+    def _IsDownloaded(self, szMd5):
+        assert szMd5 in self.m_dictFileIndex
+        FileIndexObj = self.m_dictFileIndex[szMd5]
+
+        return FileIndexObj.Size == FileIndexObj.DownloadedSize and len(FileIndexObj.ToDownloadedBlockIndex) == 0
+
+    def _CheckExist(self, szMd5, szFileName, nSize):
+        if szMd5 not in self.m_dictFileIndex:
+            return False
+
+        FileIndexObj = self.m_dictFileIndex[szMd5]
+        return FileIndexObj.Md5 == szMd5 and FileIndexObj.FileName == szFileName and FileIndexObj.Size == nSize
