@@ -16,14 +16,16 @@ class CallbackMgr:
         return nCbID in self.m_dictCb
 
     # TODO tuplearg，写法改为*
-    def CreateCb(self, funCb, tupleArg):
+    def CreateCb(self, funCb, *args):
         nCbID = self._GenCbID()
-        assert nCbID not in self.m_nCbID
-        self.m_dictCb[nCbID] = (funCb, tupleArg)
+        assert nCbID not in self.m_dictCb
+        self.m_dictCb[nCbID] = (funCb, (*args))
+
+        return nCbID
 
     def Call(self, nCbID, **kwargs):
         self.m_LoggerObj.debug("CbID:%d", nCbID)
-        assert nCbID in self.m_nCbID
+        assert nCbID in self.m_dictCb
 
         funCb, tupleArg = self.m_dictCb[nCbID]
         funCb(*tupleArg, **kwargs)
