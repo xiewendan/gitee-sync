@@ -1,5 +1,13 @@
 import json
 import struct
+# 序列化，需要支持bytes格式的数据
+# 格式修改
+#       第一个字节：高位为Head长度所占字节数
+#       第一个字节：低位为Data长度所占字节数
+#       Head长度
+#       Data长度
+#       读取Header部分的长度：格式为json
+#       读取Data长度，json中，dict["byte"] = ["key1", 长度, "key2", 长度， ]  以此来解析并赋值到json中
 
 
 class DataPack:
