@@ -11,15 +11,15 @@ g_MaxSendBuffSize = 10000000  # 10 M
 
 
 class XxFile:
-    def __init__(self, szMd5, szFileNameFPath, nSize):
+    def __init__(self, szMd5, szFileFPath, nSize):
         self.m_szMd5 = szMd5
-        self.m_szFileNameFPath = szFileNameFPath
+        self.m_szFileFPath = szFileFPath
         self.m_nSize = nSize
 
-        self.m_FileObj = open(szFileNameFPath, "rb")
+        self.m_FileObj = open(szFileFPath, "rb")
 
-    def CheckSame(self, szMd5, szFileNameFPath, nSize):
-        return self.m_szMd5 == szMd5 and self.m_szFileNameFPath == szFileNameFPath and self.m_nSize == nSize
+    def CheckSame(self, szMd5, szFileFPath, nSize):
+        return self.m_szMd5 == szMd5 and self.m_szFileFPath == szFileFPath and self.m_nSize == nSize
 
     def Read(self, nOffset, nBlockSize):
         assert self.m_FileObj.seekable()
@@ -47,6 +47,17 @@ class XxFileDispatcher(xx_buffer_dispatcher.XxBufferDispatcher):
             self.m_XxFileObj.Close()
             self.m_XxFileObj = None
 
+        """
+        {
+            "md5": szMd5,
+            "file_name": szFileName,
+            "size": nSize,
+            "block_index": nBlockIndex,
+            "offset": nBlockSize * nBlockIndex,
+            "block_size": nBlockSize,
+            "file_fpath": szFileFPath
+        }
+        """
         self.m_listToSendFileBlock = []
 
     @staticmethod
@@ -97,18 +108,22 @@ class XxFileDispatcher(xx_buffer_dispatcher.XxBufferDispatcher):
         nSize = dictFileBlock["size"]
         nOffset = dictFileBlock["offset"]
         nBlockSize = dictFileBlock["block_size"]
+        szFileFPath = dictFileBlock["file_fpath"]
 
         if self.m_XxFileObj is not None:
-            if not self.m_XxFileObj.CheckSame(szMd5, szFileName, nSize):
+            if not self.m_XxFileObj.CheckSame(szMd5, szFileFPath, nSize):
                 self.m_XxFileObj.Close()
                 self.m_XxFileObj = None
 
         if self.m_XxFileObj is None:
-            self.m_XxFileObj = XxFile(szMd5, szFileName, nSize)
+            self.m_XxFileObj = XxFile(szMd5, szFileFPath, nSize)
 
         byteData = self.m_XxFileObj.Read(nOffset, nBlockSize)
         assert len(byteData) == nBlockSize
         dictFileBlock["data_block"] = byteData
+
+        del dictFileBlock["file_fpath"]
+        del dictFileBlock["offset"]
 
         # TODO common模块函数依赖外部函数，需要考虑怎么采用注册的方式，实现依赖翻转
         import logic.connection.message_dispatcher as message_dispatcher

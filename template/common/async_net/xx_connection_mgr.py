@@ -116,17 +116,14 @@ class XxConnectionMgr:
         :param dictData={
                 "md5":
                 "file_name":
+                "size":
                 "block_index":
                 "offset":
                 "block_size":
+                "file_fpath":
             }
         :return:
         """
-        assert "md5" in dictData
-        assert "file_name" in dictData
-        assert "block_index" in dictData
-        assert "offset" in dictData
-        assert "block_size" in dictData
 
         ConnectionObj = self._GetConnection(nID)
         ConnectionObj.SendFile(dictData)

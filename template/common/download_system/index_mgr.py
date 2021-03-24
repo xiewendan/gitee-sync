@@ -247,6 +247,13 @@ class IndexMgr:
     def GetAllFileIndex(self):
         return self.m_dictFileIndex
 
+    def GetToDownloadBlockIndex(self, szMd5):
+        assert szMd5 in self.m_dictFileIndex
+
+        FileIndexObj = self.m_dictFileIndex[szMd5]
+
+        return FileIndexObj.ToDownloadedBlockIndex
+
     def GetCbList(self, szMd5):
         assert szMd5 in self.m_dictFileIndex
 

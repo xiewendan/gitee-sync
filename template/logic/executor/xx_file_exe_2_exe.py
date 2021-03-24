@@ -14,3 +14,8 @@ class XxFileExe2Exe(xx_connection_client.XxConnectionClient):
     def GetType():
         import common.async_net.connection.xx_connection as xx_connection
         return xx_connection.EConnectionType.eFileExe2Exe
+
+    @staticmethod
+    def GetDispathcerType():
+        import common.async_net.dispatcher.xx_dispatcher as xx_dispatcher
+        return xx_dispatcher.EDispatcherType.eFile

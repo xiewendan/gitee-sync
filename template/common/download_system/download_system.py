@@ -12,6 +12,7 @@ class DownloadSystem:
 
         import os
         assert nMaxTotalSize > 0
+        assert nBlockSize > 0
         assert os.path.exists(szDownloadFDir)
 
         self.m_LoggerObj.info("szDownloadFDir:%s, MaxTotalSize:%d", szDownloadFDir, nMaxTotalSize)
@@ -31,20 +32,23 @@ class DownloadSystem:
 
         self.m_nOverMilliSecond = nOverMilliSecond
 
+    def GetBlockSize(self):
+        return self.m_nBlockSize
+
     def CheckExist(self, szMd5, szFileName, nSize):
         self.m_LoggerObj.debug("szMd5:%s, szFileName:%s, nSize:%d", szMd5, szFileName, nSize)
 
         return self.m_IndexMgrObj.CheckExistDownloaded(szMd5, szFileName, nSize)
 
     def Download(self, szMd5, szFileName, nSize, nCbID):
-        self.m_LoggerObj.debug("szMd5:%s, szFileName:%s, nSize:%d, nCbID:%d", szMd5, szFileName, nSize, nCbID)
+        self.m_LoggerObj.info("szMd5:%s, szFileName:%s, nSize:%d, nCbID:%d", szMd5, szFileName, nSize, nCbID)
 
         import common.my_path as my_path
         assert not self.CheckExist(szMd5, szFileName, nSize)
 
         if self.m_IndexMgrObj.CheckExistDownloading(szMd5, szFileName, nSize):
             self.m_IndexMgrObj.AddCb(szMd5, nCbID)
-            return
+            return self.m_IndexMgrObj.GetToDownloadBlockIndex(szMd5)
 
         # 删除相同Md5的旧文件
         szDestFPath = self._GenFPath(szMd5)
@@ -70,6 +74,8 @@ class DownloadSystem:
         listToDownloadBlockIndex = [nIndex for nIndex in range(0, math.ceil(nSize / self.m_nBlockSize))]
 
         self.m_IndexMgrObj.AddFileIndex(szMd5, szFileName, nSize, 0, self.m_nBlockSize, listToDownloadBlockIndex)
+
+        return listToDownloadBlockIndex
 
     def Write(self, szMd5, szFileName, nSize, nBlockIndex, byteDataBlock):
         self.m_LoggerObj.debug("szMd5:%s, szFileName:%s, nSize:%d, nBlockIndex:%d", szMd5, szFileName, nSize, nBlockIndex)
@@ -124,6 +130,8 @@ class DownloadSystem:
         dictFileIndex = self.m_IndexMgrObj.GetAllFileIndex()
         for szMd5, FileIndexObj in dictFileIndex.items():
             if nCurTime - FileIndexObj.LastUseTime() >= self.m_nOverMilliSecond:
+                self.m_LoggerObj.error("over time file, szMd5:%s, filename:%s", szMd5, FileIndexObj.FileName)
+
                 listCb = self.m_IndexMgrObj.GetCbList(szMd5)
                 for nCbID in listCb:
                     callback_mgr.Call(nCbID, bOk=False)
@@ -210,8 +218,11 @@ class DownloadSystem:
         return "%s/%s/%s" % (self.m_szFilesFDir, szDir, szFileName)
 
 
-g_DownloadSystem = DownloadSystem()
+szDownloadFDir = os.getcwd() + "/data/download_system"
+nMaxTotalSize = 10000000000
+g_DownloadSystem = DownloadSystem(szDownloadFDir, nMaxTotalSize)
 Download = g_DownloadSystem.Download
 Write = g_DownloadSystem.Write
 CheckOvertime = g_DownloadSystem.CheckOvertime
 T_GetDownloadData = g_DownloadSystem.T_GetDownloadData
+GetBlockSize = g_DownloadSystem.GetBlockSize

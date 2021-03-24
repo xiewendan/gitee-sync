@@ -16,4 +16,4 @@ class XxFileExeInExe(xx_connection_base.XxConnectionBase):
     @staticmethod
     def GetDispathcerType():
         import common.async_net.dispatcher.xx_dispatcher as xx_dispatcher
-        return xx_dispatcher.EDispatcherType.eBuffer
+        return xx_dispatcher.EDispatcherType.eFile

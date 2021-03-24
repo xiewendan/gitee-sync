@@ -5,6 +5,9 @@
 
 # desc:
 
+import os
+
+
 class GmCommandMgr:
     def __init__(self):
         import common.my_log as my_log
@@ -61,29 +64,48 @@ def GetDownloadData():
 
 
 def DownloadFile():
+    import common.my_path as my_path
     import common.download_system.download_system as download_system
     import logic.connection.message_dispatcher as message_dispatcher
     nConnID = 100
     nSize = 28160
     szMd5 = "9767f3103c55c66cc2c9eb39d56db594"
-    szFileName = "E:/project/xiewendan/tools/template/unit_test/test_data/file_cache_system/1.data"
-    listFileBlock = download_system.Download(szMd5, szFileName, nSize)
+    szFileFPath = "E:/project/xiewendan/tools/template/unit_test/test_data/file_cache_system/1.data"
+    szFileName = my_path.FileNameWithExt(szFileFPath)
+    listToDownloadBlockIndex = download_system.Download(szMd5, szFileName, nSize)
+    nBlockSize = download_system.GetBlockSize()
 
-    for FileBlockObj in listFileBlock:
+    for nBlockIndex in listToDownloadBlockIndex:
         dictData = {
-            # TODO
-            "md5": FileBlockObj[0],
-            "file_name": FileBlockObj[1],
-            "size": FileBlockObj[2],
-            "block_index": FileBlockObj[3],
-            "offset": FileBlockObj[4],
-            "block_size": FileBlockObj[5],
+            "md5": szMd5,
+            "file_name": szFileName,
+            "size": nSize,
+            "block_index": nBlockIndex,
+            "offset": nBlockSize * nBlockIndex,
+            "block_size": nBlockSize,
+            "file_fpath": szFileFPath
         }
+
+        if dictData["offset"] + nBlockSize > nSize:
+            dictData["block_size"] = nSize - dictData["offset"]
 
         message_dispatcher.CallRpc(nConnID, "logic.gm.gm_command", "OnDownloadFileRequest", [dictData])
 
 
 def OnDownloadFileRequest(nConnID, dictData):
+    assert "md5" in dictData
+    assert "file_name" in dictData
+    assert "size" in dictData
+    assert "block_index" in dictData
+    assert "offset" in dictData
+    assert "block_size" in dictData
+    assert "file_fpath" in dictData
+
+    import logging
+    if not os.path.exists(dictData["file_fpath"]):
+        logging.error("OnDownloadFileRequest error, file not exists:%s", dictData["file_fpath"])
+        return
+
     import common.async_net.xx_connection_mgr as xx_connection_mgr
     xx_connection_mgr.SendFile(nConnID, dictData)
 

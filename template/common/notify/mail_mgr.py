@@ -96,6 +96,9 @@ class MailMgr:
             szTitle,
             szMsg)
 
+        if True:
+            return
+
         self.m_DestroyingThreadLockObj.acquire()
         if self.m_bDestroying:
             logging.getLogger("myLog").error(
