@@ -64,15 +64,26 @@ def GetDownloadData():
 
 
 def DownloadFile():
+    import logging
+    logging.getLogger().info("")
+
     import common.my_path as my_path
+    import common.callback_mgr as callback_mgr
     import common.download_system.download_system as download_system
     import logic.connection.message_dispatcher as message_dispatcher
-    nConnID = 100
+    # TODO
+    nConnID = 5
+
     nSize = 28160
     szMd5 = "9767f3103c55c66cc2c9eb39d56db594"
-    szFileFPath = "E:/project/xiewendan/tools/template/unit_test/test_data/file_cache_system/1.data"
+    szFileFPath = os.getcwd().replace("\\", "/") + "/unit_test/test_data/file_cache_system/1.data"
     szFileName = my_path.FileNameWithExt(szFileFPath)
-    listToDownloadBlockIndex = download_system.Download(szMd5, szFileName, nSize)
+
+    def FunCB(name, nvalue, bOK=False):
+        print("==============", name, nvalue, bOK)
+
+    nCbID = callback_mgr.CreateCb(FunCB, "xjc", 1)
+    listToDownloadBlockIndex = download_system.Download(szMd5, szFileName, nSize, nCbID)
     nBlockSize = download_system.GetBlockSize()
 
     for nBlockIndex in listToDownloadBlockIndex:
@@ -102,15 +113,21 @@ def OnDownloadFileRequest(nConnID, dictData):
     assert "file_fpath" in dictData
 
     import logging
+    logging.getLogger().info("ConnID:%d, dictData:%s", nConnID, str(dictData))
     if not os.path.exists(dictData["file_fpath"]):
         logging.error("OnDownloadFileRequest error, file not exists:%s", dictData["file_fpath"])
         return
 
+    # TODO
+    nFileExeInExeConnID = 5
     import common.async_net.xx_connection_mgr as xx_connection_mgr
-    xx_connection_mgr.SendFile(nConnID, dictData)
+    xx_connection_mgr.SendFile(nFileExeInExeConnID, dictData)
 
 
 def OnDownloadFileReceive(nConnID, dictData):
+    import logging
+    logging.getLogger().info("ConnID:%d, dictData:%s", nConnID, str(dictData))
+
     import common.download_system.download_system as download_system
     szMd5 = dictData["md5"]
     szFileName = dictData["file_name"]

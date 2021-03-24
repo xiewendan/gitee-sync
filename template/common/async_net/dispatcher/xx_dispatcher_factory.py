@@ -11,8 +11,20 @@ class XxDispatcherFactory:
     def RegisterAll(self):
         self.m_LoggerObj.info("register all dispatcher class")
 
-        import common.async_net.dispatcher.xx_buffer_dispatcher as xx_buffer_dispatcher
-        self._RegisterClass(xx_buffer_dispatcher.XxBufferDispatcher)
+        import os
+        import common.util as util
+        import common.async_net.dispatcher.xx_dispatcher_base as xx_dispatcher_base
+
+        szCwd = os.getcwd()
+        listDispatcherClassObj = []
+        listDispatcherClassObj.extend(
+            util.FilterClassObj(
+                os.path.join(szCwd, "common/async_net/dispatcher"),
+                r"^xx_[_a-zA-Z0-9]*.py$",
+                xx_dispatcher_base.XxDispatcherBase))
+
+        for DispatcherClassObj in listDispatcherClassObj:
+            self._RegisterClass(DispatcherClassObj)
 
     def UnregisterAll(self):
         self.m_LoggerObj.info("unregister all dispatcher class")

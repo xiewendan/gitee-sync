@@ -53,48 +53,59 @@ class CmdXxConnectionMgrClient(cmd_base.CmdBase):
         # call rpc
         import logic.connection.message_dispatcher as message_dispatcher
 
-        szCommand = "\n".join(
-            [
-                # 打印所有的数据
-                # "import logic.gm.gm_command as gm_command",
-                # "gm_command.GetAllExecutorData()",
-                # "gm_command.GetAllConnectionData()",
-                # "gm_command.GetDownloadData()",
+        listCommand = [
+            "\n".join(
+                [
+                    # 销毁连接
+                    # "import common.async_net.xx_connection_mgr as xx_connection_mgr",
+                    # "xx_connection_mgr.DestroyConnection(4)",
 
-                # 销毁连接
-                # "import common.async_net.xx_connection_mgr as xx_connection_mgr",
-                # "xx_connection_mgr.DestroyConnection(4)",
+                    # 发起连接Exe
+                    "import common.async_net.xx_connection_mgr as xx_connection_mgr",
+                    "import common.async_net.connection.xx_connection as xx_connection",
+                    "dictConnectionData = xx_connection_mgr.CreateConnectionData()",
+                    "nConnectionID = xx_connection_mgr.CreateConnection(xx_connection.EConnectionType.eExe2Exe, dictConnectionData)",
+                    "xx_connection_mgr.Connect(nConnectionID, '127.0.0.1', 60020)",
+                    "dictConnectionData1 = xx_connection_mgr.CreateConnectionData()",
+                    "nConnectionID1 = xx_connection_mgr.CreateConnection(xx_connection.EConnectionType.eFileExe2Exe, dictConnectionData1)",
+                    "xx_connection_mgr.Connect(nConnectionID1, '127.0.0.1', 60021)",
 
-                # 发起连接Exe
-                # "import common.async_net.xx_connection_mgr as xx_connection_mgr",
-                # "import common.async_net.connection.xx_connection as xx_connection",
-                # "dictConnectionData = xx_connection_mgr.CreateConnectionData()",
-                # "nConnectionID = xx_connection_mgr.CreateConnection(xx_connection.EConnectionType.eExe2Exe, dictConnectionData)",
-                # "xx_connection_mgr.Connect(nConnectionID, '10.249.80.162', 60020)",
-                # "dictConnectionData1 = xx_connection_mgr.CreateConnectionData()",
-                # "nConnectionID1 = xx_connection_mgr.CreateConnection(xx_connection.EConnectionType.eFileExe2Exe, dictConnectionData1)",
-                # "xx_connection_mgr.Connect(nConnectionID1, '10.249.80.162', 60021)",
+                ]),
+            "\n".join(
+                [
+                    # 下载文件
+                    "import logic.gm.gm_command as gm_command",
+                    "gm_command.DownloadFile()",
+                ]),
+            # "\n".join(
+            #     [
+            #         # 打印所有的数据
+            #         "import logic.gm.gm_command as gm_command",
+            #         "gm_command.GetAllConnectionData()",
+            #         "gm_command.GetDownloadData()",
+            #         "gm_command.GetAllExecutorData()",
+            #     ]
+            # )
 
-                # 下载文件
-                "import logic.gm.gm_command as gm_command",
-                "gm_command.DownloadFile()",
-            ])
+        ]
 
-        def GMCallback(dictData):
-            self.m_LoggerObj.info("********************dictData:%s", str(dictData))
-            if "ret" in dictData:
-                self.m_LoggerObj.info("********************ret:\n%s", dictData["ret"])
+        import time
+        for szCommand in listCommand:
+            def GMCallback(dictData):
+                self.m_LoggerObj.info("********************dictData:%s", str(dictData))
+                if "ret" in dictData:
+                    self.m_LoggerObj.info("********************ret:\n%s", dictData["ret"])
 
-        message_dispatcher.CallRpc(nConnectionID, "logic.gm.gm_command", "Do", [szCommand],
-                                   Callback=GMCallback,
-                                   tupleArg=())
+            message_dispatcher.CallRpc(nConnectionID, "logic.gm.gm_command", "Do", [szCommand],
+                                       Callback=GMCallback,
+                                       tupleArg=())
 
-        # wait callback
-        nCount = 4
-        while nCount > 0:
-            time.sleep(1)
-            xx_connection_mgr.Update()
-            nCount -= 1
+            # wait callback
+            nCount = 4
+            while nCount > 0:
+                time.sleep(1)
+                xx_connection_mgr.Update()
+                nCount -= 1
 
         # destroy
         time.sleep(1)

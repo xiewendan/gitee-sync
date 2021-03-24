@@ -19,9 +19,7 @@ class FileCacheSystem:
         import common.my_log as my_log
         self.m_LoggerObj = my_log.MyLog(__file__)
 
-        import os
         assert nMaxTotalSize > 0
-        assert os.path.exists(szCacheFDir)
 
         self.m_LoggerObj.info("szCacheFDir:%s, MaxTotalSize:%d", szCacheFDir, nMaxTotalSize)
         szCacheFDir = szCacheFDir.replace("\\", "/")

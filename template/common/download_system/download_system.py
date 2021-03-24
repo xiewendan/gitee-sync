@@ -10,10 +10,8 @@ class DownloadSystem:
         import common.my_log as my_log
         self.m_LoggerObj = my_log.MyLog(__file__)
 
-        import os
         assert nMaxTotalSize > 0
         assert nBlockSize > 0
-        assert os.path.exists(szDownloadFDir)
 
         self.m_LoggerObj.info("szDownloadFDir:%s, MaxTotalSize:%d", szDownloadFDir, nMaxTotalSize)
         szDownloadFDir = szDownloadFDir.replace("\\", "/")
@@ -26,7 +24,7 @@ class DownloadSystem:
 
         self.m_nBlockSize = nBlockSize
 
-        self._CheckCacheFile(bFullCheck)
+        self._CheckCacheFile()
 
         self.m_bFullCheck = bFullCheck
 
@@ -169,7 +167,7 @@ class DownloadSystem:
             else:
                 self.m_LoggerObj.info("del file:%s", szFPath)
 
-    def _CheckCacheFile(self, bFullCheck):
+    def _CheckCacheFile(self):
         """
         确保索引和缓存文件两边一致
         所以索引，都有对应的缓存文件
@@ -218,9 +216,9 @@ class DownloadSystem:
         return "%s/%s/%s" % (self.m_szFilesFDir, szDir, szFileName)
 
 
-szDownloadFDir = os.getcwd() + "/data/download_system"
-nMaxTotalSize = 10000000000
-g_DownloadSystem = DownloadSystem(szDownloadFDir, nMaxTotalSize)
+g_szDownloadFDir = os.getcwd() + "/data/download_system"
+g_nMaxTotalSize = 10000000000
+g_DownloadSystem = DownloadSystem(g_szDownloadFDir, g_nMaxTotalSize)
 Download = g_DownloadSystem.Download
 Write = g_DownloadSystem.Write
 CheckOvertime = g_DownloadSystem.CheckOvertime
