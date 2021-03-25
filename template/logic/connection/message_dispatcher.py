@@ -24,7 +24,7 @@ class MessageDispatcher:
 
     @my_log.SeperateWrap()
     def OnRecv(self, nID, dictData):
-        self.m_LoggerObj.debug("id:%s, dictData:%s", nID, str(dictData))
+        self.m_LoggerObj.debug("id:%s, dictData:%s", nID, Str(dictData))
 
         szModule = dictData[EDataName.eModule]
         szFunction = dictData[EDataName.eFunction]

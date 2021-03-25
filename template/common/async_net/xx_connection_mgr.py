@@ -90,14 +90,14 @@ class XxConnectionMgr:
 
     @my_log.SeperateWrap()
     def Send(self, nID, dictData):
-        self.m_LoggerObj.info("id:%d, data:%s", nID, str(dictData))
+        self.m_LoggerObj.info("id:%d, data:%s", nID, Str(dictData))
 
         ConnectionObj = self._GetConnection(nID)
         ConnectionObj.Send(dictData)
 
     @my_log.SeperateWrap()
     def SendAsync(self, nID, dictData, funCallback=None, tupleArg=None):
-        self.m_LoggerObj.debug("id:%d, dictData:%s", nID, str(dictData))
+        self.m_LoggerObj.debug("id:%d, dictData:%s", nID, Str(dictData))
 
         if funCallback is not None:
             nAsyncID = self._GenAsyncID()
@@ -235,7 +235,7 @@ class XxConnectionMgr:
         return self.m_dictAsyncID2Callback[nAsyncID]
 
     def _HandleAsync(self, nID, dictData):
-        self.m_LoggerObj.debug("id:%d, dictData:%s", nID, str(dictData))
+        self.m_LoggerObj.debug("id:%d, dictData:%s", nID, Str(dictData))
 
         import common.async_net.connection.xx_connection as xx_connection
         if xx_connection.EAsyncName.eAsyncID in dictData:

@@ -74,13 +74,13 @@ def DownloadFile():
     # TODO
     nConnID = 5
 
-    nSize = 28160
-    szMd5 = "9767f3103c55c66cc2c9eb39d56db594"
-    szFileFPath = os.getcwd().replace("\\", "/") + "/unit_test/test_data/file_cache_system/1.data"
+    nSize = 1026052571
+    szMd5 = "ab67334b9bd3dc0349377738f0f0f97e"
+    szFileFPath = os.getcwd().replace("\\", "/") + "/unit_test/test_data/file_cache_system/trunk__c74dcf98c_u74dcf98c.ipa"
     szFileName = my_path.FileNameWithExt(szFileFPath)
 
-    def FunCB(name, nvalue, bOK=False):
-        print("==============", name, nvalue, bOK)
+    def FunCB(name, nvalue, bOk=False):
+        print("==============", name, nvalue, bOk)
 
     nCbID = callback_mgr.CreateCb(FunCB, "xjc", 1)
     listToDownloadBlockIndex = download_system.Download(szMd5, szFileName, nSize, nCbID)
@@ -113,7 +113,7 @@ def OnDownloadFileRequest(nConnID, dictData):
     assert "file_fpath" in dictData
 
     import logging
-    logging.getLogger().info("ConnID:%d, dictData:%s", nConnID, str(dictData))
+    logging.getLogger().info("ConnID:%d, dictData:%s", nConnID, Str(dictData))
     if not os.path.exists(dictData["file_fpath"]):
         logging.error("OnDownloadFileRequest error, file not exists:%s", dictData["file_fpath"])
         return
@@ -126,14 +126,14 @@ def OnDownloadFileRequest(nConnID, dictData):
 
 def OnDownloadFileReceive(nConnID, dictData):
     import logging
-    logging.getLogger().info("ConnID:%d, dictData:%s", nConnID, str(dictData))
+    logging.getLogger().info("ConnID:%d, dictData:%s", nConnID, Str(dictData))
 
     import common.download_system.download_system as download_system
     szMd5 = dictData["md5"]
     szFileName = dictData["file_name"]
     nSize = dictData["size"]
     nBlockIndex = dictData["block_index"]
-    byteDataBlock = dictData["data_block"]
+    byteDataBlock = dictData["byte_data_block"]
 
     download_system.Write(szMd5, szFileName, nSize, nBlockIndex, byteDataBlock)
 

@@ -92,7 +92,7 @@ class CmdXxConnectionMgrClient(cmd_base.CmdBase):
         import time
         for szCommand in listCommand:
             def GMCallback(dictData):
-                self.m_LoggerObj.info("********************dictData:%s", str(dictData))
+                self.m_LoggerObj.info("********************dictData:%s", Str(dictData))
                 if "ret" in dictData:
                     self.m_LoggerObj.info("********************ret:\n%s", dictData["ret"])
 

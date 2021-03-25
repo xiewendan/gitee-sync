@@ -15,7 +15,7 @@ class ExecutorMgr:
         self.m_dictExecutorData = {}
 
     def AddExecutorData(self, nConnID, dictData):
-        self.m_LoggerObj.debug("ConnID:%d, dictData:%s", nConnID, str(dictData))
+        self.m_LoggerObj.debug("ConnID:%d, dictData:%s", nConnID, Str(dictData))
 
         assert nConnID not in self.m_dictExecutorData
         self.m_dictExecutorData[nConnID] = dictData

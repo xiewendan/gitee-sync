@@ -18,9 +18,12 @@ class TestDataPack(unittest.TestCase):
         logging.getLogger("myLog").debug("TestDataPack setUp:")
 
     def test_pack_unpack(self):
-        dictData = {"name": "xjc", "age": 16, "ismale": True}
+        dictData = {"name": "xjc", "age": 16, "ismale": True,
+                    "arg": [{"byte_data_block": b"xjc is a good boy"}, [b'xjc is not a good boy']]}
         byteData = data_pack.Serialize(dictData)
         dictUnpackData = data_pack.Unserialize(byteData)
+        print(dictData)
+        print(dictUnpackData)
 
         self.assertTrue(unit_test_helper.CompareDict(dictData, dictUnpackData))
 

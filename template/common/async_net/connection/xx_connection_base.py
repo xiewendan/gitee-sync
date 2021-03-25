@@ -62,7 +62,7 @@ class XxConnectionBase:
         return xx_dispatcher_mgr.GetPort(self.DispatcherID)
 
     def Send(self, dictData):
-        self.m_LoggerObj.debug("data:%s", str(dictData))
+        self.m_LoggerObj.debug("data:%s", Str(dictData))
 
         if self.m_eConnectState not in (xx_connection.EConnectionState.eConnected,):
             self.m_LoggerObj.error("failed, not connected, ID:%d, ConnectState:%d", self.m_nID, self.m_eConnectState)
@@ -72,7 +72,7 @@ class XxConnectionBase:
         xx_dispatcher_mgr.Send(self.DispatcherID, dictData)
 
     def SendFile(self, dictData):
-        self.m_LoggerObj.debug("data:%s", str(dictData))
+        self.m_LoggerObj.debug("data:%s", Str(dictData))
 
         if self.m_eConnectState not in (xx_connection.EConnectionState.eConnected,):
             self.m_LoggerObj.error("failed, not connected, ID:%d, ConnectState:%d", self.m_nID, self.m_eConnectState)
@@ -171,7 +171,7 @@ class XxConnectionBase:
         return self._OnRead(dictData)
 
     def _OnRead(self, dictData):
-        self.m_LoggerObj.info("dictData:%s", str(dictData))
+        self.m_LoggerObj.info("dictData:%s", Str(dictData))
         import logic.connection.message_dispatcher as message_dispatcher
 
         return message_dispatcher.OnRecv(self.m_nID, dictData)

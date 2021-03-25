@@ -12,8 +12,6 @@ import common.async_net.dispatcher.xx_dispatcher as xx_dispatcher
 import common.async_net.dispatcher.xx_dispatcher_base as xx_dispatcher_base
 import common.async_net.pack.data_pack as data_pack
 
-g_RecvCount = 1024
-
 
 class XxBufferDispatcher(xx_dispatcher_base.XxDispatcherBase):
     """"""
@@ -23,6 +21,7 @@ class XxBufferDispatcher(xx_dispatcher_base.XxDispatcherBase):
 
         self.m_WriteBufferObj = io.BytesIO()
         self.m_ReadBufferObj = io.BytesIO()
+        self.m_RecvCount = 1024 * 1024
 
     def Destroy(self):
         super().Destroy()
@@ -35,7 +34,7 @@ class XxBufferDispatcher(xx_dispatcher_base.XxDispatcherBase):
         return xx_dispatcher.EDispatcherType.eBuffer
 
     def Send(self, dictData):
-        self.m_LoggerObj.debug("data:%s", str(dictData))
+        self.m_LoggerObj.debug("data:%s", Str(dictData))
 
         byteData = data_pack.Serialize(dictData)
         self.m_WriteBufferObj.write(byteData)
@@ -56,7 +55,7 @@ class XxBufferDispatcher(xx_dispatcher_base.XxDispatcherBase):
 
         # 接收数据
         try:
-            byteData = self.m_SocketObj.recv(g_RecvCount)
+            byteData = self.m_SocketObj.recv(self.m_RecvCount)
         except BaseException as e:
             import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
             xx_dispatcher_mgr.HandleDisconnectEvent(self.m_nID)
@@ -71,7 +70,6 @@ class XxBufferDispatcher(xx_dispatcher_base.XxDispatcherBase):
 
         # 放到buff中
         self.m_ReadBufferObj.write(byteData)
-
 
         # 反序列化解析
         byteDataAll = self.m_ReadBufferObj.getvalue()

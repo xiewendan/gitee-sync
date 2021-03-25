@@ -3,38 +3,18 @@
 #          才算发送完毕
 
 
+import common.download_system.xx_file as xx_file
 import common.async_net.dispatcher.xx_buffer_dispatcher as xx_buffer_dispatcher
 import common.async_net.dispatcher.xx_dispatcher as xx_dispatcher
 
-g_RecvCount = 1024
 g_MaxSendBuffSize = 10000000  # 10 M
-
-
-class XxFile:
-    def __init__(self, szMd5, szFileFPath, nSize):
-        self.m_szMd5 = szMd5
-        self.m_szFileFPath = szFileFPath
-        self.m_nSize = nSize
-
-        self.m_FileObj = open(szFileFPath, "rb")
-
-    def CheckSame(self, szMd5, szFileFPath, nSize):
-        return self.m_szMd5 == szMd5 and self.m_szFileFPath == szFileFPath and self.m_nSize == nSize
-
-    def Read(self, nOffset, nBlockSize):
-        assert self.m_FileObj.seekable()
-
-        self.m_FileObj.seek(nOffset)
-        return self.m_FileObj.read(nBlockSize)
-
-    def Close(self):
-        self.m_FileObj.close()
-        self.m_FileObj = None
 
 
 class XxFileDispatcher(xx_buffer_dispatcher.XxBufferDispatcher):
     def __init__(self, dictData):
         super().__init__(dictData)
+
+        self.m_RecvCount = 1024 * 1024 * 10
 
         self.m_XxFileObj = None
 
@@ -65,7 +45,7 @@ class XxFileDispatcher(xx_buffer_dispatcher.XxBufferDispatcher):
         return xx_dispatcher.EDispatcherType.eFile
 
     def SendFile(self, dictData):
-        self.m_LoggerObj.debug("data:%s", str(dictData))
+        self.m_LoggerObj.debug("data:%s", Str(dictData))
 
         self.m_listToSendFileBlock.append(dictData)
 
@@ -95,7 +75,8 @@ class XxFileDispatcher(xx_buffer_dispatcher.XxBufferDispatcher):
         if len(self.m_listToSendFileBlock) == 0:
             return
 
-        dictFileBlock = self.m_listToSendFileBlock[0]
+        dictFileBlock = self.m_listToSendFileBlock.pop(0)
+        self.m_LoggerObj.debug("dictFileBlock:%s", Str(dictFileBlock))
 
         nLenWriteBuffer = len(self.m_WriteBufferObj.getvalue())
         if nLenWriteBuffer + dictFileBlock["block_size"] > g_MaxSendBuffSize:
@@ -116,17 +97,17 @@ class XxFileDispatcher(xx_buffer_dispatcher.XxBufferDispatcher):
                 self.m_XxFileObj = None
 
         if self.m_XxFileObj is None:
-            self.m_XxFileObj = XxFile(szMd5, szFileFPath, nSize)
+            self.m_XxFileObj = xx_file.XxFile(szMd5, szFileFPath, nSize)
 
         byteData = self.m_XxFileObj.Read(nOffset, nBlockSize)
         assert len(byteData) == nBlockSize
-        dictFileBlock["data_block"] = byteData
+        dictFileBlock["byte_data_block"] = byteData
 
         del dictFileBlock["file_fpath"]
         del dictFileBlock["offset"]
 
         # TODO common模块函数依赖外部函数，需要考虑怎么采用注册的方式，实现依赖翻转
         import logic.connection.message_dispatcher as message_dispatcher
-        message_dispatcher.F_CreateRpcData("logic.gm.gm_command", "OnDownloadFileReceive", [dictFileBlock])
+        dictRpcData = message_dispatcher.F_CreateRpcData("logic.gm.gm_command", "OnDownloadFileReceive", [dictFileBlock])
 
-        self.Send(dictFileBlock)
+        self.Send(dictRpcData)

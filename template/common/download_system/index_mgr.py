@@ -223,7 +223,7 @@ class IndexMgr:
         FileIndexObj = self.m_dictFileIndex[szMd5]
         FileIndexObj.Update(nBlockIndex, nDataSize)
 
-        self._UpdateUseTime(szMd5)
+        self.F_UpdateUseTime(szMd5)
 
     def GetBlockSize(self, szMd5):
         assert szMd5 in self.m_dictFileIndex
@@ -236,7 +236,7 @@ class IndexMgr:
         FileIndexObj = self.m_dictFileIndex[szMd5]
         FileIndexObj.AddCb(nCbID)
 
-        self._UpdateUseTime(szMd5)
+        self.F_UpdateUseTime(szMd5)
 
     def CheckExistDownloading(self, szMd5, szFileName, nSize):
         return self._CheckExist(szMd5, szFileName, nSize) and not self._IsDownloaded(szMd5)
@@ -264,7 +264,7 @@ class IndexMgr:
         assert szMd5 in self.m_dictFileIndex
 
         FileIndexObj = self.m_dictFileIndex[szMd5]
-        FileIndexObj.RemoveCblist(szMd5)
+        FileIndexObj.RemoveCblist()
 
     def RemoveFileIndex(self, szMd5):
         assert szMd5 in self.m_dictFileIndex
@@ -295,6 +295,7 @@ class IndexMgr:
 
     def ClearSpace(self, nSize):
         listRemoveMd5 = []
+        listRemoveCb = []
         while self.m_LinkMd5QueueObj.Top() is not None:
             if self.CheckSpace(nSize):
                 break
@@ -302,17 +303,19 @@ class IndexMgr:
                 szMd5 = self.m_LinkMd5QueueObj.Top()
                 assert szMd5 is not None
 
+                listRemoveCb.extend(self.GetCbList(szMd5))
+
                 self.RemoveFileIndex(szMd5)
                 listRemoveMd5.append(szMd5)
 
-        return listRemoveMd5
+        return listRemoveMd5, listRemoveCb
 
     def _AddSize(self, nSize):
         nTotalSize = self.m_nTotalSize + nSize
         assert nTotalSize >= 0
         self.m_nTotalSize = nTotalSize
 
-    def _UpdateUseTime(self, szMd5):
+    def F_UpdateUseTime(self, szMd5):
 
         self.m_LinkMd5QueueObj.Pop(szMd5)
         self.m_LinkMd5QueueObj.Push(szMd5)
@@ -327,15 +330,17 @@ class IndexMgr:
             with open(self.m_szIndexFullPath, "r") as FileObj:
                 listFileIndex = json.load(FileObj)
                 for listData in listFileIndex:
+                    # [Md5, FileName, Size, DownloadedSize, BlockSize, ToDownloadedBlockIndex, LastUseTime]
+                    # 参考 FileIndex.ToList中的顺序
                     szMd5 = listData[0]
                     szFileName = listData[1]
                     nSize = listData[2]
-                    nLastUseTime = listData[3]
 
-                    nDownloadedSize = listData[4]
-                    nBlockSize = listData[5]
-                    listToDownloadBlockIndex = listData[6]
+                    nDownloadedSize = listData[3]
+                    nBlockSize = listData[4]
+                    listToDownloadBlockIndex = listData[5]
 
+                    nLastUseTime = listData[6]
                     self.AddFileIndex(szMd5, szFileName, nSize, nDownloadedSize, nBlockSize, listToDownloadBlockIndex, nLastUseTime)
 
     def _IsDownloaded(self, szMd5):

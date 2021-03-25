@@ -12,6 +12,12 @@ import os
 import sys
 import time
 
+g_MaxStrLen = 500
+
+
+def Str(DataObj):
+    return str(DataObj)[:500]
+
 
 def CheckCWD():
     print(os.getcwd())
@@ -62,6 +68,8 @@ def StartApp(args):
 def Main(args):
     print("Begin:\t" + time.strftime('%H:%M:%S', time.localtime(time.time())))
 
+    builtins.Str = Str
+
     # 检查当前目录是否正常
     CheckCWD()
 
@@ -82,4 +90,3 @@ def Main(args):
 
 if __name__ == "__main__":
     Main(sys.argv)
-

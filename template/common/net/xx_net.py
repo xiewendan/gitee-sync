@@ -46,7 +46,7 @@ class XxNet:
         self.m_ListenLockObj.release()
 
     def Send(self, szIp, nPort, dictData):
-        self.m_LoggerObj.info("ip:%s, port:%d, dictData:%s", szIp, nPort, str(dictData))
+        self.m_LoggerObj.info("ip:%s, port:%d, dictData:%s", szIp, nPort, Str(dictData))
 
         IpPortDataObj = ip_port_data.IpPortData(szIp, nPort, dictData)
 
@@ -70,7 +70,7 @@ class XxNet:
             self._Handle(szIp, nPort, dictData)
 
     def _Handle(self, szIp, nPort, dictData):
-        self.m_LoggerObj.info("ip:%s, port:%d, data:%s", szIp, nPort, str(dictData))
+        self.m_LoggerObj.info("ip:%s, port:%d, data:%s", szIp, nPort, Str(dictData))
         pass
 
     def F_GetSendData(self):

@@ -1,12 +1,13 @@
 import os
 
 from .index_mgr import IndexMgr
+from .xx_file import XxFile
 
 
 class DownloadSystem:
     """"""
 
-    def __init__(self, szDownloadFDir, nMaxTotalSize, nOverMilliSecond=300000, bFullCheck=False, nBlockSize=2000000):
+    def __init__(self, szDownloadFDir, nMaxTotalSize, nOverMilliSecond=300000, bFullCheck=False, nBlockSize=4000000):
         import common.my_log as my_log
         self.m_LoggerObj = my_log.MyLog(__file__)
 
@@ -30,6 +31,19 @@ class DownloadSystem:
 
         self.m_nOverMilliSecond = nOverMilliSecond
 
+        self.m_XxFileObj = None
+
+    def _GetXxFile(self, szMd5, szFileFPath, nSize):
+        if self.m_XxFileObj is not None:
+            if not self.m_XxFileObj.CheckSame(szMd5, szFileFPath, nSize):
+                self.m_XxFileObj.Close()
+                self.m_XxFileObj = None
+
+        if self.m_XxFileObj is None:
+            self.m_XxFileObj = XxFile(szMd5, szFileFPath, nSize, "wb")
+
+        return self.m_XxFileObj
+
     def GetBlockSize(self):
         return self.m_nBlockSize
 
@@ -45,13 +59,18 @@ class DownloadSystem:
         assert not self.CheckExist(szMd5, szFileName, nSize)
 
         if self.m_IndexMgrObj.CheckExistDownloading(szMd5, szFileName, nSize):
+            self.m_LoggerObj.info("exist downloading")
+
             self.m_IndexMgrObj.AddCb(szMd5, nCbID)
             return self.m_IndexMgrObj.GetToDownloadBlockIndex(szMd5)
 
         # 删除相同Md5的旧文件
         szDestFPath = self._GenFPath(szMd5)
         if szMd5 in self.m_IndexMgrObj:
+            listCb = self.m_IndexMgrObj.GetCbList(szMd5)
             self.m_IndexMgrObj.RemoveFileIndex(szMd5)
+            self._CallCb(listCb)
+
             # noinspection PyBroadException
             try:
                 os.remove(szDestFPath)
@@ -64,19 +83,22 @@ class DownloadSystem:
 
         # 创建空文件
         my_path.CreateFileDir(szDestFPath)
-        with open(szDestFPath, "wb"):
-            pass
+        XxFileObj = self._GetXxFile(szMd5, szDestFPath, nSize)
+        XxFileObj.Write(nSize - 1, b'e')
 
         # 创建索引
         import math
         listToDownloadBlockIndex = [nIndex for nIndex in range(0, math.ceil(nSize / self.m_nBlockSize))]
 
         self.m_IndexMgrObj.AddFileIndex(szMd5, szFileName, nSize, 0, self.m_nBlockSize, listToDownloadBlockIndex)
+        self.m_IndexMgrObj.AddCb(szMd5, nCbID)
+        self.m_LoggerObj.info("new downloading")
 
         return listToDownloadBlockIndex
 
     def Write(self, szMd5, szFileName, nSize, nBlockIndex, byteDataBlock):
         self.m_LoggerObj.debug("szMd5:%s, szFileName:%s, nSize:%d, nBlockIndex:%d", szMd5, szFileName, nSize, nBlockIndex)
+        self.m_LoggerObj.info("szMd5:%s, szFileName:%s, nSize:%d, nBlockIndex:%d", szMd5, szFileName, nSize, nBlockIndex)
 
         assert self.m_IndexMgrObj.CheckExistDownloading(szMd5, szFileName, nSize), "发送到远端请求文件，结果本地下载缓存不够，把文件清除了就尴尬了"
 
@@ -88,9 +110,8 @@ class DownloadSystem:
         assert nDataSize == nBlockSize or nOffset + nDataSize == nSize
 
         # 更新文件
-        with open(szDestFPath, "wb") as FileObj:
-            FileObj.seek(nOffset)
-            FileObj.write(byteDataBlock)
+        XxFileObj = self._GetXxFile(szMd5, szDestFPath, nSize)
+        XxFileObj.Write(nOffset, byteDataBlock)
 
         # 更新索引
         self.m_IndexMgrObj.UpdateFileIndex(szMd5, nBlockIndex, nDataSize)
@@ -112,11 +133,21 @@ class DownloadSystem:
 
         # 调用回调
         listCb = self.m_IndexMgrObj.GetCbList(szMd5)
-        import common.callback_mgr as callback_mgr
-        for nCbID in listCb:
-            callback_mgr.Call(nCbID, bOk=bMd5Ok)
-
         self.m_IndexMgrObj.RemoveCbList(szMd5)
+        self._CallCb(listCb, bMd5Ok)
+
+    def UseFile(self, szMd5, szFileName, nSize):
+        szDestFPath = self._GenFPath(szMd5)
+        if not self.m_IndexMgrObj.CheckExistDownloaded(szMd5, szFileName, nSize) and \
+                not self.m_IndexMgrObj.CheckExistDownloading(szMd5, szFileName, nSize):
+            return ""
+
+        if not os.path.exists(szDestFPath):
+            return ""
+
+        self.m_IndexMgrObj.F_UpdateUseTime(szMd5)
+
+        return szDestFPath
 
     def CheckOvertime(self):
         import time
@@ -127,12 +158,17 @@ class DownloadSystem:
 
         dictFileIndex = self.m_IndexMgrObj.GetAllFileIndex()
         for szMd5, FileIndexObj in dictFileIndex.items():
-            if nCurTime - FileIndexObj.LastUseTime() >= self.m_nOverMilliSecond:
+            if nCurTime - FileIndexObj.LastUseTime >= self.m_nOverMilliSecond:
                 self.m_LoggerObj.error("over time file, szMd5:%s, filename:%s", szMd5, FileIndexObj.FileName)
 
                 listCb = self.m_IndexMgrObj.GetCbList(szMd5)
-                for nCbID in listCb:
-                    callback_mgr.Call(nCbID, bOk=False)
+                self.m_IndexMgrObj.RemoveCbList(szMd5)
+                self._CallCb(listCb, False)
+
+    def Destroy(self):
+        self.m_LoggerObj.debug("")
+
+        self.m_IndexMgrObj.SaveIndex()
 
     def T_GetDownloadData(self):
         """用于测试，获得所有下载的数据"""
@@ -150,10 +186,16 @@ class DownloadSystem:
     # ********************************************************************************
     # private
     # ********************************************************************************
+    def _CallCb(self, listCb, bMd5Ok=False):
+        import common.callback_mgr as callback_mgr
+        for nCbID in listCb:
+            callback_mgr.Call(nCbID, bOk=bMd5Ok)
+
     def _ClearSpace(self, nNeedSize):
         self.m_LoggerObj.info("NeedSize:%d", nNeedSize)
 
-        listDelFile = self.m_IndexMgrObj.ClearSpace(nNeedSize)
+        listDelFile, listDelCb = self.m_IndexMgrObj.ClearSpace(nNeedSize)
+        self._CallCb(listDelCb)
 
         self.m_LoggerObj.info("to del file:%s", str(listDelFile))
 

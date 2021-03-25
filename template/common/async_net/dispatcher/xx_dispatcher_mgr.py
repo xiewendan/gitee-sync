@@ -57,7 +57,7 @@ class XxDispatcherMgr:
         DispatcherObj.Close()
 
     def CreateDispatcher(self, nType, dictData):
-        self.m_LoggerObj.debug("type:%d, dictData:%s", nType, str(dictData))
+        self.m_LoggerObj.debug("type:%d, dictData:%s", nType, Str(dictData))
 
         DispatcherObj = self.m_DispatcherFactory.CreateDispatcher(nType, dictData)
         self._AddDispatcher(DispatcherObj)
@@ -97,7 +97,7 @@ class XxDispatcherMgr:
         self._Register(DispatcherObj.SocketObj, selectors.EVENT_READ | selectors.EVENT_WRITE, self._ReadWriteCB)
 
     def Send(self, nDispatcherID, dictData):
-        self.m_LoggerObj.debug("dispatcherID:%d, dictdata:%s", nDispatcherID, str(dictData))
+        self.m_LoggerObj.debug("dispatcherID:%d, dictdata:%s", nDispatcherID, Str(dictData))
 
         DispatcherObj = self._GetDispatcher(nDispatcherID)
         DispatcherObj.Send(dictData)
@@ -105,7 +105,7 @@ class XxDispatcherMgr:
         self._Modify(DispatcherObj.SocketObj, selectors.EVENT_READ | selectors.EVENT_WRITE, self._ReadWriteCB)
 
     def SendFile(self, nDispatcherID, dictData):
-        self.m_LoggerObj.debug("dispatcherID:%d, dictdata:%s", nDispatcherID, str(dictData))
+        self.m_LoggerObj.debug("dispatcherID:%d, dictdata:%s", nDispatcherID, Str(dictData))
 
         DispatcherObj = self._GetDispatcher(nDispatcherID)
         DispatcherObj.SendFile(dictData)
