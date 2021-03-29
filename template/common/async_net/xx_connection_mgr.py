@@ -150,6 +150,10 @@ class XxConnectionMgr:
 
         return "\n".join(listConnectionData) + "\n" + xx_dispatcher_mgr.GetAllDataStr()
 
+    def IsConnected(self, nConnID):
+        ConnectionObj = self._GetConnection(nConnID)
+        return ConnectionObj.IsConnected()
+
     # ********************************************************************************
     # to destroy
     # ********************************************************************************
@@ -315,6 +319,7 @@ Update = g_XxConnectionMgrObj.Update
 Destroy = g_XxConnectionMgrObj.Destroy
 DestroyConnection = g_XxConnectionMgrObj.DestroyConnection
 GetAllDataStr = g_XxConnectionMgrObj.GetAllDataStr
+IsConnected = g_XxConnectionMgrObj.IsConnected
 
 F_OnConnect = g_XxConnectionMgrObj.F_OnConnect
 F_OnDisconnect = g_XxConnectionMgrObj.F_OnDisconnect

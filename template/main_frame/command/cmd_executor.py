@@ -14,9 +14,22 @@ class CmdExecutor(cmd_base.CmdBase):
         super().__init__()
         self.m_LoggerObj = my_log.MyLog(__file__)
 
+        self.m_szIp = ""
+        self.m_nExePort = 0
+        self.m_nFileExePort = 0
+
     @staticmethod
     def GetName():
         return "executor"
+
+    def GetIp(self):
+        return self.m_szIp
+
+    def GetExePort(self):
+        return self.m_nExePort
+
+    def GetFileExePort(self):
+        return self.m_nFileExePort
 
     def _OnInit(self):
         pass
@@ -41,6 +54,13 @@ class CmdExecutor(cmd_base.CmdBase):
             "file_listen_ip": szListenIp,
             "file_listen_port": nFilePort,
         }
+
+        self.m_szIp = szListenIp
+        self.m_nExePort = nListenPort
+        self.m_nFileExePort = nFilePort
+
+        import logic.task.dis_task_mgr as dis_task_mgr
+        dis_task_mgr.SetIpPort(szListenIp, nListenPort, nFilePort)
 
         import logic.executor.executor as executor
         ExecutorObj = executor.Executor(dictData)

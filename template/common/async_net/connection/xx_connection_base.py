@@ -81,6 +81,9 @@ class XxConnectionBase:
         import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
         xx_dispatcher_mgr.SendFile(self.DispatcherID, dictData)
 
+    def IsConnected(self):
+        return self.m_eConnectState == xx_connection.EConnectionState.eConnected
+
     # ********************************************************************************
     # private
     # ********************************************************************************

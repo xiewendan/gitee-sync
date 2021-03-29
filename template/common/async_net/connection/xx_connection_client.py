@@ -41,7 +41,7 @@ class XxConnectionClient(xx_connection_base.XxConnectionBase):
 
         assert self.m_eConnectState in (xx_connection.EConnectionState.eDisconnected,)
 
-        self.m_eConnectState = xx_connection.EConnectionState.eConnecting
+        self._SetConnectState(xx_connection.EConnectionState.eConnecting)
 
         import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
         xx_dispatcher_mgr.Connect(self.m_nID, szIp, nPort)

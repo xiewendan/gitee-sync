@@ -418,6 +418,7 @@ bug：目前的定时器是进程定时器，属于异步定时器，可以考�
 
 # 4. 任务发布
 
+## 4.1. 流程需求
 ```mermaid
 graph TD;
 
@@ -426,23 +427,93 @@ graph TD;
 回调检测-->失败通知原服务器执行失败
 ```
 
-DisTask：分布式任务
-    
+## 4.2. 实现分析
 
-DisTaskMgr：发布任务管理器
+### 4.2.1. 数据结构
+* 新建任务放到任务发布系统中
+  * CreateDisTask()
+    * AddCommandLine(szCommand)
+    * AddVariable(nType, nIot, fpath)
+    * class TaskVariable
+      * name
+      * type
+      * iot
+      * fpath
+      * md5
+      * size
+      * file_name
+    * class TaskCommand
+      * command
+      * format
+      * Do
+    * class DisTask
+      * listCommand
+      * listVar
+      * szIp
+      * nExePort
+      * nFileExePort
+      * nTaskID：uuid
+      * eState：ToDo，Doing，Accept，Prepare（等待），
+      * nNextDisTime
+      * GenDict
+        * command = [[szCommand],[szCommand],...]
+        * variable = {"name":{"type"=file, "iot"="input/output/temp", "fpath"="", "md5"="", "size"="", "file_name"=""}}
+        * ip = ""
+        * exe_port = 60010
+        * file_exe_port = 60011
+        * taskid = 自动生成
+        * next_disttime = 下一次发布时间
+    * class DisTaskMgr
+      * m_dictID2Task
+      * m_listID2Dis
+      * m_dictID2Doing
+      * Update: 定时触发
+        * Call("assign_task_mgr", "AddTask", nRegisterConnID, dictTaskData)
 
-AcceptTask：接受任务
+* 注册服转发
+  AssignTaskMgr
+  * m_dictTaskToForward = { ip-exe_port-taskID: dictData }
+  * m_listTaskToForward = {}
+  * Update
+    * 非空
+    * 定时转发 1秒一次，可以转发记录
+      * 非自己的服务器
+      * 轮询现有服务器
+    * 通过随机执行器执行，如果所有执行器都比较满，就需要提醒增加执行器
 
-AcceptTaskMgr
-
-AssignTaskMgr
-
+* 接收任务
+  * AcceptTaskMgr
+    * AcceptTask
+      * listCommand
+      * listVar
+      * szIp
+      * nExePort
+      * nFileExePort
+      * nTaskID：uuid
+      * next_distime下一次发布时间
+      * nConnID
+      * CheckReady
+      * Prepare
+        * 如果没有需要准备，则直接执行
+        * 准备，并添加回调
+      * Do
+        * 检查准备好
+        * command和variable整合，执行
+        * 执行成功，通知发布服取数据
+    * m_dictTask = {ip-exe_port-时间-taskID: AcceptTaskObj}
 
 所有异常情况处理情况:
 
 > 发送给register服，可以优化为单独的任务分配服，register服只负责注册
 
-## 4.1. 异常处理
+## 4.3. 技术调研
+* szCommand+variable，生成可执行的命令
+* 压缩贴图程序
+* uuid：作为任务id，保证分布式生成任务不重复
+
+## 4.4. 边界
+* 0 关于重启，导致taskID reset， 导致不同任务会被认证为相同任务
+  * 多个执行器执行相同的任务，最后有相同的返回值
 * 1 发布失败
   * 没有连接上register服，直接报错
   * DisTaskMgr需要定时触发，检查所有尚未分配的任务，并走分配流程

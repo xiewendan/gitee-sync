@@ -1,11 +1,12 @@
-import time
-import hmac
-import hashlib
 import base64
-import urllib.parse
-import requests
+import hashlib
+import hmac
 import json  # 导入依赖库
 import logging
+import time
+import urllib.parse
+
+import requests
 
 import common.my_exception as my_exception
 
@@ -24,6 +25,9 @@ class DingDingMgr:
     def Send(self, szMsg, listTo=None):
         logging.getLogger("myLog").info(
             "msg:%s, listTo:%s", szMsg, repr(listTo))
+
+        if True:
+            return
 
         if len(szMsg) == 0:
             logging.getLogger("myLog").info("send msg is empty")

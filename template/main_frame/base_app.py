@@ -18,6 +18,7 @@ class BaseApp:
         self.m_bTest = False
         self.m_ConfigLoader = None
         self.m_ProfileObj = None
+        self.m_CurCommandObj = None
         self.m_dictCommand = {}
         self.m_dictService = {}
         self.m_dictServiceOpt2Name = {}
@@ -56,6 +57,7 @@ class BaseApp:
         if szCmdName is not None:
             CommandObj = self._GetCommand(szCmdName)
             CommandObj.Init(self)
+            self.m_CurCommandObj = CommandObj
             CommandObj.Do()
         else:
             if self._DoHelp():
@@ -273,6 +275,9 @@ class BaseApp:
     # ********************************************************************************
     # command
     # ********************************************************************************
+    def GetCurCommand(self):
+        return self.m_CurCommandObj
+
     def _GetCommand(self, szName):
         assert szName in self.m_dictCommand, "command not register:{0}".format(
             szName)

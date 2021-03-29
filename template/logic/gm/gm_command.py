@@ -138,6 +138,32 @@ def OnDownloadFileReceive(nConnID, dictData):
     download_system.Write(szMd5, szFileName, nSize, nBlockIndex, byteDataBlock)
 
 
+def AddDisTask(nConnID, dictTaskData):
+    import logging
+    import logic.task.dis_task_mgr as dis_task_mgr
+    logging.getLogger().info("ConnID:%d, dictTaskData:%s", nConnID, Str(dictTaskData))
+
+    def TaskCB(nConnID, szTaskId):
+        DisTaskObj = dis_task_mgr.GetTask(szTaskId)
+        import logic.connection.message_dispatcher as message_dispatcher
+
+        message_dispatcher.CallRpc(nConnID, "logic.gm.gm_command", "OnFinishTask", listArg)
+        pass
+
+    import logic.task.task_enum as task_enum
+    import logic.task.task_factory as task_factory
+    DisTaskObj = task_factory.TaskFactory.Create(task_enum.ETaskType.eDis, dictTaskData)
+    DisTaskObj.AddCB(TaskCB, nConnID, DisTaskObj.GetTaskID())
+
+    dis_task_mgr.AddTask(DisTaskObj)
+    pass
+
+
+def OnFinishTask(nConnID, dictTaskData):
+    import main_frame.command.cmd_dis_task as cmd_dis_task
+    cmd_dis_task.g_dictUUID2State[dictTaskData["uuid"]] = "True"
+
+
 g_GmCommandMgr = GmCommandMgr()
 Do = g_GmCommandMgr.Do
 AddOutput = g_GmCommandMgr.AddOutput
