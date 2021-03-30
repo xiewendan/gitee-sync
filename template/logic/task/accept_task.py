@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+
+# __author__ = xiaobao
+# __date__ = 2021/3/31 2:04
+
+# desc:
+
 import logic.task.base_task as tasK_base
 import logic.task.task_enum as task_enum
 
@@ -28,9 +35,9 @@ class AcceptTask(tasK_base.BaseTask):
         elif self.m_eState == task_enum.ETaskState.eConnecting:
             import common.async_net.xx_connection_mgr as xx_connection_mgr
             if xx_connection_mgr.IsConnected(self.m_nExeConnID) and xx_connection_mgr.IsConnected(self.m_nFileExeConnID):
-                # 请求文件，并
+                # 请求文件
                 for szName, VarObj in self.m_dictVar.items():
-                    VarObj.Prepare(self.m_nFileExeConnID)
+                    VarObj.Prepare(self.m_nFileExeConnID, self.m_szTaskID)
 
                 self.m_eState = task_enum.ETaskState.ePreparing
 
@@ -39,8 +46,11 @@ class AcceptTask(tasK_base.BaseTask):
             for szName, VarObj in self.m_dictVar.items():
                 if VarObj.IsError():
                     self.m_eState = task_enum.ETaskState.eFailed
+                    import logic.task.accept_task_mgr as accept_task_mgr
+                    accept_task_mgr.ClearCurTask(self.m_szTaskID)
                     bVarAllPrepare = False
                     break
+
                 if not VarObj.IsDownloaded():
                     bVarAllPrepare = False
                     break
@@ -56,13 +66,20 @@ class AcceptTask(tasK_base.BaseTask):
                         VarObj.Init()
 
                 import logic.connection.message_dispatcher as message_dispatcher
+
                 dictVarReturn = {}
                 for szName, VarObj in self.m_dictVar:
                     if VarObj.IsOutput():
                         dictVarReturn[szName] = VarObj.ToReturnDict()
 
                 message_dispatcher.CallRpc(self.m_nFileExeConnID, "logic.gm.gm_command", "OnReturn", [self.m_szTaskID, dictVarReturn])
+
                 self.m_eState = task_enum.ETaskState.eReturning
+
+            else:
+                self.m_eState = task_enum.ETaskState.eFailed
+                import logic.task.accept_task_mgr as accept_task_mgr
+                accept_task_mgr.ClearCurTask(self.m_szTaskID)
 
         elif self.m_eState == task_enum.ETaskState.eReturning:
             pass
@@ -82,8 +99,13 @@ class AcceptTask(tasK_base.BaseTask):
         xx_connection_mgr.Connect(self.m_nFileExeConnID, self.m_szIp, self.m_nFileExePort)
 
     def _Exec(self):
+        import os
         from jinja2 import Template
         import common.util as util
+
+        # TODO 在执行前，需要先将文件放到temp目录下，如果不存在rpath的时候，就放到data/temp/任务id/filename文件
+
+        szWorkDir = "%s/data/temp/%s" % (os.getcwd(), self.m_szTaskID)
 
         dictVarConfig = {}
         for VarObj in self.m_dictVar.items():
@@ -95,9 +117,9 @@ class AcceptTask(tasK_base.BaseTask):
             TemplateObj = Template(szCommandFormat)
             szCommand = TemplateObj.render(dictVarConfig)
 
-            nRet = util.RunCmd(szCommand)
+            nRet = util.RunCmd(szCommand, szWorkDir)
             if nRet != 0:
-                self.m_LoggerObj.info("Command:%s", szCommand)
+                self.m_LoggerObj.error("Command:%s", szCommand)
                 return False
 
         return True

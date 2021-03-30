@@ -37,6 +37,15 @@ def CreateFileDir(szFilePath):
         os.makedirs(szDir)
 
 
+def Copy(szSrc, szDest):
+    assert os.path.exists(szSrc)
+
+    CreateFileDir(szDest)
+
+    import shutil
+    shutil.copy(szSrc, szDest)
+
+
 def ClearEmptyDir(szRootFPath):
     """
     清理所有空文件夹

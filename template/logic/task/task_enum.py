@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+
+# __author__ = xiaobao
+# __date__ = 2021/3/31 2:05
+
+# desc:
+
 class ETaskState:
     eTodo = "todo"
     eDoing = "doing"
@@ -73,4 +80,6 @@ class EIotType:
 
 
 class ETaskConst:
-    eDisDeltaTime = 60
+    eDisDeltaTime = 90  # 发布任务时间间隔
+    eExecDeltaTime = 300  # 请求文件执行间隔
+    eReturnDeltaTime = 90  # 返回结果间隔

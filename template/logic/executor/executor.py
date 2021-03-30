@@ -37,26 +37,26 @@ class Executor:
     def Run(self):
         self.m_LoggerObj.info("")
 
-        self._OnStart()
-
+        import common.xx_time as xx_time
         import logic.task.dis_task_mgr as dis_task_mgr
         import logic.task.accept_task_mgr as accept_task_mgr
+        import common.async_net.xx_connection_mgr as xx_connection_mgr
 
+        self._OnStart()
 
         dis_task_mgr.SetIpPort(self.m_szListenIp, self.m_nListenPort, self.m_nFileListenPort)
         nRegisterConnID = self._GetRegisterConnID()
         dis_task_mgr.SetRegisterConnID(nRegisterConnID)
 
-        import common.xx_time as xx_time
-        nCurTime = xx_time.GetTime()
-
-        import common.async_net.xx_connection_mgr as xx_connection_mgr
         while True:
             time.sleep(0.01)
+
+            nCurTime = xx_time.GetTime()
+
             xx_connection_mgr.Update()
+
             dis_task_mgr.Update(nCurTime)
             accept_task_mgr.Update(nCurTime)
-
 
     # ********************************************************************************
     # private

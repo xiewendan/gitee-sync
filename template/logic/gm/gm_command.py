@@ -63,48 +63,104 @@ def GetDownloadData():
     AddOutput(szData)
 
 
-def DownloadFile():
+# def DownloadFile():
+#     import logging
+#     logging.getLogger().info("")
+#
+#     import common.my_path as my_path
+#     import common.callback_mgr as callback_mgr
+#     import common.download_system.download_system as download_system
+#     import logic.connection.message_dispatcher as message_dispatcher
+#     # TODO
+#     nConnID = 5
+#     nFileExeInExeConnID = 5
+#
+#     nSize = 1026052571
+#     szMd5 = "ab67334b9bd3dc0349377738f0f0f97e"
+#     szFileFPath = os.getcwd().replace("\\", "/") + "/unit_test/test_data/file_cache_system/trunk__c74dcf98c_u74dcf98c.ipa"
+#     szFileName = my_path.FileNameWithExt(szFileFPath)
+#
+#     def FunCB(name, nvalue, bOk=False):
+#         print("==============", name, nvalue, bOk)
+#
+#     nCbID = callback_mgr.CreateCb(FunCB, "xjc", 1)
+#     listToDownloadBlockIndex = download_system.Download(szMd5, szFileName, nSize, nCbID)
+#     nBlockSize = download_system.GetBlockSize()
+#
+#     for nBlockIndex in listToDownloadBlockIndex:
+#         dictData = {
+#             "md5": szMd5,
+#             "file_name": szFileName,
+#             "size": nSize,
+#             "block_index": nBlockIndex,
+#             "offset": nBlockSize * nBlockIndex,
+#             "block_size": nBlockSize,
+#             "file_fpath": szFileFPath
+#         }
+#
+#         if dictData["offset"] + nBlockSize > nSize:
+#             dictData["block_size"] = nSize - dictData["offset"]
+#
+#         message_dispatcher.CallRpc(nConnID, "logic.gm.gm_command", "OnDownloadFileRequest", [nFileExeInExeConnID, dictData])
+
+
+# 1 发布一个任务
+def AddDisTask(nConnID, dictTaskData):
     import logging
-    logging.getLogger().info("")
+    import logic.task.dis_task_mgr as dis_task_mgr
+    logging.getLogger().info("ConnID:%d, dictTaskData:%s", nConnID, Str(dictTaskData))
 
-    import common.my_path as my_path
-    import common.callback_mgr as callback_mgr
-    import common.download_system.download_system as download_system
-    import logic.connection.message_dispatcher as message_dispatcher
-    # TODO
-    nConnID = 5
-    nFileExeInExeConnID = 5
+    def TaskCB(nConnID1, szTaskId):
+        import logic.connection.message_dispatcher as message_dispatcher
 
-    nSize = 1026052571
-    szMd5 = "ab67334b9bd3dc0349377738f0f0f97e"
-    szFileFPath = os.getcwd().replace("\\", "/") + "/unit_test/test_data/file_cache_system/trunk__c74dcf98c_u74dcf98c.ipa"
-    szFileName = my_path.FileNameWithExt(szFileFPath)
-
-    def FunCB(name, nvalue, bOk=False):
-        print("==============", name, nvalue, bOk)
-
-    nCbID = callback_mgr.CreateCb(FunCB, "xjc", 1)
-    listToDownloadBlockIndex = download_system.Download(szMd5, szFileName, nSize, nCbID)
-    nBlockSize = download_system.GetBlockSize()
-
-    for nBlockIndex in listToDownloadBlockIndex:
-        dictData = {
-            "md5": szMd5,
-            "file_name": szFileName,
-            "size": nSize,
-            "block_index": nBlockIndex,
-            "offset": nBlockSize * nBlockIndex,
-            "block_size": nBlockSize,
-            "file_fpath": szFileFPath
+        dictRet = {
+            "uuid": szTaskId
         }
+        message_dispatcher.CallRpc(nConnID1, "logic.gm.gm_command", "OnFinishTask", [dictRet])
 
-        if dictData["offset"] + nBlockSize > nSize:
-            dictData["block_size"] = nSize - dictData["offset"]
+    import logic.task.task_enum as task_enum
+    import logic.task.task_factory as task_factory
+    DisTaskObj = task_factory.TaskFactory.Create(task_enum.ETaskType.eDis, dictTaskData)
+    DisTaskObj.AddCB(TaskCB, nConnID, DisTaskObj.GetTaskID())
 
-        message_dispatcher.CallRpc(nConnID, "logic.gm.gm_command", "OnDownloadFileRequest", [nFileExeInExeConnID, dictData])
+    dis_task_mgr.AddTask(DisTaskObj)
+    logging.getLogger().info("add task, dictTaskData:%s", DisTaskObj.GetTaskID())
 
 
-def OnDownloadFileRequest(nConnID, dictData):
+# 2 register接受到一个任务
+def OnRecvDisTask(nConnID, dictTaskData):
+    """
+    :param nConnID:
+    :param dictTaskData:
+        参考logic.task.base_task.BaseTask.ToDict的返回值
+    :return:
+    """
+    import logging
+    logging.getLogger().info("ConnID:%d, dictTaskData:%s", nConnID, Str(dictTaskData))
+
+    import logic.task.assign_task_mgr as assign_task_mgr
+    dictTaskData["conn_id"] = nConnID
+    assign_task_mgr.AddTask(dictTaskData)
+
+
+# 3 执行服接受到一个任务
+def OnRecvAcceptTask(nConnID, dictTaskData):
+    import logging
+    logging.getLogger().info("ConnID:%d, dictTaskData:%s", nConnID, Str(dictTaskData))
+
+    import logic.task.task_enum as task_enum
+    import logic.task.task_factory as task_factory
+    AcceptTaskObj = task_factory.TaskFactory.Create(task_enum.ETaskType.eAccept, dictTaskData)
+
+    if AcceptTaskObj.IsOverdue():
+        logging.getLogger().info("overdue task, dictTaskData:%s", nConnID, Str(dictTaskData))
+    else:
+        import logic.task.accept_task_mgr as accept_task_mgr
+        accept_task_mgr.AddTask(AcceptTaskObj)
+
+
+# 4 发布服收到请求文件
+def OnDownloadFileRequest(nConnID, szTaskId, dictData):
     assert "md5" in dictData
     assert "file_name" in dictData
     assert "size" in dictData
@@ -123,7 +179,15 @@ def OnDownloadFileRequest(nConnID, dictData):
     import common.async_net.xx_connection_mgr as xx_connection_mgr
     xx_connection_mgr.SendFile(nConnID, dictData)
 
+    # 返回文件，更新分配任务时间
+    import common.xx_time as xx_time
+    import logic.task.task_enum as task_enum
+    import logic.task.dis_task_mgr as dis_task_mgr
+    DisTaskObj = dis_task_mgr.GetTask(szTaskId)
+    DisTaskObj.SetNextDisTime(xx_time.GetTime() + task_enum.ETaskConst.eExecDeltaTime)
 
+
+# 5 执行服收到一个文件
 def OnDownloadFileReceive(nConnID, dictData):
     import logging
     logging.getLogger().info("ConnID:%d, dictData:%s", nConnID, Str(dictData))
@@ -138,70 +202,37 @@ def OnDownloadFileReceive(nConnID, dictData):
     download_system.Write(szMd5, szFileName, nSize, nBlockIndex, byteDataBlock)
 
 
-def AddDisTask(nConnID, dictTaskData):
+# 6 发布服收到执行结束，返回结果的请求
+def OnReturn(nConnID, szTaskId, dictVarReturn):
     import logging
-    import logic.task.dis_task_mgr as dis_task_mgr
-    logging.getLogger().info("ConnID:%d, dictTaskData:%s", nConnID, Str(dictTaskData))
-
-    def TaskCB(nConnID, szTaskId):
-        DisTaskObj = dis_task_mgr.GetTask(szTaskId)
-        import logic.connection.message_dispatcher as message_dispatcher
-
-        dictRet = {
-            "uuid": szTaskId
-        }
-        message_dispatcher.CallRpc(nConnID, "logic.gm.gm_command", "OnFinishTask", [dictRet])
-
-    import logic.task.task_enum as task_enum
-    import logic.task.task_factory as task_factory
-    DisTaskObj = task_factory.TaskFactory.Create(task_enum.ETaskType.eDis, dictTaskData)
-    DisTaskObj.AddCB(TaskCB, nConnID, DisTaskObj.GetTaskID())
-
-    dis_task_mgr.AddTask(DisTaskObj)
-    logging.getLogger().info("add task, dictTaskData:%s", DisTaskObj.GetTaskID())
-
-
-def OnFinishTask(nConnID, dictTaskData):
-    import main_frame.command.cmd_dis_task as cmd_dis_task
-    cmd_dis_task.g_dictUUID2State[dictTaskData["uuid"]] = "True"
-
-
-def OnRecvDisTask(nConnID, dictTaskData):
-    """
-
-    :param nConnID:
-    :param dictTaskData:
-        参考logic.task.base_task.BaseTask.ToDict的返回值
-    :return:
-    """
-    import logging
-    logging.getLogger().info("ConnID:%d, dictTaskData:%s", nConnID, Str(dictTaskData))
-
-    import logic.task.assign_task_mgr as assign_task_mgr
-    dictTaskData["conn_id"] = nConnID
-    assign_task_mgr.AddTask(dictTaskData)
-
-
-def OnRecvAcceptTask(nConnID, dictTaskData):
-    import logging
-    logging.getLogger().info("ConnID:%d, dictTaskData:%s", nConnID, Str(dictTaskData))
-
-    import logic.task.task_enum as task_enum
-    import logic.task.task_factory as task_factory
-    AcceptTaskObj = task_factory.TaskFactory.Create(task_enum.ETaskType.eAccept, dictTaskData)
-
-    import logic.task.accept_task_mgr as accept_task_mgr
-    accept_task_mgr.AddTask(AcceptTaskObj)
-
-
-def OnReturn(nConnID, szTaskID, dictVarReturn):
-    import logging
-    logging.getLogger().info("ConnID:%d, TaskID:%s", nConnID, szTaskID)
+    logging.getLogger().info("ConnID:%d, TaskId:%s, dictVarReturn:%s", nConnID, szTaskId, Str(dictVarReturn))
 
     import logic.task.dis_task_mgr as dis_task_mgr
-    DisTaskObj = dis_task_mgr.GetTask(szTaskID)
+    DisTaskObj = dis_task_mgr.GetTask(szTaskId)
+
+    # 返回文件，更新分配任务时间
+    import common.xx_time as xx_time
+    import logic.task.task_enum as task_enum
+    import logic.task.dis_task_mgr as dis_task_mgr
+    DisTaskObj = dis_task_mgr.GetTask(szTaskId)
+    DisTaskObj.SetNextDisTime(xx_time.GetTime() + task_enum.ETaskConst.eReturnDeltaTime)
 
     DisTaskObj.OnReturn(nConnID, dictVarReturn)
+
+
+# 7 执行服接收到返回完成
+def OnReturnOver(nConnID, szTaskId):
+    import logging
+    logging.getLogger().info("ConnID:%d, TaskId:%s", nConnID, szTaskId)
+
+    import logic.task.accept_task_mgr as accept_task_mgr
+    accept_task_mgr.ClearCurTask(szTaskId)
+
+
+# 10 任务结束
+def OnFinishTask(_, dictTaskData):
+    import main_frame.command.cmd_dis_task as cmd_dis_task
+    cmd_dis_task.g_dictUUID2State[dictTaskData["uuid"]] = "True"
 
 
 g_GmCommandMgr = GmCommandMgr()

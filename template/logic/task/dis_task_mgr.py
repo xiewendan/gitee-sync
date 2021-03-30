@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+
+# __author__ = xiaobao
+# __date__ = 2021/3/31 2:05
+
+# desc:
+
 class DisTaskMgr:
     def __init__(self):
         import common.my_log as my_log
@@ -13,6 +20,8 @@ class DisTaskMgr:
         self.m_listToDis = []
 
     def SetIpPort(self, szIp, nExePort, nFileExePort):
+        self.m_LoggerObj.debug("ip:%s, ExePort:%d, FileExePort:%d", szIp, nExePort, nFileExePort)
+
         self.m_szIp = szIp
         self.m_nExePort = nExePort
         self.m_nFileExePort = nFileExePort
@@ -21,10 +30,12 @@ class DisTaskMgr:
         return self.m_szIp, self.m_nExePort, self.m_nFileExePort
 
     def SetRegisterConnID(self, nConnID):
+        self.m_LoggerObj.debug("nConnID:%d", nConnID)
+
         assert nConnID != 0
         self.m_nRegisterConnID = nConnID
 
-    def GetRegisterConnID(self):
+    def _GetRegisterConnID(self):
         return self.m_nRegisterConnID
 
     def AddTask(self, TaskObj):
@@ -33,6 +44,7 @@ class DisTaskMgr:
 
         assert szTaskId not in self.m_dictTask
         self.m_dictTask[szTaskId] = TaskObj
+
         import common.xx_time as xx_time
         TaskObj.SetNextDisTime(xx_time.GetTime())
 
@@ -41,6 +53,7 @@ class DisTaskMgr:
     def RemoveTask(self, szTaskId):
         assert szTaskId in self.m_dictTask
         del self.m_dictTask[szTaskId]
+        self.m_listToDis.remove(szTaskId)
         self.m_LoggerObj.info("TaskId:%s", szTaskId)
 
     def GetTask(self, szTaskId):
@@ -48,11 +61,11 @@ class DisTaskMgr:
         return self.m_dictTask[szTaskId]
 
     def Update(self, nCurTime):
-        import logic.connection.message_dispatcher as message_dispatcher
-        import common.async_net.xx_connection_mgr as xx_connection_mgr
         import logic.task.task_enum as task_enum
+        import common.async_net.xx_connection_mgr as xx_connection_mgr
+        import logic.connection.message_dispatcher as message_dispatcher
 
-        nRegisterConnID = self.GetRegisterConnID()
+        nRegisterConnID = self._GetRegisterConnID()
         if not xx_connection_mgr.IsConnected(nRegisterConnID):
             return
 
@@ -60,22 +73,21 @@ class DisTaskMgr:
         listSucceedTaskId = []
         for szTaskId in self.m_listToDis:
             TaskObj = self.m_dictTask[szTaskId]
-            nNextDisTime = TaskObj.GetNextDisTime()
             if TaskObj.IsSucceed():
                 listSucceedTaskId.append(szTaskId)
                 continue
 
-            if nNextDisTime < nCurTime:
+            if TaskObj.IsOverdue(nCurTime):
                 TaskObj.SetNextDisTime(nCurTime + task_enum.ETaskConst.eDisDeltaTime)
                 message_dispatcher.CallRpc(nRegisterConnID, "logic.gm.gm_command", "OnRecvDisTask", [TaskObj.ToDict()])
 
         # 遍历处理成功的任务
         for szTaskId in listSucceedTaskId:
-            self.m_listToDis.remove(szTaskId)
             TaskObj = self.m_dictTask[szTaskId]
             assert TaskObj.IsSucceed()
+
+            self.RemoveTask(szTaskId)
             TaskObj.OnCB()
-            del self.m_dictTask[szTaskId]
 
         assert len(self.m_dictTask) == self.m_listToDis
 
@@ -86,5 +98,4 @@ GetIpPort = g_DisTaskMgrObj.GetIpPort
 AddTask = g_DisTaskMgrObj.AddTask
 GetTask = g_DisTaskMgrObj.GetTask
 SetRegisterConnID = g_DisTaskMgrObj.SetRegisterConnID
-GetRegisterConnID = g_DisTaskMgrObj.GetRegisterConnID
 Update = g_DisTaskMgrObj.Update

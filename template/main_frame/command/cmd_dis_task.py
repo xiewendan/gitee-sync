@@ -58,21 +58,25 @@ class CmdDisTask(cmd_base.CmdBase):
                     "type": "file",
                     "iot": "input",
                     "fpath": "E:/project/xiewendan/tools/template/data/test/etcpack.exe",
+                    "rpath": "etcpack.exe",
                 },
                 "tga_file": {
                     "type": "file",
                     "iot": "input",
                     "fpath": "E:/project/xiewendan/tools/template/data/test/cqs_ground_06.tga",
+                    "rpath": "cqs_ground_06.tga",
                 },
                 "temp_dir": {
                     "type": "dir",
                     "iot": "temp",
                     "fpath": "E:/project/xiewendan/tools/template/data/test/cqs_ground_06.ktx",
+                    "rpath": "cqs_ground_06.ktx",
                 },
                 "ktx_file": {
                     "type": "file",
                     "iot": "output",
                     "fpath": "E:/project/xiewendan/tools/template/data/test/cqs_ground_06.ktx/cqs_ground_06.ktx",
+                    "rpath": "cqs_ground_06.ktx/cqs_ground_06.ktx"
                 }
             },
         }

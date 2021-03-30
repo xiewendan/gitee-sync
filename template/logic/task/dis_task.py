@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+
+# __author__ = xiaobao
+# __date__ = 2021/3/31 2:05
+
+# desc:
+
 import logic.task.base_task as tasK_base
 import logic.task.task_enum as task_enum
 
@@ -20,6 +27,8 @@ class DisTask(tasK_base.BaseTask):
 
         self.m_eState = task_enum.ETaskState.eNone
 
+        self.m_nFileExeConnID = 0
+
     @staticmethod
     def GetType(self):
         return task_enum.ETaskType.eDis
@@ -33,13 +42,15 @@ class DisTask(tasK_base.BaseTask):
         """
         self.m_LoggerObj.debug("ConnID:%d, dictVarReturn:%s", nConnID, str(dictVarReturn))
 
+        self.m_nFileExeConnID = nConnID
+
         for szName, dictValue in dictVarReturn.items():
             VarObj = self.m_dictVar[szName]
             VarObj.UpdateOutputValue(dictValue)
 
         for szName, _ in dictVarReturn.items():
             VarObj = self.m_dictVar[szName]
-            VarObj.RequestReturn(nConnID, self.RequestReturnCb)
+            VarObj.RequestReturn(nConnID, self.m_szTaskID, self.RequestReturnCb)
 
     def RequestReturnCb(self, szName):
         self.m_LoggerObj.debug("name:%s", szName)
@@ -48,6 +59,7 @@ class DisTask(tasK_base.BaseTask):
         CurVarObj = self.m_dictVar[szName]
         assert CurVarObj.IsOutput()
 
+        bOver = True
         bAllOutputOK = True
         for _, VarObj in self.m_dictVar.items():
             if VarObj.IsOutput():
@@ -57,10 +69,15 @@ class DisTask(tasK_base.BaseTask):
 
                 if not VarObj.IsDownloaded():
                     bAllOutputOK = False
+                    bOver = False
                     break
 
         if bAllOutputOK:
             self.m_eState = task_enum.ETaskState.eSucceed
+
+        if bOver:
+            import logic.connection.message_dispatcher as message_dispatcher
+            message_dispatcher.CallRpc(self.m_nFileExeConnID, "logic.gm.gm_command", "OnReturnOver", [self.m_szTaskID])
 
     def IsSucceed(self):
         return self.m_eState == task_enum.ETaskState.eSucceed

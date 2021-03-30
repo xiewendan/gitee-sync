@@ -18,17 +18,33 @@ import common.my_path as my_path
 from common.my_exception import MyException
 
 
-def RunCmd(szCmd, szOutputFile=None, bStdout=False):
+def RunCmd(szCmd, szOutputFile=None, bStdout=False, szWorkDir=None):
     logging.getLogger("myLog").debug("%s,%s,%s", szCmd, szOutputFile, bStdout)
 
-    if szOutputFile is None:
-        szOutputFile = open(os.devnull, 'w')
-    if bStdout:
-        szOutputFile = sys.stdout
-    p = subprocess.Popen(
-        szCmd, shell=True, stdout=szOutputFile, stderr=szOutputFile)
+    szCurWorkDir = os.getcwd()
+    if szWorkDir is not None:
+        os.chdir(szWorkDir)
 
-    return p.wait()
+    nResult = 1
+
+    try:
+        if szOutputFile is None:
+            szOutputFile = open(os.devnull, 'w')
+        if bStdout:
+            szOutputFile = sys.stdout
+        p = subprocess.Popen(
+            szCmd, shell=True, stdout=szOutputFile, stderr=szOutputFile)
+
+        nResult = p.wait()
+
+    except BaseException as e:
+        import common.my_trackback as my_traceback
+        my_traceback.OnException()
+
+    if szWorkDir is not None:
+        os.chdir(szCurWorkDir)
+
+    return nResult
 
 
 def AssertRunCmd(szCmd, szOutputFile=None):

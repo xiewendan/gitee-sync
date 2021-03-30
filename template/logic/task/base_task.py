@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+
+# __author__ = xiaobao
+# __date__ = 2021/3/31 2:05
+
+# desc:
+
 import common.my_log as my_log
 import logic.task.task_enum as task_enum
 
@@ -42,12 +49,12 @@ class BaseTask:
 
         self.m_listCommand = []
         self.m_dictVar = {}
-        self.m_szIp = ""
-        self.m_nExePort = 0
-        self.m_nFileExePort = 0
+        self.m_szIp = dictTaskData.get("ip", "")
+        self.m_nExePort = dictTaskData.get("exe_port", 0)
+        self.m_nFileExePort = dictTaskData.get("file_exe_port", 0)
         self.m_szTaskID = dictTaskData["uuid"]
         self.m_eState = task_enum.ETaskState.eNone
-        self.m_nNextDisTime = 0
+        self.m_nNextDisTime = dictTaskData.get("next_dis_time", 0)
 
         self.m_listCB = []
 
@@ -61,8 +68,9 @@ class BaseTask:
             nType = task_enum.EVarType.ToType(dictValue["type"])
             nIotType = task_enum.EIotType.ToType(dictValue["iot"])
             szFPath = dictValue["fpath"]
+            szRPath = dictValue["rpath"]
 
-            TaskVarObj = task_var.TaskVar(szVarName, nType, nIotType, szFPath)
+            TaskVarObj = task_var.TaskVar(szVarName, nType, nIotType, szFPath, szRPath)
             self.m_dictVar[szVarName] = TaskVarObj
 
     def GetTaskId(self):
@@ -117,6 +125,8 @@ class BaseTask:
         NotImplementedError
 
     def AddCB(self, FunCB, *args):
+        self.m_LoggerObj.debug("TaskId:%s", self.m_szTaskID)
+
         import common.callback_mgr as callback_mgr
         nCallBackID = callback_mgr.CreateCb(FunCB, *args)
 
@@ -126,6 +136,8 @@ class BaseTask:
         return nCallBackID
 
     def OnCB(self):
+        self.m_LoggerObj.debug("TaskId:%s", self.m_szTaskID)
+
         import common.callback_mgr as callback_mgr
         for nCallbackID in self.m_listCB:
             callback_mgr.Call(nCallbackID)
@@ -133,11 +145,19 @@ class BaseTask:
         self.m_listCB = []
 
     def SetNextDisTime(self, nNextDisTime):
-        assert nNextDisTime > 0
+        self.m_LoggerObj.debug("taskid:%s, curdistime:%d, nextdistime:%d", self.m_szTaskID, self.m_nNextDisTime, nNextDisTime)
+        assert nNextDisTime >= self.m_nNextDisTime
         self.m_nNextDisTime = nNextDisTime
 
     def GetNextDisTime(self):
         return self.m_nNextDisTime
+
+    def IsOverdue(self, nCurTime=None):
+        if nCurTime is None:
+            import common.xx_time as xx_time
+            nCurTime = xx_time.GetTime()
+
+        return nCurTime > self.m_nNextDisTime
 
     # ********************************************************************************
     # private

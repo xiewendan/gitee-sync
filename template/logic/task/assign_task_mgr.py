@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+
+# __author__ = xiaobao
+# __date__ = 2021/3/31 2:04
+
+# desc:
+
 class AssignTaskMgr:
     """"""
 
@@ -15,15 +22,15 @@ class AssignTaskMgr:
 
     def Update(self):
         import common.async_net.xx_connection_mgr as xx_connection_mgr
-        import common.async_net.connection.xx_connection as xx_connection
         import logic.connection.message_dispatcher as message_dispatcher
+        import common.async_net.connection.xx_connection as xx_connection
 
         listConnID = xx_connection_mgr.FilterConnIDList(xx_connection.EConnectionType.eExeInReg)
 
         nLenConnID = len(listConnID)
 
         if nLenConnID <= 1:
-            self.m_LoggerObj.debug("executor not enough, count:%d", nLenConnID)
+            self.m_LoggerObj.error("executor not enough, count:%d", nLenConnID)
             return
 
         import random
@@ -42,7 +49,8 @@ class AssignTaskMgr:
 
         self.m_listAssign = []
 
-    def _AddIndex(self, nIndex, nLen):
+    @staticmethod
+    def _AddIndex(nIndex, nLen):
         nIndex += 1
 
         if nIndex >= nLen:

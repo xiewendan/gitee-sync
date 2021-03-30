@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+
+# __author__ = xiaobao
+# __date__ = 2021/3/31 2:05
+
+# desc:
+
 import os
 import logic.task.task_enum as task_enum
 
@@ -5,7 +12,7 @@ import logic.task.task_enum as task_enum
 class TaskVar:
     """"""
 
-    def __init__(self, szName: str, nType, nIotType, szFPath):
+    def __init__(self, szName: str, nType, nIotType, szFPath, szRPath):
         import common.my_log as my_log
         self.m_LoggerObj = my_log.MyLog(__file__)
 
@@ -15,6 +22,7 @@ class TaskVar:
         self.m_nType = nType
         self.m_nIotType = nIotType
         self.m_szFPath = szFPath
+        self.m_szRPath = szRPath
 
         self.m_szMd5 = ""
         self.m_nSize = 0
@@ -77,6 +85,7 @@ class TaskVar:
             "type": self.m_nType,
             "iot": self.m_nIotType,
             "fpath": self.m_szFPath,
+            "rpath": self.m_szRPath,
             "md5": self.m_szMd5,
             "size": self.m_nSize,
             "file_name": self.m_szFileName,
@@ -94,29 +103,36 @@ class TaskVar:
             "file_name": self.m_szFileName,
         }
 
-    def Prepare(self, nFileExeConnID):
+    def Prepare(self, nFileExeConnID, szTaskID):
         assert self.IsInput()
 
         self.m_LoggerObj.info("name:%s", self.m_szName)
 
-        if self.IsInput():
-            import common.file_cache_system.file_cache_system as file_cache_system
-            if file_cache_system.CheckExistSameFile(self.m_szMd5, self.m_nSize, self.m_szFileName):
-                self.m_szLocalFPath = file_cache_system.UseFile(self.m_szMd5, self.m_nSize, self.m_szFileName)
-                self.m_bDownloaded = True
-                return
+        import common.my_path as my_path
+        self.m_szLocalFPath = "%s/data/temp/%s/%s" % (os.getcwd(), szTaskID, self.m_szRPath)
+        my_path.CreateFileDir(self.m_szLocalFPath)
 
-            import common.callback_mgr as callback_mgr
-            nPrepareCbID = callback_mgr.CreateCb(self._PrepareDownloadFinish)
-            self._Download(nFileExeConnID, self.m_szFPath, nPrepareCbID)
-
-        elif self.IsTemp():
-            self.m_szLocalFPath = "%s/data/temp/%s" % (os.getcwd(), self.m_szMd5)
+        if self.IsTemp():
             self.m_bDownloaded = True
 
         elif self.IsOutput():
-            self.m_szLocalFPath = "%s/data/temp/%s" % (os.getcwd(), self.m_szMd5)
             self.m_bDownloaded = True
+
+        if self.IsInput():
+            import common.file_cache_system.file_cache_system as file_cache_system
+            if file_cache_system.CheckExistSameFile(self.m_szMd5, self.m_nSize, self.m_szFileName):
+                szFPathInCacheSystem = file_cache_system.UseFile(self.m_szMd5, self.m_nSize, self.m_szFileName)
+
+                my_path.Copy(szFPathInCacheSystem, self.m_szLocalFPath)
+
+                self.m_bDownloaded = True
+            else:
+                import common.callback_mgr as callback_mgr
+                nPrepareCbID = callback_mgr.CreateCb(self._PrepareDownloadFinish)
+                self._Download(nFileExeConnID, szTaskID, self.m_szFPath, nPrepareCbID)
+
+        else:
+            assert False, "not support"
 
     def UpdateOutputValue(self, dictReturn):
         assert self.IsOutput()
@@ -125,19 +141,19 @@ class TaskVar:
         self.m_szFileName = dictReturn["file_name"]
         self.m_szRemoteFPath = dictReturn["remote_fpath"]
 
-    def RequestReturn(self, nConnID, RequestReturnCb):
+    def RequestReturn(self, nConnID, szTaskId, RequestReturnCb):
         assert self.IsOutput()
 
         import common.callback_mgr as callback_mgr
         nReturnCbID = callback_mgr.CreateCb(self._ReturnDownloadFinish)
-        self._Download(nConnID, self.m_szRemoteFPath, nReturnCbID)
+        self._Download(nConnID, szTaskId, self.m_szRemoteFPath, nReturnCbID)
 
         self.m_RequestReturnCb = RequestReturnCb
 
     # ********************************************************************************
     # private
     # ********************************************************************************
-    def _Download(self, nFileExeConnID, szFPath, nCbID):
+    def _Download(self, nFileExeConnID, szTaskID, szFPath, nCbID):
         import common.download_system.download_system as download_system
         import logic.connection.message_dispatcher as message_dispatcher
 
@@ -158,7 +174,7 @@ class TaskVar:
             if dictData["offset"] + nBlockSize > self.m_nSize:
                 dictData["block_size"] = self.m_nSize - dictData["offset"]
 
-            message_dispatcher.CallRpc(nFileExeConnID, "logic.gm.gm_command", "OnDownloadFileRequest", [dictData])
+            message_dispatcher.CallRpc(nFileExeConnID, "logic.gm.gm_command", "OnDownloadFileRequest", [szTaskID, dictData])
 
     def _PrepareDownloadFinish(self, bOk=False):
         self.m_LoggerObj.info("varname:%s, ok:%s", self.m_szName, str(bOk))
@@ -170,7 +186,10 @@ class TaskVar:
 
             import common.file_cache_system.file_cache_system as file_cache_system
             file_cache_system.SaveFile(self.m_szMd5, self.m_nSize, self.m_szFileName, szDownloadFPath)
-            self.m_szLocalFPath = file_cache_system.UseFile(self.m_szMd5, self.m_nSize, self.m_szFileName)
+            szFPathInCacheSystem = file_cache_system.UseFile(self.m_szMd5, self.m_nSize, self.m_szFileName)
+
+            import common.my_path as my_path
+            my_path.Copy(szFPathInCacheSystem, self.m_szLocalFPath)
 
             self.m_bDownloaded = True
         else:
@@ -184,8 +203,9 @@ class TaskVar:
             szDownloadFPath = download_system.UseFile(self.m_szMd5, self.m_nSize, self.m_szFileName)
             assert szDownloadFPath != ""
 
-            import shutil
-            shutil.copy(szDownloadFPath, self.m_szFPath)
+            import common.my_path as my_path
+            my_path.Copy(szDownloadFPath, self.m_szFPath)
+
             self.m_bDownloaded = True
         else:
             self.m_bError = True

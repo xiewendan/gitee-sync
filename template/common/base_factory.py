@@ -52,6 +52,7 @@ class BaseFactory:
         self.m_dictCls = {}
 
     def Create(self, nType, dictData):
+        self.m_LoggerObj.debug("type:%d, dictData:%s", nType, Str(dictData))
         assert nType in self.m_dictCls
         assert dictData is not None
 
