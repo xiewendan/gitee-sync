@@ -260,9 +260,12 @@ class DownloadSystem:
 
 g_szDownloadFDir = os.getcwd() + "/data/download_system"
 g_nMaxTotalSize = 10000000000
+
 g_DownloadSystem = DownloadSystem(g_szDownloadFDir, g_nMaxTotalSize)
 Download = g_DownloadSystem.Download
 Write = g_DownloadSystem.Write
 CheckOvertime = g_DownloadSystem.CheckOvertime
-T_GetDownloadData = g_DownloadSystem.T_GetDownloadData
+UseFile = g_DownloadSystem.UseFile
 GetBlockSize = g_DownloadSystem.GetBlockSize
+
+T_GetDownloadData = g_DownloadSystem.T_GetDownloadData

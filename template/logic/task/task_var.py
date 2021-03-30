@@ -21,9 +21,12 @@ class TaskVar:
         self.m_szFileName = ""
 
         self.m_szLocalFPath = ""
+        self.m_szRemoteFPath = ""
 
         self.m_bDownloaded = False
         self.m_bError = False
+
+        self.m_RequestReturnCb = None
 
     def Init(self):
         import os
@@ -45,6 +48,21 @@ class TaskVar:
     def IsTemp(self):
         return self.m_nIotType == task_enum.EIotType.eTemp
 
+    def IsError(self):
+        return self.m_bError
+
+    def IsDownloaded(self):
+        return self.m_bDownloaded
+
+    def GetLocalFPath(self):
+        return self.m_szLocalFPath
+
+    def GetName(self):
+        return self.m_szName
+
+    def GetValue(self):
+        return self.m_szLocalFPath
+
     def ToDict(self):
         """
         :return:
@@ -64,7 +82,19 @@ class TaskVar:
             "file_name": self.m_szFileName,
         }
 
-    def Prepare(self, nExeConnID):
+    def ToReturnDict(self):
+        """
+        :return:
+        """
+        return {
+            "name": self.m_szName,
+            "remote_fpath": self.m_szLocalFPath,
+            "md5": self.m_szMd5,
+            "size": self.m_nSize,
+            "file_name": self.m_szFileName,
+        }
+
+    def Prepare(self, nFileExeConnID):
         assert self.IsInput()
 
         self.m_LoggerObj.info("name:%s", self.m_szName)
@@ -76,7 +106,9 @@ class TaskVar:
                 self.m_bDownloaded = True
                 return
 
-            self._Download(nExeConnID)
+            import common.callback_mgr as callback_mgr
+            nPrepareCbID = callback_mgr.CreateCb(self._PrepareDownloadFinish)
+            self._Download(nFileExeConnID, self.m_szFPath, nPrepareCbID)
 
         elif self.IsTemp():
             self.m_szLocalFPath = "%s/data/temp/%s" % (os.getcwd(), self.m_szMd5)
@@ -86,12 +118,29 @@ class TaskVar:
             self.m_szLocalFPath = "%s/data/temp/%s" % (os.getcwd(), self.m_szMd5)
             self.m_bDownloaded = True
 
-    def _Download(self, nExeConnID):
+    def UpdateOutputValue(self, dictReturn):
+        assert self.IsOutput()
+        self.m_szMd5 = dictReturn["md5"]
+        self.m_nSize = dictReturn["size"]
+        self.m_szFileName = dictReturn["file_name"]
+        self.m_szRemoteFPath = dictReturn["remote_fpath"]
+
+    def RequestReturn(self, nConnID, RequestReturnCb):
+        assert self.IsOutput()
+
         import common.callback_mgr as callback_mgr
+        nReturnCbID = callback_mgr.CreateCb(self._ReturnDownloadFinish)
+        self._Download(nConnID, self.m_szRemoteFPath, nReturnCbID)
+
+        self.m_RequestReturnCb = RequestReturnCb
+
+    # ********************************************************************************
+    # private
+    # ********************************************************************************
+    def _Download(self, nFileExeConnID, szFPath, nCbID):
         import common.download_system.download_system as download_system
         import logic.connection.message_dispatcher as message_dispatcher
 
-        nCbID = callback_mgr.CreateCb(self._DownloadFinish)
         listToDownloadBlockIndex = download_system.Download(self.m_szMd5, self.m_szFileName, self.m_nSize, nCbID)
         nBlockSize = download_system.GetBlockSize()
 
@@ -103,35 +152,42 @@ class TaskVar:
                 "block_index": nBlockIndex,
                 "offset": nBlockSize * nBlockIndex,
                 "block_size": nBlockSize,
-                "file_fpath": self.m_szFPath
+                "file_fpath": szFPath
             }
 
             if dictData["offset"] + nBlockSize > self.m_nSize:
                 dictData["block_size"] = self.m_nSize - dictData["offset"]
 
-            message_dispatcher.CallRpc(nExeConnID, "logic.gm.gm_command", "OnDownloadFileRequest", [dictData])
+            message_dispatcher.CallRpc(nFileExeConnID, "logic.gm.gm_command", "OnDownloadFileRequest", [dictData])
 
-    def _DownloadFinish(self, bOk=False):
-        self.m_LoggerObj.info("ok:%s", str(bOk))
+    def _PrepareDownloadFinish(self, bOk=False):
+        self.m_LoggerObj.info("varname:%s, ok:%s", self.m_szName, str(bOk))
 
         if bOk is True:
+            import common.download_system.download_system as download_system
+            szDownloadFPath = download_system.UseFile(self.m_szMd5, self.m_nSize, self.m_szFileName)
+            assert szDownloadFPath != ""
+
             import common.file_cache_system.file_cache_system as file_cache_system
+            file_cache_system.SaveFile(self.m_szMd5, self.m_nSize, self.m_szFileName, szDownloadFPath)
             self.m_szLocalFPath = file_cache_system.UseFile(self.m_szMd5, self.m_nSize, self.m_szFileName)
+
             self.m_bDownloaded = True
         else:
             self.m_bError = True
 
-    def IsError(self):
-        return self.m_bError
+    def _ReturnDownloadFinish(self, bOk=False):
+        self.m_LoggerObj.info("varname:%s, ok:%s", self.m_szName, str(bOk))
 
-    def IsDownloaded(self):
-        return self.m_bDownloaded
+        if bOk is True:
+            import common.download_system.download_system as download_system
+            szDownloadFPath = download_system.UseFile(self.m_szMd5, self.m_nSize, self.m_szFileName)
+            assert szDownloadFPath != ""
 
-    def GetLocalFPath(self):
-        return self.m_szLocalFPath
+            import shutil
+            shutil.copy(szDownloadFPath, self.m_szFPath)
+            self.m_bDownloaded = True
+        else:
+            self.m_bError = True
 
-    def GetName(self):
-        return self.m_szName
-
-    def GetValue(self):
-        return self.m_szLocalFPath
+        self.m_RequestReturnCb(self.m_szName)

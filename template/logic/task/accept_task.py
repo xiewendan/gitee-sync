@@ -30,7 +30,7 @@ class AcceptTask(tasK_base.BaseTask):
             if xx_connection_mgr.IsConnected(self.m_nExeConnID) and xx_connection_mgr.IsConnected(self.m_nFileExeConnID):
                 # 请求文件，并
                 for szName, VarObj in self.m_dictVar.items():
-                    VarObj.Prepare(self.m_nExeConnID)
+                    VarObj.Prepare(self.m_nFileExeConnID)
 
                 self.m_eState = task_enum.ETaskState.ePreparing
 
@@ -51,9 +51,19 @@ class AcceptTask(tasK_base.BaseTask):
         elif self.m_eState == task_enum.ETaskState.ePrepared:
             bOK = self._Exec()
             if bOK:
+                for szName, VarObj in self.m_dictVar:
+                    if VarObj.IsOutput():
+                        VarObj.Init()
+
                 import logic.connection.message_dispatcher as message_dispatcher
-                message_dispatcher.CallRpc("logic.gm.gm_command", "OnReturn", [self.m_szTaskID])
+                dictVarReturn = {}
+                for szName, VarObj in self.m_dictVar:
+                    if VarObj.IsOutput():
+                        dictVarReturn[szName] = VarObj.ToReturnDict()
+
+                message_dispatcher.CallRpc(self.m_nFileExeConnID, "logic.gm.gm_command", "OnReturn", [self.m_szTaskID, dictVarReturn])
                 self.m_eState = task_enum.ETaskState.eReturning
+
         elif self.m_eState == task_enum.ETaskState.eReturning:
             pass
 

@@ -11,6 +11,7 @@ class ETaskState:
     eReturning = "returning"
     eFailed = "failed"
     eNone = "none"
+    eSucceed = "succeed"
 
 
 class ETaskType:

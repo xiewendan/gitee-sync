@@ -56,12 +56,28 @@ class DisTaskMgr:
         if not xx_connection_mgr.IsConnected(nRegisterConnID):
             return
 
+        # 遍历发布任务
+        listSucceedTaskId = []
         for szTaskId in self.m_listToDis:
             TaskObj = self.m_dictTask[szTaskId]
             nNextDisTime = TaskObj.GetNextDisTime()
+            if TaskObj.IsSucceed():
+                listSucceedTaskId.append(szTaskId)
+                continue
+
             if nNextDisTime < nCurTime:
                 TaskObj.SetNextDisTime(nCurTime + task_enum.ETaskConst.eDisDeltaTime)
                 message_dispatcher.CallRpc(nRegisterConnID, "logic.gm.gm_command", "OnRecvDisTask", [TaskObj.ToDict()])
+
+        # 遍历处理成功的任务
+        for szTaskId in listSucceedTaskId:
+            self.m_listToDis.remove(szTaskId)
+            TaskObj = self.m_dictTask[szTaskId]
+            assert TaskObj.IsSucceed()
+            TaskObj.OnCB()
+            del self.m_dictTask[szTaskId]
+
+        assert len(self.m_dictTask) == self.m_listToDis
 
 
 g_DisTaskMgrObj = DisTaskMgr()

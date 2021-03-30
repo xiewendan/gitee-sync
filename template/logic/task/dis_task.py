@@ -23,3 +23,44 @@ class DisTask(tasK_base.BaseTask):
     @staticmethod
     def GetType(self):
         return task_enum.ETaskType.eDis
+
+    def OnReturn(self, nConnID, dictVarReturn):
+        """
+        :param nConnID:
+        :param dictVarReturn:
+            task_var.TaskVar.ToReturnDict
+        :return:
+        """
+        self.m_LoggerObj.debug("ConnID:%d, dictVarReturn:%s", nConnID, str(dictVarReturn))
+
+        for szName, dictValue in dictVarReturn.items():
+            VarObj = self.m_dictVar[szName]
+            VarObj.UpdateOutputValue(dictValue)
+
+        for szName, _ in dictVarReturn.items():
+            VarObj = self.m_dictVar[szName]
+            VarObj.RequestReturn(nConnID, self.RequestReturnCb)
+
+    def RequestReturnCb(self, szName):
+        self.m_LoggerObj.debug("name:%s", szName)
+        assert szName in self.m_dictVar
+
+        CurVarObj = self.m_dictVar[szName]
+        assert CurVarObj.IsOutput()
+
+        bAllOutputOK = True
+        for _, VarObj in self.m_dictVar.items():
+            if VarObj.IsOutput():
+                if VarObj.IsError():
+                    bAllOutputOK = False
+                    break
+
+                if not VarObj.IsDownloaded():
+                    bAllOutputOK = False
+                    break
+
+        if bAllOutputOK:
+            self.m_eState = task_enum.ETaskState.eSucceed
+
+    def IsSucceed(self):
+        return self.m_eState == task_enum.ETaskState.eSucceed

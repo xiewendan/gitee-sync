@@ -6,6 +6,7 @@
 # desc:
 
 import time
+import uuid
 
 
 class Executor:
@@ -22,6 +23,8 @@ class Executor:
         self.m_szFileListenIp = dictData["file_listen_ip"]
         self.m_nFileListenPort = dictData["file_listen_port"]
         self.m_nRegisterConnID = 0
+
+        self.m_szExeUuid = uuid.uuid1()
 
     @property
     def ListenIp(self):

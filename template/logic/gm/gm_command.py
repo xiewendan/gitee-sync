@@ -73,6 +73,7 @@ def DownloadFile():
     import logic.connection.message_dispatcher as message_dispatcher
     # TODO
     nConnID = 5
+    nFileExeInExeConnID = 5
 
     nSize = 1026052571
     szMd5 = "ab67334b9bd3dc0349377738f0f0f97e"
@@ -100,7 +101,7 @@ def DownloadFile():
         if dictData["offset"] + nBlockSize > nSize:
             dictData["block_size"] = nSize - dictData["offset"]
 
-        message_dispatcher.CallRpc(nConnID, "logic.gm.gm_command", "OnDownloadFileRequest", [dictData])
+        message_dispatcher.CallRpc(nConnID, "logic.gm.gm_command", "OnDownloadFileRequest", [nFileExeInExeConnID, dictData])
 
 
 def OnDownloadFileRequest(nConnID, dictData):
@@ -114,14 +115,13 @@ def OnDownloadFileRequest(nConnID, dictData):
 
     import logging
     logging.getLogger().info("ConnID:%d, dictData:%s", nConnID, Str(dictData))
+
     if not os.path.exists(dictData["file_fpath"]):
         logging.error("OnDownloadFileRequest error, file not exists:%s", dictData["file_fpath"])
         return
 
-    # TODO
-    nFileExeInExeConnID = 5
     import common.async_net.xx_connection_mgr as xx_connection_mgr
-    xx_connection_mgr.SendFile(nFileExeInExeConnID, dictData)
+    xx_connection_mgr.SendFile(nConnID, dictData)
 
 
 def OnDownloadFileReceive(nConnID, dictData):
@@ -194,14 +194,14 @@ def OnRecvAcceptTask(nConnID, dictTaskData):
     accept_task_mgr.AddTask(AcceptTaskObj)
 
 
-def OnReturn(nConnID, szTaskID):
+def OnReturn(nConnID, szTaskID, dictVarReturn):
     import logging
     logging.getLogger().info("ConnID:%d, TaskID:%s", nConnID, szTaskID)
 
-    
+    import logic.task.dis_task_mgr as dis_task_mgr
+    DisTaskObj = dis_task_mgr.GetTask(szTaskID)
 
-
-
+    DisTaskObj.OnReturn(nConnID, dictVarReturn)
 
 
 g_GmCommandMgr = GmCommandMgr()
