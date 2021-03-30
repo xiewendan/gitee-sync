@@ -46,7 +46,7 @@ class BaseTask:
         self.m_nExePort = 0
         self.m_nFileExePort = 0
         self.m_szTaskID = dictTaskData["uuid"]
-        self.m_eState = task_enum.ETaskState.eTodo
+        self.m_eState = task_enum.ETaskState.eNone
         self.m_nNextDisTime = 0
 
         self.m_listCB = []
@@ -68,8 +68,49 @@ class BaseTask:
     def GetTaskId(self):
         return self.m_szTaskID
 
-    def GenDict(self):
-        pass
+    def ToDict(self):
+        """
+        :return:
+        {
+            "uuid": szTaskUuid,
+            "command": [
+                "{{exe_fpath}} {{tga_file}} {{temp_dir}}  -s fast -c etc2 -f RGBA -ktx"
+            ],
+            "var": {
+                "exe_fpath": {
+                    "type": "file",
+                    "iot": "input",
+                    "fpath": "E:/project/xx/tools/template/data/test/etcpack.exe",
+                },
+                "tga_file": {
+                    "type": "file",
+                    "iot": "input",
+                    "fpath": "E:/project/xx/tools/template/data/test/cqs_ground_06.tga",
+                },
+                "temp_dir": {
+                    "type": "dir",
+                    "iot": "temp",
+                    "fpath": "E:/project/xx/tools/template/data/test/cqs_ground_06.ktx",
+                },
+                "ktx_file": {
+                    "type": "file",
+                    "iot": "output",
+                    "fpath": "E:/project/xx/tools/template/data/test/cqs_ground_06.ktx/cqs_ground_06.ktx",
+                }
+            },
+        }
+        """
+        dictData = {
+            "uuid": self.m_szTaskID,
+            "command": self._GetCommandList(),
+            "var": self._GetVarDict(),
+            "ip": self.m_szIp,
+            "exe_port": self.m_nExePort,
+            "file_exe_port": self.m_nFileExePort,
+            "next_dis_time": self.m_nNextDisTime,
+        }
+
+        return dictData
 
     @staticmethod
     def GetType(self):
@@ -90,3 +131,27 @@ class BaseTask:
             callback_mgr.Call(nCallbackID)
 
         self.m_listCB = []
+
+    def SetNextDisTime(self, nNextDisTime):
+        assert nNextDisTime > 0
+        self.m_nNextDisTime = nNextDisTime
+
+    def GetNextDisTime(self):
+        return self.m_nNextDisTime
+
+    # ********************************************************************************
+    # private
+    # ********************************************************************************
+    def _GetCommandList(self):
+        listCommand = []
+        for CommandObj in self.m_listCommand:
+            listCommand.append(CommandObj.ToStr())
+
+        return listCommand
+
+    def _GetVarDict(self):
+        dictRet = {}
+        for szName, VarObj in self.m_dictVar.items():
+            dictRet[szName] = VarObj.ToDict()
+
+        return dictRet

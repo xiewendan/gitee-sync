@@ -3,6 +3,14 @@ class ETaskState:
     eDoing = "doing"
     eAccept = "accept"
     ePrepare = "prepare"
+    eCreate = "create"
+    eConnecting = "connecting"
+    ePreparing = "preparing"
+    ePrepared = "prepared"
+    eExecing = "execing"
+    eReturning = "returning"
+    eFailed = "failed"
+    eNone = "none"
 
 
 class ETaskType:
@@ -61,3 +69,7 @@ class EIotType:
     def ToStr(nType):
         assert nType in EIotType.dictStr
         return EIotType.dictStr[nType]
+
+
+class ETaskConst:
+    eDisDeltaTime = 60

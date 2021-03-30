@@ -154,6 +154,13 @@ class XxConnectionMgr:
         ConnectionObj = self._GetConnection(nConnID)
         return ConnectionObj.IsConnected()
 
+    def FilterConnIDList(self, nConnType):
+        listConnID = []
+        for nConnID, ConnectionObj in self.m_dictConnection.items():
+            if ConnectionObj.GetType() == nConnType:
+                listConnID.append(nConnID)
+        return listConnID
+
     # ********************************************************************************
     # to destroy
     # ********************************************************************************
@@ -320,6 +327,7 @@ Destroy = g_XxConnectionMgrObj.Destroy
 DestroyConnection = g_XxConnectionMgrObj.DestroyConnection
 GetAllDataStr = g_XxConnectionMgrObj.GetAllDataStr
 IsConnected = g_XxConnectionMgrObj.IsConnected
+FilterConnIDList = g_XxConnectionMgrObj.FilterConnIDList
 
 F_OnConnect = g_XxConnectionMgrObj.F_OnConnect
 F_OnDisconnect = g_XxConnectionMgrObj.F_OnDisconnect

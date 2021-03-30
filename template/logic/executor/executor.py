@@ -21,6 +21,7 @@ class Executor:
         self.m_nRegisterPort = dictData["register_port"]
         self.m_szFileListenIp = dictData["file_listen_ip"]
         self.m_nFileListenPort = dictData["file_listen_port"]
+        self.m_nRegisterConnID = 0
 
     @property
     def ListenIp(self):
@@ -35,10 +36,24 @@ class Executor:
 
         self._OnStart()
 
+        import logic.task.dis_task_mgr as dis_task_mgr
+        import logic.task.accept_task_mgr as accept_task_mgr
+
+
+        dis_task_mgr.SetIpPort(self.m_szListenIp, self.m_nListenPort, self.m_nFileListenPort)
+        nRegisterConnID = self._GetRegisterConnID()
+        dis_task_mgr.SetRegisterConnID(nRegisterConnID)
+
+        import common.xx_time as xx_time
+        nCurTime = xx_time.GetTime()
+
         import common.async_net.xx_connection_mgr as xx_connection_mgr
         while True:
             time.sleep(0.01)
             xx_connection_mgr.Update()
+            dis_task_mgr.Update(nCurTime)
+            accept_task_mgr.Update(nCurTime)
+
 
     # ********************************************************************************
     # private
@@ -80,3 +95,8 @@ class Executor:
             dictConnectionData)
 
         xx_connection_mgr.Connect(nConnectionID, self.m_szRegisterIp, self.m_nRegisterPort)
+        self.m_nRegisterConnID = nConnectionID
+
+    def _GetRegisterConnID(self):
+        assert self.m_nRegisterConnID != 0
+        return self.m_nRegisterConnID

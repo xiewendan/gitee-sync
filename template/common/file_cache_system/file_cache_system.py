@@ -197,3 +197,9 @@ class FileCacheSystem:
                 return False
 
         return True
+
+
+g_FileCacheSystem = FileCacheSystem()
+CheckExistSameFile = g_FileCacheSystem.CheckExistSameFile
+UseFile = g_FileCacheSystem.UseFile
+SaveFile = g_FileCacheSystem.SaveFile

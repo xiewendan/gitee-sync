@@ -24,9 +24,12 @@ class RegisterServer:
         self._OnStart()
 
         import common.async_net.xx_connection_mgr as xx_connection_mgr
+        import logic.task.assign_task_mgr as assign_task_mgr
         while True:
             time.sleep(0.01)
             xx_connection_mgr.Update()
+            assign_task_mgr.Update()
+
 
     # ********************************************************************************
     # private

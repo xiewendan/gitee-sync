@@ -147,8 +147,10 @@ def AddDisTask(nConnID, dictTaskData):
         DisTaskObj = dis_task_mgr.GetTask(szTaskId)
         import logic.connection.message_dispatcher as message_dispatcher
 
-        message_dispatcher.CallRpc(nConnID, "logic.gm.gm_command", "OnFinishTask", listArg)
-        pass
+        dictRet = {
+            "uuid": szTaskId
+        }
+        message_dispatcher.CallRpc(nConnID, "logic.gm.gm_command", "OnFinishTask", [dictRet])
 
     import logic.task.task_enum as task_enum
     import logic.task.task_factory as task_factory
@@ -156,12 +158,50 @@ def AddDisTask(nConnID, dictTaskData):
     DisTaskObj.AddCB(TaskCB, nConnID, DisTaskObj.GetTaskID())
 
     dis_task_mgr.AddTask(DisTaskObj)
-    pass
+    logging.getLogger().info("add task, dictTaskData:%s", DisTaskObj.GetTaskID())
 
 
 def OnFinishTask(nConnID, dictTaskData):
     import main_frame.command.cmd_dis_task as cmd_dis_task
     cmd_dis_task.g_dictUUID2State[dictTaskData["uuid"]] = "True"
+
+
+def OnRecvDisTask(nConnID, dictTaskData):
+    """
+
+    :param nConnID:
+    :param dictTaskData:
+        参考logic.task.base_task.BaseTask.ToDict的返回值
+    :return:
+    """
+    import logging
+    logging.getLogger().info("ConnID:%d, dictTaskData:%s", nConnID, Str(dictTaskData))
+
+    import logic.task.assign_task_mgr as assign_task_mgr
+    dictTaskData["conn_id"] = nConnID
+    assign_task_mgr.AddTask(dictTaskData)
+
+
+def OnRecvAcceptTask(nConnID, dictTaskData):
+    import logging
+    logging.getLogger().info("ConnID:%d, dictTaskData:%s", nConnID, Str(dictTaskData))
+
+    import logic.task.task_enum as task_enum
+    import logic.task.task_factory as task_factory
+    AcceptTaskObj = task_factory.TaskFactory.Create(task_enum.ETaskType.eAccept, dictTaskData)
+
+    import logic.task.accept_task_mgr as accept_task_mgr
+    accept_task_mgr.AddTask(AcceptTaskObj)
+
+
+def OnReturn(nConnID, szTaskID):
+    import logging
+    logging.getLogger().info("ConnID:%d, TaskID:%s", nConnID, szTaskID)
+
+    
+
+
+
 
 
 g_GmCommandMgr = GmCommandMgr()

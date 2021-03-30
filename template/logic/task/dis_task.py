@@ -18,6 +18,8 @@ class DisTask(tasK_base.BaseTask):
         self.m_nExePort = nExePort
         self.m_nFileExePort = nFileExePort
 
+        self.m_eState = task_enum.ETaskState.eNone
+
     @staticmethod
     def GetType(self):
         return task_enum.ETaskType.eDis
