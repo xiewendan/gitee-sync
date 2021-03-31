@@ -15,23 +15,32 @@ from .index_mgr import IndexMgr
 
 
 class FileCacheSystem:
-    def __init__(self, szCacheFDir, nMaxTotalSize, bFullCheck=False, bDebug=False):
+    def __init__(self, szCacheFDir=None, nMaxTotalSize=10000000000, bFullCheck=False, bDebug=False):
         import common.my_log as my_log
         self.m_LoggerObj = my_log.MyLog(__file__)
 
         assert nMaxTotalSize > 0
 
-        self.m_LoggerObj.info("szCacheFDir:%s, MaxTotalSize:%d", szCacheFDir, nMaxTotalSize)
+        self.m_szCacheFDir = None
+        self.m_szFilesFDir = None
+        self.m_IndexMgrObj = None
+
+        self.m_nMaxTotalSize = nMaxTotalSize
+        self.m_bFullCheck = bFullCheck
+        self.m_bDebug = bDebug
+
+        if szCacheFDir is not None:
+            self.Init(szCacheFDir)
+
+    def Init(self, szCacheFDir):
+        self.m_LoggerObj.info("szCacheFDir:%s", szCacheFDir)
         szCacheFDir = szCacheFDir.replace("\\", "/")
 
         self.m_szCacheFDir = szCacheFDir
-
         self.m_szFilesFDir = szCacheFDir + "/files"
+        self.m_IndexMgrObj = IndexMgr(szCacheFDir + "/index.json", self.m_nMaxTotalSize)
 
-        self.m_IndexMgrObj = IndexMgr(szCacheFDir + "/index.json", nMaxTotalSize)
-        self._CheckCacheFile(bFullCheck)
-
-        self.m_bDebug = bDebug
+        self._CheckCacheFile(self.m_bFullCheck)
 
     def CheckExistSameFile(self, szMd5, szFileName, nSize):
         """是否存在相同文件"""
@@ -72,6 +81,7 @@ class FileCacheSystem:
         self.m_IndexMgrObj.AddFileIndex(szMd5, szFileName, nSize)
 
     def UseFile(self, szMd5, szFileName, nSize):
+        self.m_LoggerObj.debug("Md5:%s, FileName:%s, Size:%d", szMd5, szFileName, nSize)
         szDestFPath = self._GenFPath(szMd5)
         if not self.CheckExistSameFile(szMd5, szFileName, nSize):
             return ""
@@ -199,7 +209,9 @@ class FileCacheSystem:
         return True
 
 
+# g_szCacheFDir = os.getcwd() + "/data/cache_system"
 g_FileCacheSystem = FileCacheSystem()
+Init = g_FileCacheSystem.Init
 CheckExistSameFile = g_FileCacheSystem.CheckExistSameFile
 UseFile = g_FileCacheSystem.UseFile
 SaveFile = g_FileCacheSystem.SaveFile

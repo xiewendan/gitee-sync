@@ -25,13 +25,15 @@ class CmdExecutor(cmd_base.CmdBase):
         """执行命令"""
         self.m_LoggerObj.info("Start")
 
-        # szCWD = self.m_AppObj.ConfigLoader.CWD
+        szCWD = self.m_AppObj.ConfigLoader.CWD
 
         szRegisterIp = self.m_AppObj.CLM.GetArg(1)
         nRegisterPort = int(self.m_AppObj.CLM.GetArg(2))
         szListenIp = self.m_AppObj.CLM.GetArg(3)
         nListenPort = int(self.m_AppObj.CLM.GetArg(4))
         nFilePort = int(self.m_AppObj.CLM.GetArg(5))
+        szBaseFPath = "%s/%s" % (szCWD, self.m_AppObj.CLM.GetArg(6))
+        szBaseFPath.replace("\\", "/")
 
         dictData = {
             "register_ip": szRegisterIp,
@@ -41,6 +43,12 @@ class CmdExecutor(cmd_base.CmdBase):
             "file_listen_ip": szListenIp,
             "file_listen_port": nFilePort,
         }
+
+        import common.download_system.download_system as download_system
+        download_system.Init(szBaseFPath + "/download_system")
+
+        import common.file_cache_system.file_cache_system as file_cache_system
+        file_cache_system.Init(szBaseFPath + "/cache_system")
 
         import logic.executor.executor as executor
         ExecutorObj = executor.Executor(dictData)

@@ -42,6 +42,10 @@ class EVarType:
 
     @staticmethod
     def ToType(szType):
+        if isinstance(szType, int):
+            assert szType in EVarType.dictStr
+            return szType
+
         assert szType in EVarType.dictType
         return EVarType.dictType[szType]
 
@@ -70,6 +74,10 @@ class EIotType:
 
     @staticmethod
     def ToType(szType):
+        if isinstance(szType, int):
+            assert szType in EIotType.dictStr
+            return szType
+
         assert szType in EIotType.dictType
         return EIotType.dictType[szType]
 

@@ -120,11 +120,11 @@ def AddDisTask(nConnID, dictTaskData):
 
     import logic.task.task_enum as task_enum
     import logic.task.task_factory as task_factory
-    DisTaskObj = task_factory.TaskFactory.Create(task_enum.ETaskType.eDis, dictTaskData)
-    DisTaskObj.AddCB(TaskCB, nConnID, DisTaskObj.GetTaskID())
+    DisTaskObj = task_factory.Create(task_enum.ETaskType.eDis, dictTaskData)
+    DisTaskObj.AddCB(TaskCB, nConnID, DisTaskObj.GetTaskId())
 
     dis_task_mgr.AddTask(DisTaskObj)
-    logging.getLogger().info("add task, dictTaskData:%s", DisTaskObj.GetTaskID())
+    logging.getLogger().info("add task, dictTaskData:%s", DisTaskObj.GetTaskId())
 
 
 # 2 register接受到一个任务
@@ -150,7 +150,7 @@ def OnRecvAcceptTask(nConnID, dictTaskData):
 
     import logic.task.task_enum as task_enum
     import logic.task.task_factory as task_factory
-    AcceptTaskObj = task_factory.TaskFactory.Create(task_enum.ETaskType.eAccept, dictTaskData)
+    AcceptTaskObj = task_factory.Create(task_enum.ETaskType.eAccept, dictTaskData)
 
     if AcceptTaskObj.IsOverdue():
         logging.getLogger().info("overdue task, dictTaskData:%s", nConnID, Str(dictTaskData))
@@ -220,7 +220,28 @@ def OnReturn(nConnID, szTaskId, dictVarReturn):
     DisTaskObj.OnReturn(nConnID, dictVarReturn)
 
 
-# 7 执行服接收到返回完成
+# 7 执行服收到请求文件
+def OnReturnDownloadFileRequest(nConnID, szTaskId, dictData):
+    assert "md5" in dictData
+    assert "file_name" in dictData
+    assert "size" in dictData
+    assert "block_index" in dictData
+    assert "offset" in dictData
+    assert "block_size" in dictData
+    assert "file_fpath" in dictData
+
+    import logging
+    logging.getLogger().info("ConnID:%d, dictData:%s", nConnID, Str(dictData))
+
+    if not os.path.exists(dictData["file_fpath"]):
+        logging.error("OnReturnDownloadFileRequest error, file not exists:%s", dictData["file_fpath"])
+        return
+
+    import common.async_net.xx_connection_mgr as xx_connection_mgr
+    xx_connection_mgr.SendFile(nConnID, dictData)
+
+
+# 8 执行服接收到返回完成
 def OnReturnOver(nConnID, szTaskId):
     import logging
     logging.getLogger().info("ConnID:%d, TaskId:%s", nConnID, szTaskId)
@@ -232,7 +253,7 @@ def OnReturnOver(nConnID, szTaskId):
 # 10 任务结束
 def OnFinishTask(_, dictTaskData):
     import main_frame.command.cmd_dis_task as cmd_dis_task
-    cmd_dis_task.g_dictUUID2State[dictTaskData["uuid"]] = "True"
+    del cmd_dis_task.g_dictUUID2State[dictTaskData["uuid"]]
 
 
 g_GmCommandMgr = GmCommandMgr()

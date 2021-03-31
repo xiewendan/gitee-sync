@@ -21,6 +21,9 @@ class AssignTaskMgr:
         self.m_listAssign.append(dictData)
 
     def Update(self):
+        if len(self.m_listAssign) == 0:
+            return
+
         import common.async_net.xx_connection_mgr as xx_connection_mgr
         import logic.connection.message_dispatcher as message_dispatcher
         import common.async_net.connection.xx_connection as xx_connection
@@ -42,7 +45,7 @@ class AssignTaskMgr:
                 nIndex = self._AddIndex(nIndex, nLenConnID)
                 nRandomConnID = listConnID[nIndex]
 
-            assert nRandomConnID != listConnID[nIndex]  # 如果只有一个连接，肯定有问题
+            assert nRandomConnID != dictData["conn_id"]  # 如果只有一个连接，肯定有问题
             message_dispatcher.CallRpc(nRandomConnID, "logic.gm.gm_command", "OnRecvAcceptTask", [dictData])
 
             nIndex = self._AddIndex(nIndex, nLenConnID)

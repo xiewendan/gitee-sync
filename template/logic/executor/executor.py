@@ -24,7 +24,7 @@ class Executor:
         self.m_nFileListenPort = dictData["file_listen_port"]
         self.m_nRegisterConnID = 0
 
-        self.m_szExeUuid = uuid.uuid1()
+        self.m_szExeUuid = str(uuid.uuid1())
 
     @property
     def ListenIp(self):

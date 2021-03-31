@@ -6,27 +6,28 @@
 # desc:
 
 import os
+
 import logic.task.task_enum as task_enum
 
 
 class TaskVar:
     """"""
 
-    def __init__(self, szName: str, nType, nIotType, szFPath, szRPath):
+    def __init__(self, szVarName, dictValue):
         import common.my_log as my_log
         self.m_LoggerObj = my_log.MyLog(__file__)
 
-        self.m_LoggerObj.debug("name:%s, type:%d, iot_type:%d, fpath:%s", szName, nType, nIotType, szFPath)
+        self.m_LoggerObj.debug("VarName:%s, dictValue:%s", szVarName, Str(dictValue))
 
-        self.m_szName = szName
-        self.m_nType = nType
-        self.m_nIotType = nIotType
-        self.m_szFPath = szFPath
-        self.m_szRPath = szRPath
+        self.m_szName = szVarName
+        self.m_nType = task_enum.EVarType.ToType(dictValue["type"])
+        self.m_nIotType = task_enum.EIotType.ToType(dictValue["iot"])
+        self.m_szFPath = dictValue["fpath"]
+        self.m_szRPath = dictValue["rpath"]
 
-        self.m_szMd5 = ""
-        self.m_nSize = 0
-        self.m_szFileName = ""
+        self.m_szMd5 = dictValue.get("md5", "")
+        self.m_nSize = dictValue.get("size", 0)
+        self.m_szFileName = dictValue.get("file_name", "")
 
         self.m_szLocalFPath = ""
         self.m_szRemoteFPath = ""
@@ -36,7 +37,7 @@ class TaskVar:
 
         self.m_RequestReturnCb = None
 
-    def Init(self):
+    def InitInput(self):
         import os
         import common.md5 as md5
         import common.my_path as my_path
@@ -44,6 +45,17 @@ class TaskVar:
         self.m_szMd5 = md5.GetFileMD5(self.m_szFPath)
         self.m_nSize = os.path.getsize(self.m_szFPath)
         self.m_szFileName = my_path.FileNameWithExt(self.m_szFPath)
+
+        self.m_LoggerObj.info("md5:%s, size:%d, filename:%s", self.m_szMd5, self.m_nSize, self.m_szFileName)
+
+    def InitOutput(self):
+        import os
+        import common.md5 as md5
+        import common.my_path as my_path
+
+        self.m_szMd5 = md5.GetFileMD5(self.m_szLocalFPath)
+        self.m_nSize = os.path.getsize(self.m_szLocalFPath)
+        self.m_szFileName = my_path.FileNameWithExt(self.m_szLocalFPath)
 
         self.m_LoggerObj.info("md5:%s, size:%d, filename:%s", self.m_szMd5, self.m_nSize, self.m_szFileName)
 
@@ -103,13 +115,11 @@ class TaskVar:
             "file_name": self.m_szFileName,
         }
 
-    def Prepare(self, nFileExeConnID, szTaskID):
-        assert self.IsInput()
-
+    def Prepare(self, nFileExeConnID, szTaskId):
         self.m_LoggerObj.info("name:%s", self.m_szName)
 
         import common.my_path as my_path
-        self.m_szLocalFPath = "%s/data/temp/%s/%s" % (os.getcwd(), szTaskID, self.m_szRPath)
+        self.m_szLocalFPath = "%s/data/temp/%s/%s" % (os.getcwd(), szTaskId, self.m_szRPath)
         my_path.CreateFileDir(self.m_szLocalFPath)
 
         if self.IsTemp():
@@ -118,18 +128,17 @@ class TaskVar:
         elif self.IsOutput():
             self.m_bDownloaded = True
 
-        if self.IsInput():
+        elif self.IsInput():
             import common.file_cache_system.file_cache_system as file_cache_system
-            if file_cache_system.CheckExistSameFile(self.m_szMd5, self.m_nSize, self.m_szFileName):
-                szFPathInCacheSystem = file_cache_system.UseFile(self.m_szMd5, self.m_nSize, self.m_szFileName)
-
+            if file_cache_system.CheckExistSameFile(self.m_szMd5, self.m_szFileName, self.m_nSize):
+                szFPathInCacheSystem = file_cache_system.UseFile(self.m_szMd5, self.m_szFileName, self.m_nSize)
                 my_path.Copy(szFPathInCacheSystem, self.m_szLocalFPath)
 
                 self.m_bDownloaded = True
             else:
                 import common.callback_mgr as callback_mgr
                 nPrepareCbID = callback_mgr.CreateCb(self._PrepareDownloadFinish)
-                self._Download(nFileExeConnID, szTaskID, self.m_szFPath, nPrepareCbID)
+                self._PrepareDownload(nFileExeConnID, szTaskId, self.m_szFPath, nPrepareCbID)
 
         else:
             assert False, "not support"
@@ -144,16 +153,22 @@ class TaskVar:
     def RequestReturn(self, nConnID, szTaskId, RequestReturnCb):
         assert self.IsOutput()
 
-        import common.callback_mgr as callback_mgr
-        nReturnCbID = callback_mgr.CreateCb(self._ReturnDownloadFinish)
-        self._Download(nConnID, szTaskId, self.m_szRemoteFPath, nReturnCbID)
-
         self.m_RequestReturnCb = RequestReturnCb
+
+        import common.download_system.download_system as download_system
+        szDownloadFPath = download_system.UseFile(self.m_szMd5, self.m_szFileName, self.m_nSize)
+        if szDownloadFPath != "":
+            self._ReturnDownloadFinish(bOk=True)
+
+        else:
+            import common.callback_mgr as callback_mgr
+            nReturnCbID = callback_mgr.CreateCb(self._ReturnDownloadFinish)
+            self._ReturnDownload(nConnID, szTaskId, self.m_szRemoteFPath, nReturnCbID)
 
     # ********************************************************************************
     # private
     # ********************************************************************************
-    def _Download(self, nFileExeConnID, szTaskID, szFPath, nCbID):
+    def _PrepareDownload(self, nFileExeConnID, szTaskId, szFPath, nCbID):
         import common.download_system.download_system as download_system
         import logic.connection.message_dispatcher as message_dispatcher
 
@@ -174,19 +189,19 @@ class TaskVar:
             if dictData["offset"] + nBlockSize > self.m_nSize:
                 dictData["block_size"] = self.m_nSize - dictData["offset"]
 
-            message_dispatcher.CallRpc(nFileExeConnID, "logic.gm.gm_command", "OnDownloadFileRequest", [szTaskID, dictData])
+            message_dispatcher.CallRpc(nFileExeConnID, "logic.gm.gm_command", "OnDownloadFileRequest", [szTaskId, dictData])
 
     def _PrepareDownloadFinish(self, bOk=False):
         self.m_LoggerObj.info("varname:%s, ok:%s", self.m_szName, str(bOk))
 
         if bOk is True:
             import common.download_system.download_system as download_system
-            szDownloadFPath = download_system.UseFile(self.m_szMd5, self.m_nSize, self.m_szFileName)
+            szDownloadFPath = download_system.UseFile(self.m_szMd5, self.m_szFileName, self.m_nSize)
             assert szDownloadFPath != ""
 
             import common.file_cache_system.file_cache_system as file_cache_system
-            file_cache_system.SaveFile(self.m_szMd5, self.m_nSize, self.m_szFileName, szDownloadFPath)
-            szFPathInCacheSystem = file_cache_system.UseFile(self.m_szMd5, self.m_nSize, self.m_szFileName)
+            file_cache_system.SaveFile(self.m_szMd5, self.m_szFileName, self.m_nSize, szDownloadFPath)
+            szFPathInCacheSystem = file_cache_system.UseFile(self.m_szMd5, self.m_szFileName, self.m_nSize)
 
             import common.my_path as my_path
             my_path.Copy(szFPathInCacheSystem, self.m_szLocalFPath)
@@ -195,12 +210,35 @@ class TaskVar:
         else:
             self.m_bError = True
 
+    def _ReturnDownload(self, nFileExeConnID, szTaskId, szFPath, nCbID):
+        import common.download_system.download_system as download_system
+        import logic.connection.message_dispatcher as message_dispatcher
+
+        listToDownloadBlockIndex = download_system.Download(self.m_szMd5, self.m_szFileName, self.m_nSize, nCbID)
+        nBlockSize = download_system.GetBlockSize()
+
+        for nBlockIndex in listToDownloadBlockIndex:
+            dictData = {
+                "md5": self.m_szMd5,
+                "file_name": self.m_szFileName,
+                "size": self.m_nSize,
+                "block_index": nBlockIndex,
+                "offset": nBlockSize * nBlockIndex,
+                "block_size": nBlockSize,
+                "file_fpath": szFPath
+            }
+
+            if dictData["offset"] + nBlockSize > self.m_nSize:
+                dictData["block_size"] = self.m_nSize - dictData["offset"]
+
+            message_dispatcher.CallRpc(nFileExeConnID, "logic.gm.gm_command", "OnReturnDownloadFileRequest", [szTaskId, dictData])
+
     def _ReturnDownloadFinish(self, bOk=False):
         self.m_LoggerObj.info("varname:%s, ok:%s", self.m_szName, str(bOk))
 
         if bOk is True:
             import common.download_system.download_system as download_system
-            szDownloadFPath = download_system.UseFile(self.m_szMd5, self.m_nSize, self.m_szFileName)
+            szDownloadFPath = download_system.UseFile(self.m_szMd5, self.m_szFileName, self.m_nSize)
             assert szDownloadFPath != ""
 
             import common.my_path as my_path

@@ -1,5 +1,10 @@
 class XxFile:
     def __init__(self, szMd5, szFileFPath, nSize, szMode="rb"):
+        import common.my_log as my_log
+        self.m_LoggerObj = my_log.MyLog(__file__)
+
+        self.m_LoggerObj.debug("md5:%s, FileFPath:%s, Size:%d, Mode:%s", szMd5, szFileFPath, nSize, szMode)
+
         self.m_szMd5 = szMd5
         self.m_szFileFPath = szFileFPath
         self.m_nSize = nSize

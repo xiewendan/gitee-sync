@@ -52,7 +52,7 @@ class BaseTask:
         self.m_szIp = dictTaskData.get("ip", "")
         self.m_nExePort = dictTaskData.get("exe_port", 0)
         self.m_nFileExePort = dictTaskData.get("file_exe_port", 0)
-        self.m_szTaskID = dictTaskData["uuid"]
+        self.m_szTaskId = dictTaskData["uuid"]
         self.m_eState = task_enum.ETaskState.eNone
         self.m_nNextDisTime = dictTaskData.get("next_dis_time", 0)
 
@@ -65,16 +65,11 @@ class BaseTask:
 
         import logic.task.task_var as task_var
         for szVarName, dictValue in dictTaskData["var"].items():
-            nType = task_enum.EVarType.ToType(dictValue["type"])
-            nIotType = task_enum.EIotType.ToType(dictValue["iot"])
-            szFPath = dictValue["fpath"]
-            szRPath = dictValue["rpath"]
-
-            TaskVarObj = task_var.TaskVar(szVarName, nType, nIotType, szFPath, szRPath)
+            TaskVarObj = task_var.TaskVar(szVarName, dictValue)
             self.m_dictVar[szVarName] = TaskVarObj
 
     def GetTaskId(self):
-        return self.m_szTaskID
+        return self.m_szTaskId
 
     def ToDict(self):
         """
@@ -109,7 +104,7 @@ class BaseTask:
         }
         """
         dictData = {
-            "uuid": self.m_szTaskID,
+            "uuid": self.m_szTaskId,
             "command": self._GetCommandList(),
             "var": self._GetVarDict(),
             "ip": self.m_szIp,
@@ -121,11 +116,11 @@ class BaseTask:
         return dictData
 
     @staticmethod
-    def GetType(self):
+    def GetType():
         NotImplementedError
 
     def AddCB(self, FunCB, *args):
-        self.m_LoggerObj.debug("TaskId:%s", self.m_szTaskID)
+        self.m_LoggerObj.debug("TaskId:%s", self.m_szTaskId)
 
         import common.callback_mgr as callback_mgr
         nCallBackID = callback_mgr.CreateCb(FunCB, *args)
@@ -136,7 +131,7 @@ class BaseTask:
         return nCallBackID
 
     def OnCB(self):
-        self.m_LoggerObj.debug("TaskId:%s", self.m_szTaskID)
+        self.m_LoggerObj.debug("TaskId:%s", self.m_szTaskId)
 
         import common.callback_mgr as callback_mgr
         for nCallbackID in self.m_listCB:
@@ -145,9 +140,8 @@ class BaseTask:
         self.m_listCB = []
 
     def SetNextDisTime(self, nNextDisTime):
-        self.m_LoggerObj.debug("taskid:%s, curdistime:%d, nextdistime:%d", self.m_szTaskID, self.m_nNextDisTime, nNextDisTime)
-        assert nNextDisTime >= self.m_nNextDisTime
-        self.m_nNextDisTime = nNextDisTime
+        self.m_LoggerObj.debug("taskid:%s, curdistime:%d, nextdistime:%d", self.m_szTaskId, self.m_nNextDisTime, nNextDisTime)
+        self.m_nNextDisTime = max(nNextDisTime, self.m_nNextDisTime)
 
     def GetNextDisTime(self):
         return self.m_nNextDisTime

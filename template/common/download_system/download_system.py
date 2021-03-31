@@ -7,31 +7,41 @@ from .xx_file import XxFile
 class DownloadSystem:
     """"""
 
-    def __init__(self, szDownloadFDir, nMaxTotalSize, nOverMilliSecond=300000, bFullCheck=False, nBlockSize=4000000):
+    def __init__(self, szDownloadFDir=None, nMaxTotalSize=10000000000, nOverMilliSecond=300000, bFullCheck=False, nBlockSize=4000000):
         import common.my_log as my_log
         self.m_LoggerObj = my_log.MyLog(__file__)
 
         assert nMaxTotalSize > 0
         assert nBlockSize > 0
 
-        self.m_LoggerObj.info("szDownloadFDir:%s, MaxTotalSize:%d", szDownloadFDir, nMaxTotalSize)
+        self.m_szDownloadFDir = None
+        self.m_szFilesFDir = None
+        self.m_IndexMgrObj = None
+
+        self.m_nBlockSize = nBlockSize
+
+        self.m_bFullCheck = bFullCheck
+
+        self.m_nOverMilliSecond = nOverMilliSecond
+
+        self.m_nMaxTotalSize = nMaxTotalSize
+
+        self.m_XxFileObj = None
+
+        if szDownloadFDir is not None:
+            self.Init(szDownloadFDir)
+
+    def Init(self, szDownloadFDir):
+        self.m_LoggerObj.info("szDownloadFDir:%s", szDownloadFDir)
         szDownloadFDir = szDownloadFDir.replace("\\", "/")
 
         self.m_szDownloadFDir = szDownloadFDir
 
         self.m_szFilesFDir = szDownloadFDir + "/files"
 
-        self.m_IndexMgrObj = IndexMgr(szDownloadFDir + "/index.json", nMaxTotalSize)
-
-        self.m_nBlockSize = nBlockSize
+        self.m_IndexMgrObj = IndexMgr(szDownloadFDir + "/index.json", self.m_nMaxTotalSize)
 
         self._CheckCacheFile()
-
-        self.m_bFullCheck = bFullCheck
-
-        self.m_nOverMilliSecond = nOverMilliSecond
-
-        self.m_XxFileObj = None
 
     def _GetXxFile(self, szMd5, szFileFPath, nSize):
         if self.m_XxFileObj is not None:
@@ -137,6 +147,7 @@ class DownloadSystem:
         self._CallCb(listCb, bMd5Ok)
 
     def UseFile(self, szMd5, szFileName, nSize):
+        self.m_LoggerObj.debug("Md5:%s, FileName:%s, Size:%d", szMd5, szFileName, nSize)
         szDestFPath = self._GenFPath(szMd5)
         if not self.m_IndexMgrObj.CheckExistDownloaded(szMd5, szFileName, nSize) and \
                 not self.m_IndexMgrObj.CheckExistDownloading(szMd5, szFileName, nSize):
@@ -152,7 +163,6 @@ class DownloadSystem:
     def CheckOvertime(self):
         import time
         import math
-        import common.callback_mgr as callback_mgr
 
         nCurTime = math.floor(time.time() * 1000)
 
@@ -258,10 +268,10 @@ class DownloadSystem:
         return "%s/%s/%s" % (self.m_szFilesFDir, szDir, szFileName)
 
 
-g_szDownloadFDir = os.getcwd() + "/data/download_system"
-g_nMaxTotalSize = 10000000000
+# g_szDownloadFDir = os.getcwd() + "/data/download_system"
 
-g_DownloadSystem = DownloadSystem(g_szDownloadFDir, g_nMaxTotalSize)
+g_DownloadSystem = DownloadSystem()
+Init = g_DownloadSystem.Init
 Download = g_DownloadSystem.Download
 Write = g_DownloadSystem.Write
 CheckOvertime = g_DownloadSystem.CheckOvertime

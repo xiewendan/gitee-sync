@@ -140,7 +140,8 @@ class XxDispatcherBase:
         nError = self.m_SocketObj.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
         if nError != 0:
             szError = nError in errorcode and errorcode[nError] or "unknown error %s" % nError
-            raise OSError(nError, szError)
+            szData = "ip:%s, port:%d" % (self.Ip, self.Port)
+            raise OSError(nError, szError + szData)
 
         self._OnConnect()
 

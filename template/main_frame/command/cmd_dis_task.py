@@ -16,6 +16,54 @@ class CmdDisTask(cmd_base.CmdBase):
     def _OnInit(self):
         pass
 
+    @staticmethod
+    def _CreateTaskData(szTagFile):
+
+        import uuid
+        szTaskUuid = str(uuid.uuid1())
+
+        import common.my_path as my_path
+        szFileName = my_path.FileName(szTagFile)
+
+        return {
+            "uuid": szTaskUuid,
+            "command": [
+                "{{exe_fpath}} {{tga_file}} {{temp_dir}}  -s fast -c etc2 -f RGBA -ktx"
+            ],
+            "var": {
+                "exe_fpath": {
+                    "type": "file",
+                    "iot": "input",
+                    "fpath": "E:/project/xiewendan/tools/template/data/test/etcpack.exe",
+                    "rpath": "etcpack.exe",
+                },
+                "tga_file": {
+                    "type": "file",
+                    "iot": "input",
+                    "fpath": "E:/project/xiewendan/tools/template/data/test/" + szTagFile,
+                    "rpath": szTagFile,
+                },
+                "convert_fpath": {
+                    "type": "file",
+                    "iot": "input",
+                    "fpath": "E:/project/xiewendan/tools/template/data/test/convert.exe",
+                    "rpath": "convert.exe",
+                },
+                "temp_dir": {
+                    "type": "dir",
+                    "iot": "temp",
+                    "fpath": "E:/project/xiewendan/tools/template/data/test/%s.ktx" % szFileName,
+                    "rpath": "%s.ktx" % szFileName,
+                },
+                "ktx_file": {
+                    "type": "file",
+                    "iot": "output",
+                    "fpath": "E:/project/xiewendan/tools/template/data/test/%s.ktx/%s.ktx" % (szFileName, szFileName),
+                    "rpath": "%s.ktx/%s.ktx" % (szFileName, szFileName)
+                }
+            },
+        }
+
     def Do(self):
         """执行命令"""
         self.m_LoggerObj.info("Start")
@@ -44,53 +92,38 @@ class CmdDisTask(cmd_base.CmdBase):
             xx_connection_mgr.Update()
 
         # call rpc
-        import uuid
         import logic.connection.message_dispatcher as message_dispatcher
 
-        szTaskUuid = uuid.uuid1()
-        dictTaskData = {
-            "uuid": szTaskUuid,
-            "command": [
-                "{{exe_fpath}} {{tga_file}} {{temp_dir}}  -s fast -c etc2 -f RGBA -ktx"
-            ],
-            "var": {
-                "exe_fpath": {
-                    "type": "file",
-                    "iot": "input",
-                    "fpath": "E:/project/xiewendan/tools/template/data/test/etcpack.exe",
-                    "rpath": "etcpack.exe",
-                },
-                "tga_file": {
-                    "type": "file",
-                    "iot": "input",
-                    "fpath": "E:/project/xiewendan/tools/template/data/test/cqs_ground_06.tga",
-                    "rpath": "cqs_ground_06.tga",
-                },
-                "temp_dir": {
-                    "type": "dir",
-                    "iot": "temp",
-                    "fpath": "E:/project/xiewendan/tools/template/data/test/cqs_ground_06.ktx",
-                    "rpath": "cqs_ground_06.ktx",
-                },
-                "ktx_file": {
-                    "type": "file",
-                    "iot": "output",
-                    "fpath": "E:/project/xiewendan/tools/template/data/test/cqs_ground_06.ktx/cqs_ground_06.ktx",
-                    "rpath": "cqs_ground_06.ktx/cqs_ground_06.ktx"
-                }
-            },
-        }
+        listTga = [
+            "card003_mfst_eyes01.tga",
+            "card003_mfst_face01.tga",
+            "cqs_ground_06.tga",
+            "fx_shanfeng.tga",
+            "fx_shanfeng_01.tga",
+            "fxdragon_demo_101_02_d.tga",
+            "kp_linshengchuan_face_01.tga",
+            "kp_linshengchuan_hair_01.tga",
+            "kp_linshengchuan_hair_d.tga",
+            "kp_linshengchuan_hair_l.tga",
+            "kp_linshengchuan_weapon.tga",
+            "kp_linshengchuan_weapon_01.tga",
+            "kp_linshengchuan_weapon_l.tga"
+        ]
 
-        message_dispatcher.CallRpc(nConnectionID, "logic.gm.gm_command", "AddDisTask", [dictTaskData])
+        for szTgaFile in listTga:
+            dictTaskData = self._CreateTaskData(szTgaFile)
+
+            message_dispatcher.CallRpc(nConnectionID, "logic.gm.gm_command", "AddDisTask", [dictTaskData])
+            g_dictUUID2State[dictTaskData["uuid"]] = True
 
         # wait to do task
-        while szTaskUuid not in g_dictUUID2State:
+        while len(g_dictUUID2State) > 0:
             self.m_LoggerObj.info("wait to do task ...")
 
-            time.sleep(10)
+            time.sleep(1)
             xx_connection_mgr.Update()
 
-        self.m_LoggerObj.info("task finish!, dictTaskData:%s", Str(dictTaskData))
+        self.m_LoggerObj.info("task finish!")
 
         # destroy
         time.sleep(1)

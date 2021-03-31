@@ -23,7 +23,7 @@ class AcceptTask(tasK_base.BaseTask):
         self.m_eState = task_enum.ETaskState.eCreate
 
     @staticmethod
-    def GetType(self):
+    def GetType():
         return task_enum.ETaskType.eAccept
 
     def Update(self):
@@ -37,7 +37,7 @@ class AcceptTask(tasK_base.BaseTask):
             if xx_connection_mgr.IsConnected(self.m_nExeConnID) and xx_connection_mgr.IsConnected(self.m_nFileExeConnID):
                 # 请求文件
                 for szName, VarObj in self.m_dictVar.items():
-                    VarObj.Prepare(self.m_nFileExeConnID, self.m_szTaskID)
+                    VarObj.Prepare(self.m_nFileExeConnID, self.m_szTaskId)
 
                 self.m_eState = task_enum.ETaskState.ePreparing
 
@@ -47,7 +47,7 @@ class AcceptTask(tasK_base.BaseTask):
                 if VarObj.IsError():
                     self.m_eState = task_enum.ETaskState.eFailed
                     import logic.task.accept_task_mgr as accept_task_mgr
-                    accept_task_mgr.ClearCurTask(self.m_szTaskID)
+                    accept_task_mgr.ClearCurTask(self.m_szTaskId)
                     bVarAllPrepare = False
                     break
 
@@ -61,25 +61,25 @@ class AcceptTask(tasK_base.BaseTask):
         elif self.m_eState == task_enum.ETaskState.ePrepared:
             bOK = self._Exec()
             if bOK:
-                for szName, VarObj in self.m_dictVar:
+                for szName, VarObj in self.m_dictVar.items():
                     if VarObj.IsOutput():
-                        VarObj.Init()
+                        VarObj.InitOutput()
 
                 import logic.connection.message_dispatcher as message_dispatcher
 
                 dictVarReturn = {}
-                for szName, VarObj in self.m_dictVar:
+                for szName, VarObj in self.m_dictVar.items():
                     if VarObj.IsOutput():
                         dictVarReturn[szName] = VarObj.ToReturnDict()
 
-                message_dispatcher.CallRpc(self.m_nFileExeConnID, "logic.gm.gm_command", "OnReturn", [self.m_szTaskID, dictVarReturn])
+                message_dispatcher.CallRpc(self.m_nFileExeConnID, "logic.gm.gm_command", "OnReturn", [self.m_szTaskId, dictVarReturn])
 
                 self.m_eState = task_enum.ETaskState.eReturning
 
             else:
                 self.m_eState = task_enum.ETaskState.eFailed
                 import logic.task.accept_task_mgr as accept_task_mgr
-                accept_task_mgr.ClearCurTask(self.m_szTaskID)
+                accept_task_mgr.ClearCurTask(self.m_szTaskId)
 
         elif self.m_eState == task_enum.ETaskState.eReturning:
             pass
@@ -105,11 +105,11 @@ class AcceptTask(tasK_base.BaseTask):
 
         # TODO 在执行前，需要先将文件放到temp目录下，如果不存在rpath的时候，就放到data/temp/任务id/filename文件
 
-        szWorkDir = "%s/data/temp/%s" % (os.getcwd(), self.m_szTaskID)
+        szWorkDir = "%s/data/temp/%s" % (os.getcwd(), self.m_szTaskId)
 
         dictVarConfig = {}
-        for VarObj in self.m_dictVar.items():
-            dictVarConfig[VarObj.GetName()] = VarObj.GetValue()
+        for szVarName, VarObj in self.m_dictVar.items():
+            dictVarConfig[szVarName] = VarObj.GetValue()
 
         for CommandObj in self.m_listCommand:
             szCommandFormat = CommandObj.ToStr()
@@ -117,7 +117,7 @@ class AcceptTask(tasK_base.BaseTask):
             TemplateObj = Template(szCommandFormat)
             szCommand = TemplateObj.render(dictVarConfig)
 
-            nRet = util.RunCmd(szCommand, szWorkDir)
+            nRet = util.RunCmd(szCommand, szWorkDir=szWorkDir)
             if nRet != 0:
                 self.m_LoggerObj.error("Command:%s", szCommand)
                 return False

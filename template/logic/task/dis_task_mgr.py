@@ -89,7 +89,7 @@ class DisTaskMgr:
             self.RemoveTask(szTaskId)
             TaskObj.OnCB()
 
-        assert len(self.m_dictTask) == self.m_listToDis
+        assert len(self.m_dictTask) == len(self.m_listToDis)
 
 
 g_DisTaskMgrObj = DisTaskMgr()

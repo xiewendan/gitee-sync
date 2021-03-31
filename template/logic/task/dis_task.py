@@ -16,7 +16,7 @@ class DisTask(tasK_base.BaseTask):
 
         for szName, VarObj in self.m_dictVar.items():
             if VarObj.IsInput():
-                VarObj.Init()
+                VarObj.InitInput()
 
         import logic.task.dis_task_mgr as dis_task_mgr
         szIp, nExePort, nFileExePort = dis_task_mgr.GetIpPort()
@@ -30,7 +30,7 @@ class DisTask(tasK_base.BaseTask):
         self.m_nFileExeConnID = 0
 
     @staticmethod
-    def GetType(self):
+    def GetType():
         return task_enum.ETaskType.eDis
 
     def OnReturn(self, nConnID, dictVarReturn):
@@ -50,7 +50,7 @@ class DisTask(tasK_base.BaseTask):
 
         for szName, _ in dictVarReturn.items():
             VarObj = self.m_dictVar[szName]
-            VarObj.RequestReturn(nConnID, self.m_szTaskID, self.RequestReturnCb)
+            VarObj.RequestReturn(nConnID, self.m_szTaskId, self.RequestReturnCb)
 
     def RequestReturnCb(self, szName):
         self.m_LoggerObj.debug("name:%s", szName)
@@ -77,7 +77,7 @@ class DisTask(tasK_base.BaseTask):
 
         if bOver:
             import logic.connection.message_dispatcher as message_dispatcher
-            message_dispatcher.CallRpc(self.m_nFileExeConnID, "logic.gm.gm_command", "OnReturnOver", [self.m_szTaskID])
+            message_dispatcher.CallRpc(self.m_nFileExeConnID, "logic.gm.gm_command", "OnReturnOver", [self.m_szTaskId])
 
     def IsSucceed(self):
         return self.m_eState == task_enum.ETaskState.eSucceed

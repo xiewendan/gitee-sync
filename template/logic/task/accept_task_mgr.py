@@ -15,14 +15,14 @@ class AcceptTaskMgr:
         self.m_szCurTaskID = 0
 
     def AddTask(self, TaskObj):
-        self.m_LoggerObj.debug("TaskID:%s", TaskObj.GetTaskID())
+        self.m_LoggerObj.debug("TaskID:%s", TaskObj.GetTaskId())
 
-        szTaskID = TaskObj.GetTaskID()
+        szTaskId = TaskObj.GetTaskId()
 
-        assert szTaskID not in self.m_dictTask
-        self.m_dictTask[szTaskID] = TaskObj
+        assert szTaskId not in self.m_dictTask
+        self.m_dictTask[szTaskId] = TaskObj
 
-        self.m_listTask.append(szTaskID)
+        self.m_listTask.append(szTaskId)
 
     def Update(self, nCurTime):
         while self.m_szCurTaskID == 0 and len(self.m_listTask) > 0:
