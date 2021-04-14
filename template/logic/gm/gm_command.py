@@ -252,8 +252,8 @@ def OnReturnOver(nConnID, szTaskId):
 
 # 10 任务结束
 def OnFinishTask(_, dictTaskData):
-    import main_frame.command.cmd_dis_task as cmd_dis_task
-    del cmd_dis_task.g_dictUUID2State[dictTaskData["uuid"]]
+    import main_frame.command.cmd_unity_tex_dis_task as cmd_unity_tex_dis_task
+    del cmd_unity_tex_dis_task.g_dictUUID2State[dictTaskData["uuid"]]
 
 
 g_GmCommandMgr = GmCommandMgr()
