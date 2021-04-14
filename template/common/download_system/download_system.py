@@ -53,6 +53,11 @@ class DownloadSystem:
             self.m_XxFileObj = XxFile(szMd5, szFileFPath, nSize, "wb")
 
         return self.m_XxFileObj
+    
+    def _CloseXxFile(self):
+        assert self.m_XxFileObj is not None
+        self.m_XxFileObj.Close()
+        self.m_XxFileObj = None
 
     def GetBlockSize(self):
         return self.m_nBlockSize
@@ -94,6 +99,7 @@ class DownloadSystem:
         # 创建空文件
         my_path.CreateFileDir(szDestFPath)
         XxFileObj = self._GetXxFile(szMd5, szDestFPath, nSize)
+        XxFileObj.CheckSame(szMd5, szDestFPath, nSize)
         XxFileObj.Write(nSize - 1, b'e')
 
         # 创建索引
@@ -107,7 +113,6 @@ class DownloadSystem:
         return listToDownloadBlockIndex
 
     def Write(self, szMd5, szFileName, nSize, nBlockIndex, byteDataBlock):
-        self.m_LoggerObj.debug("szMd5:%s, szFileName:%s, nSize:%d, nBlockIndex:%d", szMd5, szFileName, nSize, nBlockIndex)
         self.m_LoggerObj.info("szMd5:%s, szFileName:%s, nSize:%d, nBlockIndex:%d", szMd5, szFileName, nSize, nBlockIndex)
 
         assert self.m_IndexMgrObj.CheckExistDownloading(szMd5, szFileName, nSize), "发送到远端请求文件，结果本地下载缓存不够，把文件清除了就尴尬了"
@@ -121,6 +126,7 @@ class DownloadSystem:
 
         # 更新文件
         XxFileObj = self._GetXxFile(szMd5, szDestFPath, nSize)
+        XxFileObj.CheckSame(szMd5, szDestFPath, nSize)
         XxFileObj.Write(nOffset, byteDataBlock)
 
         # 更新索引
@@ -130,6 +136,8 @@ class DownloadSystem:
         if not self.m_IndexMgrObj.CheckExistDownloaded(szMd5, szFileName, nSize):
             return
 
+        self._CloseXxFile()
+
         # 下载完成检查
         self.m_LoggerObj.info("file downloaded, md5:%s, filename:%s", szMd5, szFileName)
 
@@ -137,9 +145,9 @@ class DownloadSystem:
         if self.m_bFullCheck:
             import common.md5 as md5
             szRealMd5 = md5.GetFileMD5(szDestFPath)
-            bMd5Ok = szMd5 != szRealMd5
+            bMd5Ok = szMd5 == szRealMd5
             if not bMd5Ok:
-                self.m_LoggerObj.error("md5 not match, md5:%s, realmd5:%s", szMd5, szRealMd5)
+                self.m_LoggerObj.error("md5 not match, md5:%s, realmd5:%s, DestFPath:%s", szMd5, szRealMd5, szDestFPath)
 
         # 调用回调
         listCb = self.m_IndexMgrObj.GetCbList(szMd5)

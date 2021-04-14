@@ -27,5 +27,6 @@ class XxFile:
         self.m_FileObj.write(byteData)
 
     def Close(self):
+        self.m_FileObj.flush()
         self.m_FileObj.close()
         self.m_FileObj = None

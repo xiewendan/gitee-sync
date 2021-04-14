@@ -12,7 +12,7 @@ import os
 import sys
 import time
 
-g_MaxStrLen = 1000
+g_MaxStrLen = 2000
 
 
 def Str(DataObj):

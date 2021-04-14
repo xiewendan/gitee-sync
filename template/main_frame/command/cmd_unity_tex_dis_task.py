@@ -113,12 +113,14 @@ class CmdDisTask(cmd_base.CmdBase):
         g_dictUUID2State[dictTaskData["uuid"]] = True
 
         # wait to do task
-        while len(g_dictUUID2State) > 0:
-            self.m_LoggerObj.info("wait to do task ...")
+        nWaitingCount = 300
+        while len(g_dictUUID2State) > 0 and nWaitingCount > 0:
+            self.m_LoggerObj.info("wait to do task ...: %d", nWaitingCount)
 
             time.sleep(1)
-            xx_connection_mgr.Update()
-
+            nWaitingCount -= 1 
+            xx_connection_mgr.Update()                                        
+        
         self.m_LoggerObj.info("task finish!")
 
         # destroy

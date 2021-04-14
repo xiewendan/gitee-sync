@@ -76,6 +76,12 @@ class FileCacheSystem:
         # 创建文件
         my_path.CreateFileDir(szDestFPath)
         shutil.copy(szSrcFPath, szDestFPath)
+        self.m_LoggerObj.debug("copy file from %s to %s", szSrcFPath, szDestFPath)
+
+        if self.m_bFullCheck:
+            import common.md5 as md5
+            szRealMd5 = md5.GetFileMD5(szDestFPath)
+            assert szRealMd5 == szMd5
 
         # 创建索引
         self.m_IndexMgrObj.AddFileIndex(szMd5, szFileName, nSize)
