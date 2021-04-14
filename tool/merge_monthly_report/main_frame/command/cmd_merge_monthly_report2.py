@@ -73,6 +73,13 @@ def _GetLastMonth():
     return nLastMonth
 
 
+def _GetCurYearMonth():
+    CurDataTime = datetime.datetime.now()
+    nYear = CurDataTime.year
+    nMonth = CurDataTime.month
+    return nYear, nMonth
+
+
 def _IsCellValid(SheetCellObj):
     return SheetCellObj.value is not None and SheetCellObj.value != ""
 
@@ -545,7 +552,8 @@ class TmSheet:
 
         nMaxRow = self.m_nSrcMaxRow
         # 时间
-        self.m_SheetObj["A2"].value = "{0}月".format(_GetLastMonth())
+        nCurYear, nCurMonth = _GetCurYearMonth()
+        self.m_SheetObj["A2"].value = "%4d-%02d" % (nCurYear, nCurMonth)
 
         # 工作内容
         # 天数
@@ -608,7 +616,8 @@ class TmSheet:
         nSrcMaxRow = self.m_nSrcMaxRow
 
         # 时间
-        self.m_SheetObj["A2"].value = "{0}月".format(_GetLastMonth())
+        nCurYear, nCurMonth = _GetCurYearMonth()
+        self.m_SheetObj["A2"].value = "%4d-%02d" % (nCurYear, nCurMonth)
 
         # 工作内容
         # 天数
@@ -653,7 +662,8 @@ class TmSheet:
     def _UpdateFormat(self):
         self.m_AppObj.Debug("update format")
 
-        self.m_SheetObj["A2"].value = "{0}月".format(_GetLastMonth())
+        nCurYear, nCurMonth = _GetCurYearMonth()
+        self.m_SheetObj["A2"].value = "%4d-%02d" % (nCurYear, nCurMonth)
 
         nMaxRow = self.m_nMaxRow
         nOldMaxRow = self.m_nOldMaxRow
