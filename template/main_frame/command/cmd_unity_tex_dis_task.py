@@ -60,7 +60,7 @@ class CmdDisTask(cmd_base.CmdBase):
                 },
                 "pvr_fpath": {
                     "type": "file",
-                    "iot": "input",
+                    "iot": "output",
                     "fpath": szPvrFPath,
                     "rpath": my_path.FileNameWithExt(szPvrFPath)
                 },
