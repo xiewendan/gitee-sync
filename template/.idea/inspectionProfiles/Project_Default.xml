@@ -14,6 +14,7 @@
         <list>
           <option value="g_AppObj" />
           <option value="g_TestAppObj" />
+          <option value="Str" />
         </list>
       </option>
     </inspection_tool>
