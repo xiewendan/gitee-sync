@@ -25,7 +25,7 @@ class CmdDisTask(cmd_base.CmdBase):
         import uuid
         szTaskUuid = str(uuid.uuid1())
 
-        szRegFormat = r"^([a-zA-Z0-9./]+PVRTexTool) [a-zA-Z0-9_ -]* -i (Temp/[a-zA-Z0-9-.]+) -o (Temp/[a-zA-Z0-9-]+.pvr)$"
+        szRegFormat = r"^([a-zA-Z0-9./]+PVRTexTool_orig) [a-zA-Z0-9_ -]* -i (Temp/[a-zA-Z0-9-.]+) -o (Temp/[a-zA-Z0-9-]+.pvr)$"
 
         MatchObj = re.match(szRegFormat, szCompressCommand)
         if MatchObj is None:
