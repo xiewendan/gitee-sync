@@ -43,6 +43,7 @@ class CmdDisTask(cmd_base.CmdBase):
         dictRet = {
             "uuid": szTaskUuid,
             "command": [
+                "chmod +x {{exe_fpath}}",
                 szCurCompressCommand
             ],
             "var": {
