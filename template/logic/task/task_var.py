@@ -29,6 +29,8 @@ class TaskVar:
         self.m_nSize = dictValue.get("size", 0)
         self.m_szFileName = dictValue.get("file_name", "")
 
+        self.m_szPlatform = dictValue.get("platform", None)
+
         self.m_szLocalFPath = ""
         self.m_szRemoteFPath = ""
 
@@ -62,6 +64,15 @@ class TaskVar:
     def IsInput(self):
         return self.m_nIotType == task_enum.EIotType.eInput
 
+    def _IsMatchPlatform(self):
+        if self.m_szPlatform is None:
+            return True
+
+        import platform
+        szCurPlatform = platform.system().lower()
+
+        return self.m_szPlatform == szCurPlatform
+
     def IsOutput(self):
         return self.m_nIotType == task_enum.EIotType.eOutput
 
@@ -92,7 +103,7 @@ class TaskVar:
             "fpath": "E:/project/xx/tools/template/data/test/etcpack.exe",
         }
         """
-        return {
+        dictRet = {
             "name": self.m_szName,
             "type": self.m_nType,
             "iot": self.m_nIotType,
@@ -102,6 +113,11 @@ class TaskVar:
             "size": self.m_nSize,
             "file_name": self.m_szFileName,
         }
+
+        if self.m_szPlatform is not None:
+            dictRet["platform"] = self.m_szPlatform
+
+        return dictRet
 
     def ToReturnDict(self):
         """
@@ -129,16 +145,20 @@ class TaskVar:
             self.m_bDownloaded = True
 
         elif self.IsInput():
-            import common.file_cache_system.file_cache_system as file_cache_system
-            if file_cache_system.CheckExistSameFile(self.m_szMd5, self.m_szFileName, self.m_nSize):
-                szFPathInCacheSystem = file_cache_system.UseFile(self.m_szMd5, self.m_szFileName, self.m_nSize)
-                my_path.Copy(szFPathInCacheSystem, self.m_szLocalFPath)
+            if self._IsMatchPlatform():
+                import common.file_cache_system.file_cache_system as file_cache_system
+                if file_cache_system.CheckExistSameFile(self.m_szMd5, self.m_szFileName, self.m_nSize):
+                    szFPathInCacheSystem = file_cache_system.UseFile(self.m_szMd5, self.m_szFileName, self.m_nSize)
+                    my_path.Copy(szFPathInCacheSystem, self.m_szLocalFPath)
 
-                self.m_bDownloaded = True
+                    self.m_bDownloaded = True
+                else:
+                    import common.callback_mgr as callback_mgr
+                    nPrepareCbID = callback_mgr.CreateCb(self._PrepareDownloadFinish)
+                    self._PrepareDownload(nFileExeConnID, szTaskId, self.m_szFPath, nPrepareCbID)
             else:
-                import common.callback_mgr as callback_mgr
-                nPrepareCbID = callback_mgr.CreateCb(self._PrepareDownloadFinish)
-                self._PrepareDownload(nFileExeConnID, szTaskId, self.m_szFPath, nPrepareCbID)
+                self.m_bDownloaded = True
+                self.m_LoggerObj.info("platform var:%s, platform:%s, not need download", self.m_szName, self.m_szPlatform)
 
         else:
             assert False, "not support"

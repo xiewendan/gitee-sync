@@ -36,23 +36,19 @@ class CmdDisTask(cmd_base.CmdBase):
         szImagFPath = szUnityProjectDir + "/" + szImageRPath
         szPvrFPath = szUnityProjectDir + "/" + szPvrRPath
 
-        szCurCompressCommand = szCompressCommand.replace(szExeFPath, "{{exe_fpath}}"). \
+        szCurCompressCommand = szCompressCommand.replace(szExeFPath, "{{exe_fpath{{platform}}}}"). \
             replace(szImageRPath, "{{image_fpath}}"). \
             replace(szPvrRPath, "{{pvr_fpath}}")
+
+        dictPlatformExePath = self._CreatePlatformVar("exe_fpath", szExeFPath, ["windows, darwin"])
 
         dictRet = {
             "uuid": szTaskUuid,
             "command": [
-                "chmod +x {{exe_fpath}}",
+                "chmod +x {{exe_fpath{{platform}}}}",
                 szCurCompressCommand
             ],
             "var": {
-                "exe_fpath": {
-                    "type": "file",
-                    "iot": "input",
-                    "fpath": szExeFPath,
-                    "rpath": my_path.FileNameWithExt(szExeFPath),
-                },
                 "image_fpath": {
                     "type": "file",
                     "iot": "input",
@@ -65,11 +61,27 @@ class CmdDisTask(cmd_base.CmdBase):
                     "fpath": szPvrFPath,
                     "rpath": my_path.FileNameWithExt(szPvrFPath)
                 },
-            },
+            }.update(dictPlatformExePath),
         }
         self.m_LoggerObj.info("dict command:%s", str(dictRet))
 
         return dictRet
+
+    @staticmethod
+    def _CreatePlatformVar(szVarName, szFPath, listPlatform):
+        dictVar = {}
+        for szPlatform in listPlatform:
+            szPlatformVarName = "%s.%s" % (szVarName, szPlatform)
+            szPlatformFPath = "%s.%s" % (szFPath, szPlatform)
+            dictVar[szPlatformVarName] = {
+                "type": "file",
+                "iot": "input",
+                "platform": "windows",
+                "fpath": szPlatformFPath,
+                "rpath": my_path.FileNameWithExt(szPlatformFPath),
+            }
+
+        return dictVar
 
     def Do(self):
         """执行命令"""
@@ -118,9 +130,9 @@ class CmdDisTask(cmd_base.CmdBase):
             self.m_LoggerObj.info("wait to do task ...: %d", nWaitingCount)
 
             time.sleep(1)
-            nWaitingCount -= 1 
-            xx_connection_mgr.Update()                                        
-        
+            nWaitingCount -= 1
+            xx_connection_mgr.Update()
+
         self.m_LoggerObj.info("task finish!")
 
         # destroy

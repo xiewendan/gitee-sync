@@ -111,8 +111,13 @@ class AcceptTask(tasK_base.BaseTask):
         for szVarName, VarObj in self.m_dictVar.items():
             dictVarConfig[szVarName] = VarObj.GetValue()
 
+        import platform
+        szPlatform = platform.system().lower()
+
         for CommandObj in self.m_listCommand:
             szCommandFormat = CommandObj.ToStr()
+
+            szCommandFormat = szCommandFormat.replace("{{platform}}", szPlatform)
 
             TemplateObj = Template(szCommandFormat)
             szCommand = TemplateObj.render(dictVarConfig)
