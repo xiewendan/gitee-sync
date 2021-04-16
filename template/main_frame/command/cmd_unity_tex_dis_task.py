@@ -40,7 +40,7 @@ class CmdDisTask(cmd_base.CmdBase):
             replace(szImageRPath, "{{image_fpath}}"). \
             replace(szPvrRPath, "{{pvr_fpath}}")
 
-        dictPlatformExePath = self._CreatePlatformVar("exe_fpath", szExeFPath, ["windows, darwin"])
+        dictPlatformExePath = self._CreatePlatformVar("exe_fpath", szExeFPath, ["windows", "darwin"])
         dictVar = {
             "image_fpath": {
                 "type": "file",
