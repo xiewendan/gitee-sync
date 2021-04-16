@@ -41,6 +41,21 @@ class CmdDisTask(cmd_base.CmdBase):
             replace(szPvrRPath, "{{pvr_fpath}}")
 
         dictPlatformExePath = self._CreatePlatformVar("exe_fpath", szExeFPath, ["windows, darwin"])
+        dictVar = {
+            "image_fpath": {
+                "type": "file",
+                "iot": "input",
+                "fpath": szImagFPath,
+                "rpath": my_path.FileNameWithExt(szImagFPath)
+            },
+            "pvr_fpath": {
+                "type": "file",
+                "iot": "output",
+                "fpath": szPvrFPath,
+                "rpath": my_path.FileNameWithExt(szPvrFPath)
+            },
+        }
+        dictVar.update(dictPlatformExePath)
 
         dictRet = {
             "uuid": szTaskUuid,
@@ -48,21 +63,9 @@ class CmdDisTask(cmd_base.CmdBase):
                 "chmod +x {{exe_fpath{{platform}}}}",
                 szCurCompressCommand
             ],
-            "var": {
-                "image_fpath": {
-                    "type": "file",
-                    "iot": "input",
-                    "fpath": szImagFPath,
-                    "rpath": my_path.FileNameWithExt(szImagFPath)
-                },
-                "pvr_fpath": {
-                    "type": "file",
-                    "iot": "output",
-                    "fpath": szPvrFPath,
-                    "rpath": my_path.FileNameWithExt(szPvrFPath)
-                },
-            }.update(dictPlatformExePath),
+            "var": dictVar,
         }
+
         self.m_LoggerObj.info("dict command:%s", str(dictRet))
 
         return dictRet
