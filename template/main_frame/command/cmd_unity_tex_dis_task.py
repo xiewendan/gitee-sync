@@ -36,7 +36,7 @@ class CmdDisTask(cmd_base.CmdBase):
         szImagFPath = szUnityProjectDir + "/" + szImageRPath
         szPvrFPath = szUnityProjectDir + "/" + szPvrRPath
 
-        szCurCompressCommand = szCompressCommand.replace(szExeFPath, "{{exe_fpath{{platform}}}}"). \
+        szCurCompressCommand = szCompressCommand.replace(szExeFPath, "{{exe_fpath.{{platform}}}}"). \
             replace(szImageRPath, "{{image_fpath}}"). \
             replace(szPvrRPath, "{{pvr_fpath}}")
 
@@ -60,7 +60,7 @@ class CmdDisTask(cmd_base.CmdBase):
         dictRet = {
             "uuid": szTaskUuid,
             "command": [
-                "chmod +x {{exe_fpath{{platform}}}}",
+                "chmod +x {{exe_fpath.{{platform}}}}",
                 szCurCompressCommand
             ],
             "var": dictVar,
@@ -79,7 +79,7 @@ class CmdDisTask(cmd_base.CmdBase):
             dictVar[szPlatformVarName] = {
                 "type": "file",
                 "iot": "input",
-                "platform": "windows",
+                "platform": szPlatform,
                 "fpath": szPlatformFPath,
                 "rpath": my_path.FileNameWithExt(szPlatformFPath),
             }
