@@ -36,7 +36,7 @@ class CmdDisTask(cmd_base.CmdBase):
         szImagFPath = szUnityProjectDir + "/" + szImageRPath
         szPvrFPath = szUnityProjectDir + "/" + szPvrRPath
 
-        szCurCompressCommand = szCompressCommand.replace(szExeFPath, "{{exe_fpath.{{platform}}}}"). \
+        szCurCompressCommand = szCompressCommand.replace(szExeFPath, "{{exe_fpath_{{platform}}}}"). \
             replace(szImageRPath, "{{image_fpath}}"). \
             replace(szPvrRPath, "{{pvr_fpath}}")
 
@@ -60,7 +60,7 @@ class CmdDisTask(cmd_base.CmdBase):
         dictRet = {
             "uuid": szTaskUuid,
             "command": [
-                "chmod +x {{exe_fpath.{{platform}}}}",
+                "chmod +x {{exe_fpath_{{platform}}}}",
                 szCurCompressCommand
             ],
             "var": dictVar,
@@ -74,7 +74,7 @@ class CmdDisTask(cmd_base.CmdBase):
     def _CreatePlatformVar(szVarName, szFPath, listPlatform):
         dictVar = {}
         for szPlatform in listPlatform:
-            szPlatformVarName = "%s.%s" % (szVarName, szPlatform)
+            szPlatformVarName = "%s_%s" % (szVarName, szPlatform)
             szPlatformFPath = "%s.%s" % (szFPath, szPlatform)
             dictVar[szPlatformVarName] = {
                 "type": "file",
