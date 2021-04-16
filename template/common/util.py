@@ -111,6 +111,17 @@ def RenderConfig(szConfigPath, dictTemplatePath2TargetPath):
         RenderSingleConfig(szTemplatePath, szTargetPath, dictConfig)
 
 
+def RenderString(szData, dictConfig):
+    logging.getLogger("myLog").debug("data:%s, dictConfig:%s", szData, dictConfig)
+
+    TemplateObj = Template(szData)
+    szRet = TemplateObj.render(dictConfig)
+
+    logging.getLogger("myLog").debug("szRet:%s", szRet)
+
+    return szRet
+
+
 def FilterClassObj(szClassFullDir, szRegPattern, BaseClass):
     assert os.path.exists(szClassFullDir), "目录不存在:" + szClassFullDir
 

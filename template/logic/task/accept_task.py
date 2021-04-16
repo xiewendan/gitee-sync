@@ -100,7 +100,6 @@ class AcceptTask(tasK_base.BaseTask):
 
     def _Exec(self):
         import os
-        from jinja2 import Template
         import common.util as util
 
         # TODO 在执行前，需要先将文件放到temp目录下，如果不存在rpath的时候，就放到data/temp/任务id/filename文件
@@ -119,8 +118,7 @@ class AcceptTask(tasK_base.BaseTask):
 
             szCommandFormat = szCommandFormat.replace("{{platform}}", szPlatform)
 
-            TemplateObj = Template(szCommandFormat)
-            szCommand = TemplateObj.render(dictVarConfig)
+            szCommand = util.RenderString(szCommandFormat, dictVarConfig)
 
             nRet = util.RunCmd(szCommand, szWorkDir=szWorkDir)
             if nRet != 0:
