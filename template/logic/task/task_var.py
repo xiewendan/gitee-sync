@@ -7,6 +7,7 @@
 
 import os
 
+import time
 import logic.task.task_enum as task_enum
 
 
@@ -262,6 +263,10 @@ class TaskVar:
             assert szDownloadFPath != ""
 
             import common.my_path as my_path
+            while os.path.exists(self.m_szFPath):
+                self.m_LoggerObj.warn("file copy waiting:" + self.m_szFPath)
+                time.sleep(0.01)
+
             my_path.Copy(szDownloadFPath, self.m_szFPath)
 
             self.m_bDownloaded = True

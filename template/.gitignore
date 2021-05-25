@@ -2,6 +2,8 @@
 /log
 /binexe
 
+/bin/unity_tex_compress/data
+
 /1.prof
 /config/render.yml
 /config/config.conf
