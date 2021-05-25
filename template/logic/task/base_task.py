@@ -153,6 +153,10 @@ class BaseTask:
 
         return nCurTime > self.m_nNextDisTime
 
+    def Destroy(self):
+        self.m_LoggerObj.debug("taskid:%s", self.m_szTaskId)
+        self._OnDestroy()
+
     # ********************************************************************************
     # private
     # ********************************************************************************
@@ -169,3 +173,6 @@ class BaseTask:
             dictRet[szName] = VarObj.ToDict()
 
         return dictRet
+
+    def _OnDestroy(self):
+        pass

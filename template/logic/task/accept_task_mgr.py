@@ -12,6 +12,7 @@ class AcceptTaskMgr:
 
         self.m_dictTask = {}
         self.m_listTask = []
+        self.m_dictTaskToDestroy = {}
         self.m_szCurTaskID = 0
 
     def AddTask(self, TaskObj):
@@ -38,12 +39,18 @@ class AcceptTaskMgr:
             TaskObj = self.m_dictTask[self.m_szCurTaskID]
             TaskObj.Update()
 
+        for nID, TaskObj in self.m_dictTaskToDestroy.items():
+            TaskObj.Destroy()
+            
+        self.m_dictTaskToDestroy = {}
+
     def ClearCurTask(self, szTaskId):
         self.m_LoggerObj.info("CurTaskID:%s", self.m_szCurTaskID)
 
         assert szTaskId == self.m_szCurTaskID
         assert self.m_szCurTaskID != 0
 
+        self.m_dictTaskToDestroy[self.m_szCurTaskID] = self.m_dictTask[self.m_szCurTaskID]
         del self.m_dictTask[self.m_szCurTaskID]
 
         self.m_szCurTaskID = 0

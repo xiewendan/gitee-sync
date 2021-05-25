@@ -126,3 +126,16 @@ class AcceptTask(tasK_base.BaseTask):
                 return False
 
         return True
+
+    def _OnDestroy(self):
+        self.m_LoggerObj.debug("taskid:%s", self.m_szTaskId)
+
+        if self.m_nExeConnID != 0:
+            import common.async_net.xx_connection_mgr as xx_connection_mgr
+            xx_connection_mgr.DestroyConnection(self.m_nExeConnID)
+            self.m_nExeConnID = 0
+
+        if self.m_nFileExeConnID != 0:
+            import common.async_net.xx_connection_mgr as xx_connection_mgr
+            xx_connection_mgr.DestroyConnection(self.m_nFileExeConnID)
+            self.m_nFileExeConnID = 0
