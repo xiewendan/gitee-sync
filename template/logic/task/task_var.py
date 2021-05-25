@@ -263,12 +263,16 @@ class TaskVar:
             assert szDownloadFPath != ""
 
             import common.my_path as my_path
-            while os.path.exists(self.m_szFPath):
-                self.m_LoggerObj.warn("file copy waiting:" + self.m_szFPath)
-                time.sleep(0.01)
 
             self.m_LoggerObj.debug("file copy: %s, %s", szDownloadFPath, self.m_szFPath)
-            my_path.Copy(szDownloadFPath, self.m_szFPath)
+
+            for i in range(1000):
+                try:
+                    my_path.Copy(szDownloadFPath, self.m_szFPath)
+                    break
+                except OSError as ExceptionObj:
+                    self.m_LoggerObj.error("file copy waiting:" + self.m_szFPath)
+                    time.sleep(0.1)
 
             self.m_bDownloaded = True
         else:
