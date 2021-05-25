@@ -267,6 +267,7 @@ class TaskVar:
                 self.m_LoggerObj.warn("file copy waiting:" + self.m_szFPath)
                 time.sleep(0.01)
 
+            self.m_LoggerObj.debug("file copy: %s, %s", szDownloadFPath, self.m_szFPath)
             my_path.Copy(szDownloadFPath, self.m_szFPath)
 
             self.m_bDownloaded = True

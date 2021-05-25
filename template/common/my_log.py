@@ -68,7 +68,7 @@ def _AddCurSeperate(nStep):
 
 
 def _GetBeginSeperate():
-    szSeperate = _g_szSeperate[:_g_nCurSeperate]
+    szSeperate = "%s %d " % (_g_szSeperate[:_g_nCurSeperate], _g_nCurSeperate)
     _AddCurSeperate(-_g_nStep)
 
     return szSeperate
@@ -76,4 +76,5 @@ def _GetBeginSeperate():
 
 def _GetEndSeperate():
     _AddCurSeperate(_g_nStep)
-    return _g_szSeperate[:_g_nCurSeperate]
+    szSeperate = "%s %d " % (_g_szSeperate[:_g_nCurSeperate], _g_nCurSeperate)
+    return szSeperate
