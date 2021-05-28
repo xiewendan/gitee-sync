@@ -27,7 +27,7 @@ class XxConnectionPool:
     def _PopConnection(self, eType, szIp, nPort):
         self.m_nCurCount -= 1
 
-        nConnectionID = self.m_dictTypeIpPort2ConnectionID[eType][szIp][nPort]
+        nConnectionID, _ = self.m_dictTypeIpPort2ConnectionID[eType][szIp][nPort]
         self.m_LRULinkQueueObj.Pop(nConnectionID)
 
         del self.m_dictTypeIpPort2ConnectionID[eType][szIp][nPort]
@@ -39,7 +39,7 @@ class XxConnectionPool:
 
     def _PushConnection(self, eType, szIp, nPort):
         self.m_nCurCount += 1
-        nConnectionID = self.m_dictTypeIpPort2ConnectionID[eType][szIp][nPort]
+        nConnectionID, _ = self.m_dictTypeIpPort2ConnectionID[eType][szIp][nPort]
         self.m_LRULinkQueueObj.Push(nConnectionID)
 
         if self.m_nCurCount > self.m_nMaxCount:
@@ -56,13 +56,9 @@ class XxConnectionPool:
 
             self._PopConnection(eType, szIp, nPort)
 
-            if dictDataObj == dictData:
-                if not xx_connection_mgr.IsConnected(nConnectionID):
-                    xx_connection_mgr.Connect(szIp, nPort)
-                return nConnectionID
-
-            else:
-                xx_connection_mgr.DestroyConnection(nConnectionID)
+            if not xx_connection_mgr.IsConnected(nConnectionID):
+                xx_connection_mgr.Connect(szIp, nPort)
+            return nConnectionID
 
         nNewConnID = xx_connection_mgr.CreateConnection(eType, dictData)
         xx_connection_mgr.Connect(nNewConnID, szIp, nPort)
