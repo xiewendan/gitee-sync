@@ -18,7 +18,9 @@ class AcceptTask(tasK_base.BaseTask):
         self.m_nTotalInput = 0
 
         self.m_nExeConnID = 0
+        self.m_dictConnectionDataExe = None
         self.m_nFileExeConnID = 0
+        self.m_dictConnectionDataFileExe = None
 
         self.m_eState = task_enum.ETaskState.eCreate
 
@@ -89,14 +91,17 @@ class AcceptTask(tasK_base.BaseTask):
 
         import common.async_net.xx_connection_mgr as xx_connection_mgr
         import common.async_net.connection.xx_connection as xx_connection
+        import common.async_net.xx_connection_pool as xx_connection_pool
 
         dictConnectionData = xx_connection_mgr.CreateConnectionData()
-        self.m_nExeConnID = xx_connection_mgr.CreateConnection(xx_connection.EConnectionType.eExe2Exe, dictConnectionData)
-        xx_connection_mgr.Connect(self.m_nExeConnID, self.m_szIp, self.m_nExePort)
+        self.m_dictConnectionDataExe = dictConnectionData
+        self.m_nExeConnID = xx_connection_pool.GetConnection(xx_connection.EConnectionType.eExe2Exe, self.m_szIp, self.m_nExePort,
+                                                             dictConnectionData)
 
         dictConnectionData1 = xx_connection_mgr.CreateConnectionData()
-        self.m_nFileExeConnID = xx_connection_mgr.CreateConnection(xx_connection.EConnectionType.eFileExe2Exe, dictConnectionData1)
-        xx_connection_mgr.Connect(self.m_nFileExeConnID, self.m_szIp, self.m_nFileExePort)
+        self.m_dictConnectionDataFileExe = dictConnectionData1
+        self.m_nFileExeConnID = xx_connection_pool.GetConnection(xx_connection.EConnectionType.eFileExe2Exe, self.m_szIp,
+                                                                 self.m_nFileExePort, dictConnectionData1)
 
     def _Exec(self):
         import os
@@ -131,11 +136,19 @@ class AcceptTask(tasK_base.BaseTask):
         self.m_LoggerObj.debug("taskid:%s", self.m_szTaskId)
 
         if self.m_nExeConnID != 0:
-            import common.async_net.xx_connection_mgr as xx_connection_mgr
-            xx_connection_mgr.DestroyConnection(self.m_nExeConnID)
+            import common.async_net.xx_connection_pool as xx_connection_pool
+            import common.async_net.connection.xx_connection as xx_connection
+            xx_connection_pool.PutConnection(xx_connection.EConnectionType.eExe2Exe, self.m_szIp, self.m_nExePort,
+                                             self.m_dictConnectionDataExe, self.m_nExeConnID)
+
             self.m_nExeConnID = 0
+            self.m_dictConnectionDataExe = None
 
         if self.m_nFileExeConnID != 0:
-            import common.async_net.xx_connection_mgr as xx_connection_mgr
-            xx_connection_mgr.DestroyConnection(self.m_nFileExeConnID)
+            import common.async_net.xx_connection_pool as xx_connection_pool
+            import common.async_net.connection.xx_connection as xx_connection
+            xx_connection_pool.PutConnection(xx_connection.EConnectionType.eFileExe2Exe, self.m_szIp, self.m_nFileExePort,
+                                             self.m_dictConnectionDataFileExe, self.m_nFileExeConnID)
+
             self.m_nFileExeConnID = 0
+            self.m_dictConnectionDataFileExe = None
