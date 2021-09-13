@@ -186,20 +186,20 @@ class InputData(object):
         if 1 <= nDay <= 10:
             self.m_listSrcFDir = [
                 "%s/src/%04d-%02d-01" % (szDataPath, nLastMonthYear, nLastMonthMonth),
-                "%s/src/%04d-%02d-16" % (szDataPath, nLastMonthYear, nLastMonthMonth),
+                # "%s/src/%04d-%02d-16" % (szDataPath, nLastMonthYear, nLastMonthMonth),
             ]
             self.m_listMergeFileFPath = [
                 "%s/src/%04d-%02d-01/%04d-%02d-01.xlsx" % (
                     szDataPath, nLastMonthYear, nLastMonthMonth, nLastMonthYear, nLastMonthMonth),
-                "%s/src/%04d-%02d-16/%04d-%02d-16.xlsx" % (
-                    szDataPath, nLastMonthYear, nLastMonthMonth, nLastMonthYear, nLastMonthMonth),
+                # "%s/src/%04d-%02d-16/%04d-%02d-16.xlsx" % (
+                #     szDataPath, nLastMonthYear, nLastMonthMonth, nLastMonthYear, nLastMonthMonth),
             ]
             self.m_szOutputTemplateFPath = "%s/template/xx月贡献评分-月初.xlsx" % szDataPath
             self.m_szOutputFileFPath = "%s/dest/%04d-%02d月贡献评分-月初.xlsx" % (szDataPath, nLastMonthYear, nLastMonthMonth)
         elif 11 <= nDay <= 20:
             self.m_listSrcFDir = [
                 "%s/src/%04d-%02d-16" % (szDataPath, nLastMonthYear, nLastMonthMonth),
-                "%s/src/%04d-%02d-01" % (szDataPath, nYear, nMonth),
+                # "%s/src/%04d-%02d-01" % (szDataPath, nYear, nMonth),
             ]
             self.m_listMergeFileFPath = [
                 "%s/src/%04d-%02d-16/%04d-%02d-16.xlsx" % (
@@ -242,7 +242,8 @@ class InputData(object):
             return False
 
         # 2 template
-        listTemplate = [self.m_szMergeTemplateFPath, self.m_szOutputTemplateFPath]
+        listTemplate = [self.m_szMergeTemplateFPath]
+        # listTemplate = [self.m_szMergeTemplateFPath, self.m_szOutputTemplateFPath]
         for szTemplate in listTemplate:
             if not self._CheckTemplate(szTemplate):
                 return False
@@ -402,13 +403,13 @@ class CmdMergeMonthlyReport2(cmd_base.CmdBase):
                 nValidDay
             )
 
-        # 将多张半月绩效汇总表合并成月报
-        self.DoMergeHalfMonthlyToMonthly(
-            self.m_InputDataObj.OutTemplateFPath,
-            listMergeFileFPath,
-            self.m_InputDataObj.OutputFileFPath,
-            nValidDay
-        )
+        # # 将多张半月绩效汇总表合并成月报
+        # self.DoMergeHalfMonthlyToMonthly(
+        #     self.m_InputDataObj.OutTemplateFPath,
+        #     listMergeFileFPath,
+        #     self.m_InputDataObj.OutputFileFPath,
+        #     nValidDay
+        # )
 
     def DoMergeMembersToHalfMonthly(self, szMergeTemplateFPath, szSrcFDir, szMergeFileFPath, nValidDay):
         self.m_AppObj.Info(
