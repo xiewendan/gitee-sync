@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dis-tex-register
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dis-tex-register
+  template:   # pod的信息
+    metadata:
+      labels:
+        app: dis-tex-register
+    spec:
+      containers:
+      - name: dis-tex-register
+        image: stephenxjc/dis_tex_register
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dis-tex-register
+spec:
+  selector:
+    app: dis-tex-register
+  type: NodePort
+  ports:
+  - name: dis-tex-register
+    port: 50000
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dis-tex-executor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dis-tex-executor
+  template:   # pod的信息
+    metadata:
+      labels:
+        app: dis-tex-executor
+    spec:
+      containers:
+      - name: dis-tex-executor
+        image: stephenxjc/dis_tex_executor
