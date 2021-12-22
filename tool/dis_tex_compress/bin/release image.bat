@@ -6,3 +6,5 @@ docker push stephenxjc/dis_tex_register
 docker push stephenxjc/dis_tex_executor
 
 cd bin
+
+pause
