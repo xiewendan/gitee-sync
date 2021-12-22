@@ -26,9 +26,6 @@ class DingDingMgr:
         logging.getLogger("myLog").info(
             "msg:%s, listTo:%s", szMsg, repr(listTo))
 
-        if True:
-            return
-
         if len(szMsg) == 0:
             logging.getLogger("myLog").info("send msg is empty")
             return
