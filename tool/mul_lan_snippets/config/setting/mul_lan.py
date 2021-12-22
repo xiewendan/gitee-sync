@@ -118,12 +118,12 @@ mul_lan = {
 
 # desc: desc''',
 		Key5: '',
-		Key6: '''# -*- coding: utf-8 -*-
+		Key6: '''// -*- coding: utf-8 -*-
 
-# __author__ = xiaobao
-# __date__ = $CURRENT_YEAR/$CURRENT_MONTH/$CURRENT_DATE $CURRENT_HOUR:$CURRENT_MINUTE:$CURRENT_SECOND
+// __author__ = xiaobao
+// __date__ = $CURRENT_YEAR/$CURRENT_MONTH/$CURRENT_DATE $CURRENT_HOUR:$CURRENT_MINUTE:$CURRENT_SECOND
 
-# desc: desc''',
+// desc: desc''',
 		Key7: '',
 	},
 
