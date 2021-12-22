@@ -47,3 +47,20 @@ spec:
       containers:
       - name: dis-tex-executor
         image: stephenxjc/dis_tex_executor
+        resources:
+          requests:
+            cpu: 100m
+
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: dis-tex-executor-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: dis-tex-executor
+  minReplicas: 1
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 80
