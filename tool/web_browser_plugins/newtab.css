@@ -1,5 +1,16 @@
 a
 {
     font-size:20px;
-    margin-left:20px
+    margin-left:30px;
+    text-decoration-line:none;
+}
+
+a:visited
+{
+    color:darkblue
+}
+
+a:hover
+{
+    color:coral
 }
