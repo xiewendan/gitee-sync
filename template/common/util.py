@@ -5,14 +5,17 @@
 
 # desc: 常用函数
 
+import re
 import logging
 import os
 import shutil
 import subprocess
 import sys
+import copy
 
 import yaml
 from jinja2 import Template
+from jinja2.runtime import StrictUndefined
 
 import common.my_path as my_path
 from common.my_exception import MyException
@@ -111,8 +114,38 @@ def RenderConfig(szConfigPath, dictTemplatePath2TargetPath):
         RenderSingleConfig(szTemplatePath, szTargetPath, dictConfig)
 
 
+def _FindAllUndefined(szData, dictConfig):
+    TemplateObj = Template(szData, undefined=StrictUndefined)
+
+    dictContext = copy.deepcopy(dictConfig)
+    bFinished = False
+
+    while not bFinished:
+        try:
+            TemplateObj.render(dictContext)
+            bFinished = True
+        except Exception as e:
+            szTag = re.sub(" is undefined", "", str(e))
+            szTag = re.sub("'", "", szTag)
+            dictContext[str(szTag)] = "FOUND"
+    
+    listNotFound = []
+    for szKey, _ in dictContext.items():
+        if szKey not in dictConfig:
+            listNotFound.append(szKey)
+
+    return listNotFound
+
+
 def RenderString(szData, dictConfig):
     logging.getLogger("myLog").debug("data:%s, dictConfig:%s", szData, dictConfig)
+
+    listUndefined = _FindAllUndefined(szData, dictConfig)
+    if len(listUndefined) > 0:
+        szMsg = "render failed! undefined variable: {0}, data:{1}, dictConfig:{2}".format(",".join(listUndefined), szData, dictConfig)
+        logging.getLogger("myLog").error(szMsg)
+        raise MyException(szMsg)
+
 
     TemplateObj = Template(szData)
     szRet = TemplateObj.render(dictConfig)

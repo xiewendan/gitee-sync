@@ -5,6 +5,7 @@
 
 # desc:
 
+from common.my_exception import MyException
 import logic.task.base_task as tasK_base
 import logic.task.task_enum as task_enum
 
@@ -123,7 +124,12 @@ class AcceptTask(tasK_base.BaseTask):
 
             szCommandFormat = szCommandFormat.replace("{{platform}}", szPlatform)
 
-            szCommand = util.RenderString(szCommandFormat, dictVarConfig)
+            try:
+                szCommand = util.RenderString(szCommandFormat, dictVarConfig)
+            except MyException as e:
+                import common.my_trackback as my_traceback
+                my_traceback.OnException()
+                return False
 
             nRet = util.RunCmd(szCommand, szWorkDir=szWorkDir)
             if nRet != 0:

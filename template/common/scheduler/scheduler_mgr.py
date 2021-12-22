@@ -34,21 +34,25 @@ class SchedulerMgr:
         self.m_LoggerObj = logging.getLogger("myLog")
 
     def Init(self):
-        import config.setting.scheduler as scheduler
-        for nNotifyID, NotifyData in scheduler.scheduler.items():
-            NotifyConfigObj = notify_config.NotifyConfig(NotifyData)
+        try:
+            import config.setting.scheduler as scheduler
+        except ModuleNotFoundError:
+            pass
+        else:
+            for nNotifyID, NotifyData in scheduler.scheduler.items():
+                NotifyConfigObj = notify_config.NotifyConfig(NotifyData)
 
-            nNotifyID = NotifyConfigObj.NotifyID
-            szMsg = NotifyConfigObj.Msg
-            nPreNotifySecond = NotifyConfigObj.PreNotifySecond
-            nCycleType = NotifyConfigObj.CycleType
-            DatetimeDataObj = NotifyConfigObj.DatetimeData
+                nNotifyID = NotifyConfigObj.NotifyID
+                szMsg = NotifyConfigObj.Msg
+                nPreNotifySecond = NotifyConfigObj.PreNotifySecond
+                nCycleType = NotifyConfigObj.CycleType
+                DatetimeDataObj = NotifyConfigObj.DatetimeData
 
-            self.RegisterNotify(szMsg,
-                                DatetimeDataObj,
-                                nPreNotifySecond=nPreNotifySecond,
-                                nCycleType=nCycleType,
-                                nNotifyID=nNotifyID)
+                self.RegisterNotify(szMsg,
+                                    DatetimeDataObj,
+                                    nPreNotifySecond=nPreNotifySecond,
+                                    nCycleType=nCycleType,
+                                    nNotifyID=nNotifyID)
 
     def Start(self):
         self.m_LoggerObj.info("Start")

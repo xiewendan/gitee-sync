@@ -28,7 +28,7 @@ class Executor:
 
     @property
     def ListenIp(self):
-        return self.m_szRegisterIp
+        return self.m_szListenIp
 
     @property
     def ListenPort(self):
@@ -66,8 +66,8 @@ class Executor:
 
         import common.async_net.connection.xx_connection as xx_connection
 
-        self._StartListen(xx_connection.EConnectionType.eExe, self.m_szListenIp, self.m_nListenPort)
-        self._StartListen(xx_connection.EConnectionType.eFileExe, self.m_szFileListenIp, self.m_nFileListenPort)
+        self._StartListen(xx_connection.EConnectionType.eExe, "0.0.0.0", self.m_nListenPort)
+        self._StartListen(xx_connection.EConnectionType.eFileExe, "0.0.0.0", self.m_nFileListenPort)
 
         self._StartRegister()
 

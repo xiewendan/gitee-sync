@@ -5,10 +5,8 @@
 
 # desc: git的工具库
 
-import re
 import os
 import subprocess
-import git
 
 
 class GitUtil(object):
