@@ -1,3 +1,4 @@
+title release exe
 cd ..
 
 pyinstaller main_frame/main.py -F --clean --distpath binexe --workpath temp
