@@ -5,6 +5,9 @@
 
 # desc:
 
+import logging
+
+
 class DisTaskMgr:
     def __init__(self):
         import common.my_log as my_log
@@ -39,14 +42,16 @@ class DisTaskMgr:
         return self.m_nRegisterConnID
 
     def AddTask(self, TaskObj):
+        import logic.task.task_enum as task_enum
+
         szTaskId = TaskObj.GetTaskId()
-        self.m_LoggerObj.info("TaskId:%s", szTaskId)
+        self.m_LoggerObj.info("Add task, Id:%s", szTaskId)
 
         assert szTaskId not in self.m_dictTask
         self.m_dictTask[szTaskId] = TaskObj
 
         import common.xx_time as xx_time
-        TaskObj.SetNextDisTime(xx_time.GetTime())
+        TaskObj.SetNextDisTime(xx_time.GetTime(), "Add Task")
 
         self.m_listToDis.append(szTaskId)
 
@@ -78,7 +83,9 @@ class DisTaskMgr:
                 continue
 
             if TaskObj.IsOverdue(nCurTime):
-                TaskObj.SetNextDisTime(nCurTime + task_enum.ETaskConst.eDisDeltaTime)
+                self.m_LoggerObj.warn("task overdue:%s", szTaskId)
+
+                TaskObj.SetNextDisTime(nCurTime + task_enum.ETaskConst.eDisDeltaTime, "task overdue")
                 message_dispatcher.CallRpc(nRegisterConnID, "logic.gm.gm_command", "OnRecvDisTask", [TaskObj.ToDict()])
 
         # 遍历处理成功的任务
@@ -88,6 +95,9 @@ class DisTaskMgr:
 
             self.RemoveTask(szTaskId)
             TaskObj.OnCB()
+            TaskObj.Destroy()
+
+            self.m_LoggerObj.info("task succeed:%s", szTaskId)
 
         assert len(self.m_dictTask) == len(self.m_listToDis)
 

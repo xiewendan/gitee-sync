@@ -45,7 +45,7 @@ class BaseTask:
         }
         """
         self.m_LoggerObj = my_log.MyLog(__file__)
-        self.m_LoggerObj.debug("dictTaskData:%s", Str(dictTaskData))
+        self.m_LoggerObj.debug("create task. dictTaskData:%s", Str(dictTaskData))
 
         self.m_listCommand = []
         self.m_dictVar = {}
@@ -67,6 +67,11 @@ class BaseTask:
         for szVarName, dictValue in dictTaskData["var"].items():
             TaskVarObj = task_var.TaskVar(szVarName, dictValue)
             self.m_dictVar[szVarName] = TaskVarObj
+
+        import common.xx_time as xx_time
+        self.m_listProfileData = []
+        self.m_nProfileStartTime = xx_time.GetTime()
+        self._LogProfile("create task")
 
     def GetTaskId(self):
         return self.m_szTaskId
@@ -139,7 +144,8 @@ class BaseTask:
 
         self.m_listCB = []
 
-    def SetNextDisTime(self, nNextDisTime):
+    def SetNextDisTime(self, nNextDisTime, szInfo=""):
+        self._LogProfile("SetNextDisTime:" + szInfo)
         self.m_LoggerObj.debug("taskid:%s, curdistime:%d, nextdistime:%d", self.m_szTaskId, self.m_nNextDisTime, nNextDisTime)
         self.m_nNextDisTime = max(nNextDisTime, self.m_nNextDisTime)
 
@@ -155,7 +161,20 @@ class BaseTask:
 
     def Destroy(self):
         self.m_LoggerObj.debug("taskid:%s", self.m_szTaskId)
+
+        self._LogProfile("destroy")
+        self._PrintProfile()
+
         self._OnDestroy()
+
+    def _LogProfile(self, szTag):
+        import common.xx_time as xx_time
+        nDeltaTime = xx_time.GetTime() - self.m_nProfileStartTime
+        self.m_listProfileData.append("%d\t\t%s" % (nDeltaTime, szTag))
+    
+    def _PrintProfile(self):
+        szLog = "\n".join(self.m_listProfileData)
+        self.m_LoggerObj.info("task profile data. taskid:%s\n profile data:\n%s", self.m_szTaskId, szLog)
 
     # ********************************************************************************
     # private
