@@ -19,7 +19,7 @@ class RegisterServer:
         self.m_nListenPort = dictData["listen_port"]
 
     def Run(self):
-        self.m_LoggerObj.info("")
+        self.m_LoggerObj.info("Run register server")
 
         self._OnStart()
 

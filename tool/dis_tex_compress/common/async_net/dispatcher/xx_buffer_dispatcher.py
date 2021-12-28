@@ -63,7 +63,7 @@ class XxBufferDispatcher(xx_dispatcher_base.XxDispatcherBase):
             return
 
         if not byteData:
-            self.m_LoggerObj.info("closing, ip:%s, port:%d", self.m_szIp, self.m_nPort)
+            self.m_LoggerObj.debug("closing, ip:%s, port:%d", self.m_szIp, self.m_nPort)
             import common.async_net.dispatcher.xx_dispatcher_mgr as xx_dispatcher_mgr
             xx_dispatcher_mgr.HandleDisconnectEvent(self.m_nID)
             return

@@ -38,6 +38,7 @@ class XxExe2Reg(xx_connection_client.XxConnectionClient):
             "listen_port": self.m_ExecutorObj.ListenPort
         }
 
+        self.m_LoggerObj.info("Update exe listen ip and port to register server, listen ip:%s, port:%d", self.m_ExecutorObj.ListenIp, self.m_ExecutorObj.ListenPort)
         message_dispatcher.CallRpc(self.ID, "logic.register.executor_mgr", "UpdateExecutorData", [dictData])
 
         self.m_nAutoReconnectCount = 0

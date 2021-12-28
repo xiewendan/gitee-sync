@@ -11,7 +11,7 @@ class XxConnectionFactory:
         self.m_nConnectionID = 0
 
     def RegisterAll(self):
-        self.m_LoggerObj.info("register all connection class")
+        self.m_LoggerObj.debug("register all connection class")
 
         import os
         import common.util as util
@@ -42,7 +42,7 @@ class XxConnectionFactory:
             self._RegisterClass(ConnectionClassObj)
 
     def UnregisterAll(self):
-        self.m_LoggerObj.info("unregister all connection class")
+        self.m_LoggerObj.debug("unregister all connection class")
         self.m_dictConnectionCls = {}
 
     def CreateConnection(self, nType, dictConnectionData):

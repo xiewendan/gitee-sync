@@ -40,7 +40,7 @@ class ServiceBase:
 
     def Init(self, AppObj, listInitingServiceName: list):
         """初始化AppObj"""
-        self.m_LoggerObj.info("Init")
+        self.m_LoggerObj.debug("Init: %s", Str(listInitingServiceName))
         self.m_AppObj = AppObj
 
         if self.m_eState == EServiceState.eInit:
@@ -69,7 +69,7 @@ class ServiceBase:
         pass
 
     def Destroy(self):
-        self.m_LoggerObj.info("Destroy")
+        self.m_LoggerObj.debug("Destroy")
 
         self.m_eState = EServiceState.eDestroying
 

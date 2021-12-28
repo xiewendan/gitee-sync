@@ -33,7 +33,7 @@ class FileCacheSystem:
             self.Init(szCacheFDir)
 
     def Init(self, szCacheFDir):
-        self.m_LoggerObj.info("szCacheFDir:%s", szCacheFDir)
+        self.m_LoggerObj.info("Init file cache system! Cache dir:%s", szCacheFDir)
         szCacheFDir = szCacheFDir.replace("\\", "/")
 
         self.m_szCacheFDir = szCacheFDir
@@ -168,7 +168,7 @@ class FileCacheSystem:
         # 清理空文件夹
         import common.my_path as my_path
         my_path.ClearEmptyDir(self.m_szFilesFDir)
-        self.m_LoggerObj.info("clean empty dir")
+        self.m_LoggerObj.info("Clean empty dir")
 
     @staticmethod
     def _FindFiles(szFullDir):

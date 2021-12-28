@@ -37,7 +37,7 @@ class DingDingService(service_base.ServiceBase):
         return self.m_DingDingMgr
 
     def _InitDingDingMgr(self):
-        self.m_LoggerObj.info("Start dingding mgr")
+        self.m_LoggerObj.info("Init dingding mgr")
 
         self.m_DingDingMgr = ding_ding_mgr.DingDingMgr(
             self.GetApp().ConfigLoader.DingDingWebhook,
@@ -50,7 +50,7 @@ class DingDingService(service_base.ServiceBase):
             "你好，我是小小助手，我已经启动了，你可以直接找我哈"
         )
 
-        self.m_LoggerObj.info("End dingding mgr\n")
+        self.m_LoggerObj.info("Init dingding mgr end\n")
 
     def _DestroyDingDingMgr(self):
         self.m_LoggerObj.debug("_DestroyDingDingMgr")

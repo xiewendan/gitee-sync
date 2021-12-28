@@ -9,7 +9,7 @@ class XxDispatcherFactory:
         self.m_dictDispatcherCls = {}
 
     def RegisterAll(self):
-        self.m_LoggerObj.info("register all dispatcher class")
+        self.m_LoggerObj.debug("register all dispatcher class")
 
         import os
         import common.util as util
@@ -27,7 +27,7 @@ class XxDispatcherFactory:
             self._RegisterClass(DispatcherClassObj)
 
     def UnregisterAll(self):
-        self.m_LoggerObj.info("unregister all dispatcher class")
+        self.m_LoggerObj.debug("unregister all dispatcher class")
         self.m_dictDispatcherCls = {}
 
     def CreateDispatcher(self, nType, dictDispatcherData):

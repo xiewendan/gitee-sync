@@ -65,7 +65,7 @@ def GetDownloadData():
 
 # def DownloadFile():
 #     import logging
-#     logging.getLogger().info("")
+#     logging.getLogger().debug("")
 #
 #     import common.my_path as my_path
 #     import common.callback_mgr as callback_mgr
@@ -108,7 +108,7 @@ def GetDownloadData():
 def AddDisTask(nConnID, dictTaskData):
     import logging
     import logic.task.dis_task_mgr as dis_task_mgr
-    logging.getLogger().info("ConnID:%d, dictTaskData:%s", nConnID, Str(dictTaskData))
+    logging.getLogger().debug("ConnID:%d, dictTaskData:%s", nConnID, Str(dictTaskData))
 
     def TaskCB(nConnID1, szTaskId):
         import logic.connection.message_dispatcher as message_dispatcher
@@ -124,7 +124,7 @@ def AddDisTask(nConnID, dictTaskData):
     DisTaskObj.AddCB(TaskCB, nConnID, DisTaskObj.GetTaskId())
 
     dis_task_mgr.AddTask(DisTaskObj)
-    logging.getLogger().info("add task, dictTaskData:%s", DisTaskObj.GetTaskId())
+    logging.getLogger().debug("add task, dictTaskData:%s", DisTaskObj.GetTaskId())
 
 
 # 2 register接受到一个任务
@@ -136,7 +136,7 @@ def OnRecvDisTask(nConnID, dictTaskData):
     :return:
     """
     import logging
-    logging.getLogger().info("ConnID:%d, dictTaskData:%s", nConnID, Str(dictTaskData))
+    logging.getLogger().debug("ConnID:%d, dictTaskData:%s", nConnID, Str(dictTaskData))
 
     import logic.task.assign_task_mgr as assign_task_mgr
     dictTaskData["conn_id"] = nConnID
@@ -146,14 +146,14 @@ def OnRecvDisTask(nConnID, dictTaskData):
 # 3 执行服接受到一个任务
 def OnRecvAcceptTask(nConnID, dictTaskData):
     import logging
-    logging.getLogger().info("ConnID:%d, dictTaskData:%s", nConnID, Str(dictTaskData))
+    logging.getLogger().debug("ConnID:%d, dictTaskData:%s", nConnID, Str(dictTaskData))
 
     import logic.task.task_enum as task_enum
     import logic.task.task_factory as task_factory
     AcceptTaskObj = task_factory.Create(task_enum.ETaskType.eAccept, dictTaskData)
 
     if AcceptTaskObj.IsOverdue():
-        logging.getLogger().info("overdue task, dictTaskData:%s", nConnID, Str(dictTaskData))
+        logging.getLogger().debug("overdue task, dictTaskData:%s", nConnID, Str(dictTaskData))
     else:
         import logic.task.accept_task_mgr as accept_task_mgr
         accept_task_mgr.AddTask(AcceptTaskObj)
@@ -170,7 +170,7 @@ def OnDownloadFileRequest(nConnID, szTaskId, dictData):
     assert "file_fpath" in dictData
 
     import logging
-    logging.getLogger().info("ConnID:%d, dictData:%s", nConnID, Str(dictData))
+    logging.getLogger().debug("ConnID:%d, dictData:%s", nConnID, Str(dictData))
 
     if not os.path.exists(dictData["file_fpath"]):
         logging.error("OnDownloadFileRequest error, file not exists:%s", dictData["file_fpath"])
@@ -184,13 +184,13 @@ def OnDownloadFileRequest(nConnID, szTaskId, dictData):
     import logic.task.task_enum as task_enum
     import logic.task.dis_task_mgr as dis_task_mgr
     DisTaskObj = dis_task_mgr.GetTask(szTaskId)
-    DisTaskObj.SetNextDisTime(xx_time.GetTime() + task_enum.ETaskConst.eExecDeltaTime)
+    DisTaskObj.SetNextDisTime(xx_time.GetTime() + task_enum.ETaskConst.eExecDeltaTime, "request file")
 
 
 # 5 执行服收到一个文件
 def OnDownloadFileReceive(nConnID, dictData):
     import logging
-    logging.getLogger().info("ConnID:%d, dictData:%s", nConnID, Str(dictData))
+    logging.getLogger().debug("ConnID:%d, dictData:%s", nConnID, Str(dictData))
 
     import common.download_system.download_system as download_system
     szMd5 = dictData["md5"]
@@ -205,7 +205,7 @@ def OnDownloadFileReceive(nConnID, dictData):
 # 6 发布服收到执行结束，返回结果的请求
 def OnReturn(nConnID, szTaskId, dictVarReturn):
     import logging
-    logging.getLogger().info("ConnID:%d, TaskId:%s, dictVarReturn:%s", nConnID, szTaskId, Str(dictVarReturn))
+    logging.getLogger().debug("ConnID:%d, TaskId:%s, dictVarReturn:%s", nConnID, szTaskId, Str(dictVarReturn))
 
     import logic.task.dis_task_mgr as dis_task_mgr
     DisTaskObj = dis_task_mgr.GetTask(szTaskId)
@@ -215,7 +215,7 @@ def OnReturn(nConnID, szTaskId, dictVarReturn):
     import logic.task.task_enum as task_enum
     import logic.task.dis_task_mgr as dis_task_mgr
     DisTaskObj = dis_task_mgr.GetTask(szTaskId)
-    DisTaskObj.SetNextDisTime(xx_time.GetTime() + task_enum.ETaskConst.eReturnDeltaTime)
+    DisTaskObj.SetNextDisTime(xx_time.GetTime() + task_enum.ETaskConst.eReturnDeltaTime, "return")
 
     DisTaskObj.OnReturn(nConnID, dictVarReturn)
 
@@ -231,7 +231,7 @@ def OnReturnDownloadFileRequest(nConnID, szTaskId, dictData):
     assert "file_fpath" in dictData
 
     import logging
-    logging.getLogger().info("ConnID:%d, dictData:%s", nConnID, Str(dictData))
+    logging.getLogger().debug("ConnID:%d, dictData:%s", nConnID, Str(dictData))
 
     if not os.path.exists(dictData["file_fpath"]):
         logging.error("OnReturnDownloadFileRequest error, file not exists:%s", dictData["file_fpath"])
@@ -244,7 +244,7 @@ def OnReturnDownloadFileRequest(nConnID, szTaskId, dictData):
 # 8 执行服接收到返回完成
 def OnReturnOver(nConnID, szTaskId):
     import logging
-    logging.getLogger().info("ConnID:%d, TaskId:%s", nConnID, szTaskId)
+    logging.getLogger().debug("ConnID:%d, TaskId:%s", nConnID, szTaskId)
 
     import logic.task.accept_task_mgr as accept_task_mgr
     accept_task_mgr.ClearCurTask(szTaskId)

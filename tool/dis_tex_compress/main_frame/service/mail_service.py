@@ -38,7 +38,7 @@ class MailService(service_base.ServiceBase):
         return self.m_MailMgr
 
     def _InitMailMgr(self):
-        self.m_LoggerObj.info("Start mail mgr")
+        self.m_LoggerObj.info("Init mail mgr")
 
         self.m_MailMgr = mail_mgr.MailMgr()
 
@@ -50,7 +50,7 @@ class MailService(service_base.ServiceBase):
 
         self.m_MailMgr.Send("启动小小服务", "你好，我是小小助手，我已经启动了，你可以直接找我哈")
 
-        self.m_LoggerObj.info("End mail mgr\n")
+        self.m_LoggerObj.info("Init mail mgr end\n")
 
     def _DestroyMailMgr(self):
         self.m_LoggerObj.debug("_DestroyMailMgr")

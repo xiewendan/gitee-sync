@@ -35,7 +35,7 @@ class Executor:
         return self.m_nListenPort
 
     def Run(self):
-        self.m_LoggerObj.info("")
+        self.m_LoggerObj.info("Run")
 
         import common.xx_time as xx_time
         import logic.task.dis_task_mgr as dis_task_mgr
@@ -66,8 +66,13 @@ class Executor:
 
         import common.async_net.connection.xx_connection as xx_connection
 
-        self._StartListen(xx_connection.EConnectionType.eExe, "0.0.0.0", self.m_nListenPort)
-        self._StartListen(xx_connection.EConnectionType.eFileExe, "0.0.0.0", self.m_nFileListenPort)
+        szIp = "0.0.0.0"
+
+        self.m_LoggerObj.info("Exe listen ip:%s, port:%d", szIp, self.m_nListenPort)
+        self._StartListen(xx_connection.EConnectionType.eExe, szIp, self.m_nListenPort)
+
+        self.m_LoggerObj.info("FileExe listen ip:%s, port:%d", szIp, self.m_nFileListenPort)
+        self._StartListen(xx_connection.EConnectionType.eFileExe, szIp, self.m_nFileListenPort)
 
         self._StartRegister()
 
@@ -96,7 +101,8 @@ class Executor:
         nConnectionID = xx_connection_mgr.CreateConnection(
             xx_connection.EConnectionType.eExe2Reg,
             dictConnectionData)
-
+        
+        self.m_LoggerObj.info("Connect to register server, ip:%s, port:%d", self.m_szRegisterIp, self.m_nRegisterPort)
         xx_connection_mgr.Connect(nConnectionID, self.m_szRegisterIp, self.m_nRegisterPort)
         self.m_nRegisterConnID = nConnectionID
 

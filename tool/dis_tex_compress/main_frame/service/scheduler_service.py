@@ -47,7 +47,7 @@ class SchedulerService(service_base.ServiceBase):
             self.m_SchedulerMgr = None
 
     def _InitSchedulerMgr(self):
-        self.m_LoggerObj.info("Start scheduler mgr")
+        self.m_LoggerObj.info("Init scheduler mgr")
 
         MailMgrObj = self.GetApp().GetService("mail").GetMailMgr()
         assert MailMgrObj is not None, "scheduler mgr depend on mail mgr"
@@ -62,4 +62,4 @@ class SchedulerService(service_base.ServiceBase):
         self.m_SchedulerMgr.Init()
         self.m_SchedulerMgr.Start()
 
-        self.m_LoggerObj.info("End scheduler mgr\n")
+        self.m_LoggerObj.info("Init scheduler mgr end\n")

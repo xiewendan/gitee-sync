@@ -110,7 +110,8 @@ class AcceptTask(tasK_base.BaseTask):
 
         # TODO 在执行前，需要先将文件放到temp目录下，如果不存在rpath的时候，就放到data/temp/任务id/filename文件
 
-        szWorkDir = "%s/data/temp/%s" % (os.getcwd(), self.m_szTaskId)
+        import common.path_mgr.path_mgr as path_mgr
+        szWorkDir = "%s/%s" % (path_mgr.GetTemp(), self.m_szTaskId)
 
         dictVarConfig = {}
         for szVarName, VarObj in self.m_dictVar.items():

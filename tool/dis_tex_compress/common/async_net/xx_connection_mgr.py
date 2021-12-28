@@ -38,7 +38,7 @@ class XxConnectionMgr:
 
     @my_log.SeperateWrap()
     def Destroy(self):
-        self.m_LoggerObj.info("")
+        self.m_LoggerObj.debug("")
 
         self.m_ConnectionFactoryObj.UnregisterAll()
 
@@ -54,7 +54,7 @@ class XxConnectionMgr:
     @my_log.SeperateWrap()
     def CreateConnection(self, nType, dictConnectionData) -> int:
         """@:return nID"""
-        self.m_LoggerObj.info("type:%d, dictData:%s", nType, dictConnectionData)
+        self.m_LoggerObj.debug("type:%d, dictData:%s", nType, dictConnectionData)
 
         ConnectionObj = self.m_ConnectionFactoryObj.CreateConnection(nType, dictConnectionData)
 
@@ -64,7 +64,7 @@ class XxConnectionMgr:
 
     @my_log.SeperateWrap()
     def DestroyConnection(self, nID):
-        self.m_LoggerObj.info("id:%s", nID)
+        self.m_LoggerObj.debug("id:%s", nID)
 
         ConnectionObj = self._GetConnection(nID)
         ConnectionObj.Close()
@@ -76,21 +76,21 @@ class XxConnectionMgr:
 
     @my_log.SeperateWrap()
     def Listen(self, nID, szIp, nPort):
-        self.m_LoggerObj.info("id:%d, ip:%s, port:%d", nID, szIp, nPort)
+        self.m_LoggerObj.debug("listen id:%d, ip:%s, port:%d", nID, szIp, nPort)
 
         ConnectionObj = self._GetConnection(nID)
         ConnectionObj.Listen(szIp, nPort)
 
     @my_log.SeperateWrap()
     def Connect(self, nID, szIp, nPort):
-        self.m_LoggerObj.info("id:%d, ip:%s, port:%d", nID, szIp, nPort)
+        self.m_LoggerObj.debug("id:%d, ip:%s, port:%d", nID, szIp, nPort)
 
         ConnectionObj = self._GetConnection(nID)
         ConnectionObj.Connect(szIp, nPort)
 
     @my_log.SeperateWrap()
     def Send(self, nID, dictData):
-        self.m_LoggerObj.info("id:%d, data:%s", nID, Str(dictData))
+        self.m_LoggerObj.debug("id:%d, data:%s", nID, Str(dictData))
 
         ConnectionObj = self._GetConnection(nID)
         ConnectionObj.Send(dictData)

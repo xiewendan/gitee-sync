@@ -174,7 +174,7 @@ class XxConnectionBase:
         return self._OnRead(dictData)
 
     def _OnRead(self, dictData):
-        self.m_LoggerObj.info("dictData:%s", Str(dictData))
+        self.m_LoggerObj.debug("dictData:%s", Str(dictData))
         import logic.connection.message_dispatcher as message_dispatcher
 
         return message_dispatcher.OnRecv(self.m_nID, dictData)

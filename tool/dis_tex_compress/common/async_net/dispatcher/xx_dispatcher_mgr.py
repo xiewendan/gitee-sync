@@ -35,7 +35,7 @@ class XxDispatcherMgr:
         self.m_dictSocketFileNo2DispatcherID = {}
 
     def Destroy(self):
-        self.m_LoggerObj.info("")
+        self.m_LoggerObj.debug("")
 
         listDispatcherID = list(self.m_dictDispathcer.keys())
         for nDispatcherID in listDispatcherID:

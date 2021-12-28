@@ -55,8 +55,12 @@ class SchedulerMgr:
                                     nNotifyID=nNotifyID)
 
     def Start(self):
-        self.m_LoggerObj.info("Start")
-        self.m_JobMgr = background.BackgroundScheduler(logger=self.m_LoggerObj)
+        self.m_LoggerObj.debug("Start")
+
+        # 调试scheduler_mgr可以注入logger
+        # self.m_JobMgr = background.BackgroundScheduler(logger=self.m_LoggerObj)
+        self.m_JobMgr = background.BackgroundScheduler()
+
         self.m_JobMgr.start()
 
         self._DailyUpdateNotifyIns()
@@ -233,7 +237,7 @@ class SchedulerMgr:
             my_traceback.OnException()
 
     def _DailyUpdateNotifyIns(self, DatetimeObj=None):
-        self.m_LoggerObj.info("Daily update notify ins")
+        self.m_LoggerObj.info("Daily update notify")
 
         CurDatetimeObj = datetime.datetime.now()
         if DatetimeObj is None:

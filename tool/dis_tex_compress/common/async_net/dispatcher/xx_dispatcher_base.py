@@ -93,7 +93,7 @@ class XxDispatcherBase:
 
         self.m_eDispatcherState = xx_dispatcher.EDispatcherState.eConnecting
 
-        self.m_LoggerObj.info("try connect ip:%s, port:%d", szIp, nPort)
+        self.m_LoggerObj.debug("try connect ip:%s, port:%d", szIp, nPort)
 
         nError = self.m_SocketObj.connect_ex((szIp, nPort))
 
@@ -168,7 +168,7 @@ class XxDispatcherBase:
         self.m_eDispatcherState = xx_dispatcher.EDispatcherState.eConnected
 
     def _HandleConnect(self):
-        self.m_LoggerObj.info("connect, ip:%s, port:%d", self.m_szIp, self.m_nPort)
+        self.m_LoggerObj.debug("connect, ip:%s, port:%d", self.m_szIp, self.m_nPort)
 
         import common.async_net.xx_connection_mgr as xx_connection_mgr
         xx_connection_mgr.F_OnConnect(self.m_nID)
@@ -180,7 +180,7 @@ class XxDispatcherBase:
         self.m_eDispatcherState = xx_dispatcher.EDispatcherState.eDisconnected
 
     def _HandleDisconnect(self):
-        self.m_LoggerObj.info("disconnected, ip:%s, port:%d", self.m_szIp, self.m_nPort)
+        self.m_LoggerObj.debug("disconnected, ip:%s, port:%d", self.m_szIp, self.m_nPort)
 
         import common.async_net.xx_connection_mgr as xx_connection_mgr
         xx_connection_mgr.F_OnDisconnect(self.m_nID)
@@ -204,7 +204,7 @@ class XxDispatcherBase:
             raise
 
         szIp, nPort = AddrObj
-        self.m_LoggerObj.info("new client come, ip:%s, port:%d", szIp, nPort)
+        self.m_LoggerObj.debug("new client come, ip:%s, port:%d", szIp, nPort)
 
         assert szIp is not None
         assert nPort is not None

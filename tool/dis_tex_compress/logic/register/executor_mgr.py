@@ -15,13 +15,13 @@ class ExecutorMgr:
         self.m_dictExecutorData = {}
 
     def AddExecutorData(self, nConnID, dictData):
-        self.m_LoggerObj.debug("ConnID:%d, dictData:%s", nConnID, Str(dictData))
+        self.m_LoggerObj.info("Add executor data! ConnID:%d, dictData:%s", nConnID, Str(dictData))
 
         assert nConnID not in self.m_dictExecutorData
         self.m_dictExecutorData[nConnID] = dictData
 
     def UpdateExecutorData(self, nConnID, dictData):
-        self.m_LoggerObj.debug("ConnID:%d, dictData:%s", nConnID, dictData)
+        self.m_LoggerObj.info("Update executor data! ConnID:%d, dictData:%s", nConnID, dictData)
 
         assert nConnID in self.m_dictExecutorData
 
@@ -29,7 +29,7 @@ class ExecutorMgr:
             self.m_dictExecutorData[nConnID][szKey] = szValue
 
     def RemoveExecutorData(self, nConnID):
-        self.m_LoggerObj.debug("ConnID:%d", nConnID)
+        self.m_LoggerObj.info("Remove executor data! ConnID:%d", nConnID)
 
         assert nConnID in self.m_dictExecutorData
         del self.m_dictExecutorData[nConnID]

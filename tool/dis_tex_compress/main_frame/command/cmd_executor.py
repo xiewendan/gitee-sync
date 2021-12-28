@@ -34,7 +34,7 @@ class CmdExecutor(cmd_base.CmdBase):
 
     def Do(self):
         """执行命令"""
-        self.m_LoggerObj.info("Start")
+        self.m_LoggerObj.info("Start %s", self.GetName())
 
         szCWD = self.m_AppObj.ConfigLoader.CWD
 

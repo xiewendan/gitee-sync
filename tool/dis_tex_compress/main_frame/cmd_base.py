@@ -29,9 +29,9 @@ class CmdBase:
 
     def Init(self, AppObj):
         """初始化AppObj"""
-        self.m_AppObj = AppObj
-        self.m_LoggerObj.info("Init AppObj")
+        self.m_LoggerObj.debug("Init cmd: %s", self.GetName())
 
+        self.m_AppObj = AppObj
         self._OnInit()
 
     def _OnInit(self):

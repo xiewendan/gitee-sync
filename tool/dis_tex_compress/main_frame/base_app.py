@@ -25,7 +25,7 @@ class BaseApp:
 
     # ############################# main process
     def DoInit(self, args):
-        self.m_LoggerObj.info("Do init")
+        self.m_LoggerObj.debug("Do init begin")
 
         # 生成render配置文件
         self._RenderConfig()
@@ -48,7 +48,7 @@ class BaseApp:
         # 初始化
         self.OnInit()
 
-        self.m_LoggerObj.info("Do init end\n")
+        self.m_LoggerObj.debug("Do init end")
 
     def DoLogic(self):
         self._BeginProfile()
@@ -139,12 +139,12 @@ class BaseApp:
         return self.m_CLMObj.GetArg(0)
 
     def _SetTestFlag(self):
-        self.m_LoggerObj.info("Start set test flag")
+        self.m_LoggerObj.debug("Start set test flag")
         self.m_bTest = self.m_CLMObj.HasOpt("-t", "--test")
-        self.m_LoggerObj.info("End set test flag")
+        self.m_LoggerObj.debug("End set test flag")
 
     def _LoadConfig(self):
-        self.m_LoggerObj.info("Start load config file")
+        self.m_LoggerObj.debug("Start load config file")
 
         ConfigLoaderCls = self.GetConfigLoaderCls()
         szConf = self.m_CLMObj.GetOpt("-c", "--config")
@@ -152,7 +152,7 @@ class BaseApp:
         self.m_ConfigLoader = ConfigLoaderCls(szConfFullPath)
         self.m_ConfigLoader.ParseConf()
 
-        self.m_LoggerObj.info("End load config file\n")
+        self.m_LoggerObj.debug("End load config file\n")
 
     def _DoHelp(self):
         bHelp = self.m_CLMObj.HasOpt("-h", "--help")
@@ -170,7 +170,7 @@ class BaseApp:
         return True
 
     def _ParseCommandArg(self, args):
-        self.m_LoggerObj.info("Start parse command line")
+        self.m_LoggerObj.debug("Start parse command line")
 
         import common.command_line_arg_mgr as command_line_arg_mgr
         szBaseShortOpt, listBaseLongOpt = self._GetBaseCommandOpt()
@@ -179,10 +179,10 @@ class BaseApp:
                                                                listBaseLongOpt + listLongOpt)
         self.m_CLMObj.Parse(args)
 
-        self.m_LoggerObj.info("End parse command line\n")
+        self.m_LoggerObj.debug("End parse command line\n")
 
     def _RenderConfig(self):
-        self.m_LoggerObj.info("Start rendering config")
+        self.m_LoggerObj.debug("Start rendering config")
 
         szRenderYmlPath = "config/render.yml"
         if not os.path.exists(szRenderYmlPath):
@@ -196,7 +196,7 @@ class BaseApp:
         }
 
         util.RenderConfig("config/render.yml", dictTemplatePath2TargetPath)
-        self.m_LoggerObj.info("End rendering config\n")
+        self.m_LoggerObj.debug("End rendering config\n")
 
     def _RegisterAll(self):
         # 注册命令

@@ -22,7 +22,7 @@ from common.my_exception import MyException
 
 
 def RunCmd(szCmd, szOutputFile=None, bStdout=False, szWorkDir=None):
-    logging.getLogger("myLog").debug("%s,%s,%s", szCmd, szOutputFile, bStdout)
+    logging.getLogger("myLog").debug("begin %s,%s,%s", szCmd, szOutputFile, bStdout)
 
     szCurWorkDir = os.getcwd()
     if szWorkDir is not None:
@@ -46,6 +46,8 @@ def RunCmd(szCmd, szOutputFile=None, bStdout=False, szWorkDir=None):
 
     if szWorkDir is not None:
         os.chdir(szCurWorkDir)
+
+    logging.getLogger("myLog").debug("end %s,%s,%s", szCmd, szOutputFile, bStdout)
 
     return nResult
 

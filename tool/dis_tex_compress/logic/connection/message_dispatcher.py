@@ -52,7 +52,7 @@ class MessageDispatcher:
 
     @my_log.SeperateWrap()
     def CallRpc(self, nConnectionID, szModule, szFunction, listArg, Callback=None, tupleArg=None):
-        self.m_LoggerObj.info("nID:%d, module:%s, function:%s, arg:%s", nConnectionID, szModule, szFunction,
+        self.m_LoggerObj.debug("nID:%d, module:%s, function:%s, arg:%s", nConnectionID, szModule, szFunction,
                               Str(listArg))
 
         import common.async_net.xx_connection_mgr as xx_connection_mgr

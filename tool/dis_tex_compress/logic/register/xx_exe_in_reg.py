@@ -26,7 +26,7 @@ class XxExeInReg(xx_connection_base.XxConnectionBase):
         return xx_dispatcher.EDispatcherType.eBuffer
 
     def _OnConnect(self):
-        self.m_LoggerObj.debug("nConnID:%d", self.ID)
+        self.m_LoggerObj.info("new connect, nConnID:%d, ip:%s, port:%d", self.ID, self.Ip, self.Port)
 
         super()._OnConnect()
 

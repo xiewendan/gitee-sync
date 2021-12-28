@@ -32,7 +32,7 @@ class DownloadSystem:
             self.Init(szDownloadFDir)
 
     def Init(self, szDownloadFDir):
-        self.m_LoggerObj.info("szDownloadFDir:%s", szDownloadFDir)
+        self.m_LoggerObj.info("Init download system! Base dir: %s", szDownloadFDir)
         szDownloadFDir = szDownloadFDir.replace("\\", "/")
 
         self.m_szDownloadFDir = szDownloadFDir
@@ -249,7 +249,7 @@ class DownloadSystem:
         # 清理空文件夹
         import common.my_path as my_path
         my_path.ClearEmptyDir(self.m_szFilesFDir)
-        self.m_LoggerObj.info("clean empty dir")
+        self.m_LoggerObj.info("Clean empty dir")
 
     @staticmethod
     def _FindFiles(szFullDir):
