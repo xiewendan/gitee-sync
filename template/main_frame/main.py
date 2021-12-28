@@ -9,6 +9,7 @@ import builtins
 import logging
 import logging.config
 import os
+import socket
 import sys
 import time
 
@@ -35,7 +36,32 @@ def InitLog():
     if not os.path.exists(szLogConfPath):
         raise FileNotFoundError(szLogConfPath)
 
-    logging.config.fileConfig(os.getcwd() + "/config/log.conf")
+    import colorlog
+    colorlog.getLogger('myLog').setLevel(logging.DEBUG)
+    colorlog.getLogger("root").setLevel(logging.DEBUG)
+
+    # 控制台log
+    ConsoleHandlerObj = colorlog.StreamHandler()
+    ConsoleFormatterObj = colorlog.ColoredFormatter("%(log_color)s%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d  %(funcName)s] - %(message)s")
+    ConsoleHandlerObj.setFormatter(ConsoleFormatterObj)
+    ConsoleHandlerObj.setLevel(logging.INFO)
+
+    colorlog.getLogger("myLog").addHandler(ConsoleHandlerObj)
+    colorlog.getLogger("root").addHandler(ConsoleHandlerObj)
+
+    # 文件log
+    import datetime
+    szTime = datetime.datetime.now().strftime("%Y-%m-%d %H_%M_%S.%f")
+    szLogFileName = "log/{0} {1}.log".format(socket.gethostname(), szTime)
+
+    FileHandlerObj = logging.FileHandler(szLogFileName)
+    FileFormatterObj = logging.Formatter('%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d  %(funcName)s] - %(message)s')
+    FileHandlerObj.setFormatter(FileFormatterObj)
+
+    logging.getLogger("myLog").addHandler(FileHandlerObj)
+    logging.getLogger("root").addHandler(FileHandlerObj)
+
+    logging.getLogger("myLog").info("Init log!")
 
 
 def InitTraceback():
@@ -56,12 +82,19 @@ def InitSysPath():
 
 def StartApp(args):
     logging.getLogger("myLog").info("Start app")
+
     import logic.main_app as main_app
     AppCls = main_app.GetAppCls()
     AppObj = AppCls()
     builtins.g_AppObj = AppObj
+
+    logging.getLogger("myLog").info("Do init app")
     AppObj.DoInit(args)
+
+    logging.getLogger("myLog").info("App run")
     AppObj.DoLogic()
+
+    logging.getLogger("myLog").info("Destroy app")
     AppObj.Destroy()
 
 
