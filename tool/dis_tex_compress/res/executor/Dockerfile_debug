@@ -1,0 +1,11 @@
+FROM python:3.6.15-slim-bullseye
+
+WORKDIR /install
+
+COPY requirements.txt requirements.txt
+
+RUN pip3 install -r requirements.txt
+
+WORKDIR /app
+
+CMD ["python", "main_frame/main.py", "executor_k8s", "/temp/data"]

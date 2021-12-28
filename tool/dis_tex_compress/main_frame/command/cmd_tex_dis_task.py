@@ -125,7 +125,7 @@ class CmdTexDisTask(cmd_base.CmdBase):
         g_dictUUID2State[dictTaskData["uuid"]] = True
 
         # wait to do task
-        nWaitingCount = 300
+        nWaitingCount = 600
         while len(g_dictUUID2State) > 0 and nWaitingCount > 0:
             self.m_LoggerObj.info("wait to do task ...: %d", nWaitingCount)
 

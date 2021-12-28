@@ -59,8 +59,11 @@ class CmdExecutor(cmd_base.CmdBase):
         szListenIp = self.GetListenIp()
         nListenPort = 60000
         nFilePort = 60001
-        szBaseFPath = "%s/%s" % (szCWD, self.m_AppObj.CLM.GetArg(1))
-        szBaseFPath.replace("\\", "/")
+        szTempFPath = self.m_AppObj.CLM.GetArg(1)
+        szTempFPath.replace("\\", "/")
+
+        import common.path_mgr.path_mgr as path_mgr
+        path_mgr.SetTemp(szTempFPath)
 
         self.m_LoggerObj.info("arg parse succeed, register ip: %s, listen ip: %s", szRegisterIp, szListenIp)
 
@@ -74,10 +77,10 @@ class CmdExecutor(cmd_base.CmdBase):
         }
 
         import common.download_system.download_system as download_system
-        download_system.Init(szBaseFPath + "/download_system")
+        download_system.Init(szTempFPath + "/download_system")
 
         import common.file_cache_system.file_cache_system as file_cache_system
-        file_cache_system.Init(szBaseFPath + "/cache_system")
+        file_cache_system.Init(szTempFPath + "/cache_system")
 
         import logic.executor.executor as executor
         ExecutorObj = executor.Executor(dictData)

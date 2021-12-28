@@ -14,7 +14,19 @@ spec:
     spec:
       containers:
       - name: dis-tex-register
-        image: stephenxjc/dis_tex_register
+        image: stephenxjc/dis_tex_register_debug
+        volumeMounts:
+        - mountPath: /app
+          name: host-mount
+        - mountPath: /temp
+          name: temp
+        
+      volumes:
+      - name: host-mount
+        hostPath:
+          path: /host
+      - name: temp
+        emptyDir: {}
 
 ---
 apiVersion: v1
@@ -47,18 +59,22 @@ spec:
     spec:
       containers:
       - name: dis-tex-executor
-        image: stephenxjc/dis_tex_executor
+        image: stephenxjc/dis_tex_executor_debug
         resources:
           requests:
-            cpu: 100m
+            cpu: 1000m
         volumeMounts:
-        - mountPath: /data
+        - mountPath: /app
           name: host-mount
+        - mountPath: /temp
+          name: temp
         
       volumes:
       - name: host-mount
         hostPath:
           path: /host
+      - name: temp
+        emptyDir: {}
 
 ---
 apiVersion: autoscaling/v1
@@ -71,5 +87,5 @@ spec:
     kind: Deployment
     name: dis-tex-executor
   minReplicas: 1
-  maxReplicas: 20
-  targetCPUUtilizationPercentage: 80
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 90

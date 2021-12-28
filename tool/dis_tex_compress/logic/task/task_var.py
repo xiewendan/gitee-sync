@@ -136,7 +136,8 @@ class TaskVar:
         self.m_LoggerObj.info("name:%s", self.m_szName)
 
         import common.my_path as my_path
-        self.m_szLocalFPath = "%s/data/temp/%s/%s" % (os.getcwd(), szTaskId, self.m_szRPath)
+        import common.path_mgr.path_mgr as path_mgr
+        self.m_szLocalFPath = "%s/%s/%s" % (path_mgr.GetTemp(), szTaskId, self.m_szRPath)
         my_path.CreateFileDir(self.m_szLocalFPath)
 
         if self.IsTemp():
