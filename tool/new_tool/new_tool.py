@@ -17,7 +17,6 @@ def main():
         "common",
         "config/config_template.conf",
         "config/render_template.yml",
-        "config/log.conf",
         "config/__init__.py",
         "lib",
         "logic",
