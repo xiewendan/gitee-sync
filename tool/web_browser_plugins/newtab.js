@@ -14,17 +14,20 @@ function PrintLink() {
         {
             "http://www.woshipm.com/": "人人都是产品经理",
             "https://github.com/trending": "github trending",
-            "https://www.zhihu.com/": "知乎",
             "https://www.infoq.cn/weekly/landing": "InfoQ",
-            "https://www.qbitai.com/": "量子位",
+            "https://km.netease.com/recent": "km七日最热",
+			"https://v.netease.com/evideo/video_course/list":"易播",
         },
         "搜索":
         {
             "https://www.google.com.hk/": "goolge",
             "https://www.baidu.com/": "百度",
-            "https://www.youtube.com/": "youtube",
-            "https://www.bilibili.com/": "B站",
-            "https://stackoverflow.com/": "stackoverflow",
+			"https://www.bilibili.com/": "B站",
+            "https://www.zhihu.com/follow":"知乎",
+			"https://stackoverflow.com/": "stackoverflow",
+			"https://github.com/": "github搜索",
+			"https://www.youtube.com/": "youtube",
+			"https://translate.google.com/": "google翻译",
         },
         "网易":
         {
@@ -33,7 +36,8 @@ function PrintLink() {
         "架构师":
         {
             "https://github.com/kamranahmedse/developer-roadmap": "web developer roadmap",
-            "https://github.com/xingshaocheng/architect-awesome": "后端架构师技术图谱"
+            "https://github.com/xingshaocheng/architect-awesome": "后端架构师技术图谱",
+			"https://www.brendangregg.com/linuxperf.html": "linux Performance"
         }
     };
 
