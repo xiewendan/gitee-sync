@@ -1,0 +1,1 @@
+supervisorctl -c etc/supervisor.conf stop template
