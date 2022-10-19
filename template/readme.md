@@ -48,6 +48,28 @@
     [实打实的谷歌搜索技巧](https://zhuanlan.zhihu.com/p/25525658)
     [google api](https://developers.google.com/apis-explorer)
 
+* 格式化
+* 可用性
+  * 不断重构
+  * 代码规范检查(codeclimate整合)
+  * 不断测试(TDD：测试驱动开发，单元测试）
+  * ci-cd流程：
+    * 自动化流程，减轻人工
+* 易用性
+  * example用例目录
+  * 争取做到产品级
+  * pandoc：整合，方便发布pdf
+  * doc文档目录s
+
+* 营销
+  * 好的readme
+  * 技术文档
+  * 示例程序
+  * 技术文章和书籍
+  * 鼓励贡献者
+  
+* 阅读源码：从第一次提交开始
+
 # 3. 使用
 
 ## 3.1. 配置

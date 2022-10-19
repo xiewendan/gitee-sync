@@ -63,7 +63,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 86400,
 		Key6: 'yearly',
-		Key7: '老姐明天生日',
+		Key7: '二姐明天生日',
 	},
 
 	6: {
@@ -74,7 +74,7 @@ scheduler = {
 		Key4: 1,
 		Key5: 86400,
 		Key6: 'yearly',
-		Key7: '老姐、外婆明天生日',
+		Key7: '大姐明天生日',
 	},
 
 	7: {
@@ -134,24 +134,13 @@ scheduler = {
 
 	12: {
 		Key0: 12,
-		Key1: '2020-12-10',
-		Key2: 'solar',
+		Key1: '2020-8-13',
+		Key2: 'lunar',
 		Key3: '12:0:0',
 		Key4: 1,
-		Key5: 0,
-		Key6: 'monthly',
-		Key7: '存钱到工行两张卡，买流量，房租，还信用卡，还花呗',
-	},
-
-	13: {
-		Key0: 13,
-		Key1: '2021-3-30',
-		Key2: 'solar',
-		Key3: '12:0:0',
-		Key4: 1,
-		Key5: 0,
-		Key6: 'once',
-		Key7: '取消移动89元套餐',
+		Key5: 86400,
+		Key6: 'yearly',
+		Key7: '黄妈明天生日',
 	},
 
 	14: {
@@ -165,17 +154,6 @@ scheduler = {
 		Key7: '公司打卡提醒',
 	},
 
-	15: {
-		Key0: 15,
-		Key1: '2020-5-1',
-		Key2: 'solar',
-		Key3: '10:0:0',
-		Key4: 1,
-		Key5: 0,
-		Key6: 'monthly',
-		Key7: '团队月初报告提醒',
-	},
-
 	16: {
 		Key0: 16,
 		Key1: '2020-1-1',
@@ -185,17 +163,6 @@ scheduler = {
 		Key5: 0,
 		Key6: 'monthly',
 		Key7: 'PMP PDU找曾老师更新',
-	},
-
-	17: {
-		Key0: 17,
-		Key1: '2020-12-1',
-		Key2: 'solar',
-		Key3: '10:0:0',
-		Key4: 1,
-		Key5: 0,
-		Key6: 'once',
-		Key7: '领取社保卡',
 	},
 
 }

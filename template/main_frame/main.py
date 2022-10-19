@@ -32,10 +32,6 @@ def InitLog():
     if not os.path.exists("log"):  # 不存在log目录，要创建
         os.makedirs("log")
 
-    szLogConfPath = os.getcwd() + "/config/log.conf"
-    if not os.path.exists(szLogConfPath):
-        raise FileNotFoundError(szLogConfPath)
-
     import colorlog
     colorlog.getLogger('myLog').setLevel(logging.DEBUG)
     colorlog.getLogger("root").setLevel(logging.DEBUG)
@@ -99,6 +95,7 @@ def StartApp(args):
 
 
 def Main(args):
+    print(args)
     print("Begin:\t" + time.strftime('%H:%M:%S', time.localtime(time.time())))
 
     builtins.Str = Str
