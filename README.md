@@ -56,3 +56,4 @@ PRs accepted.
 ## 1.7. License
 
 [MIT © xiewendan](LICENSE)
+
